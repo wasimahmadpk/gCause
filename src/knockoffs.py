@@ -14,7 +14,7 @@ class Knockoffs:
     def __init__(self):
         self.n = 32
 
-    def GenKnockoffs(self, n, dim, datax):
+    def Generate_Knockoffs(self, n, dim, datax):
 
         import data
         import diagnostics
