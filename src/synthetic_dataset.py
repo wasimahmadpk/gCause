@@ -28,33 +28,23 @@ class SyntheticDataset:
         self.X3 = list(np.zeros(10))
         self.X4 = list(np.zeros(10))
         self.X5 = list(np.zeros(10))
+        self.X6 = list(np.zeros(10))
 
     def generate_data(self):
 
-        for t in range(10, self.time_steps):
-
-            if t < self.time_steps/3:
-                ex = self.ex[0]
-                ey = self.ey[0]
-                ez = self.ez[0]
-
-            if t >= self.time_steps/3 and t < 2*self.time_steps/3:
-                ex = self.ex[1]
-                ey = self.ey[1]
-                ez = self.ez[1]
-
-            elif t >= 2 * self.time_steps/3:
-                ex = self.ex[2]
-                ey = self.ey[2]
-                ez = self.ez[2]
-
+        for t in range(10, self.time_steps): 
+            
+            # Subsystem 1
             self.X1.append(self.root[t] + ex[t])
-            self.X2.append(C.get('c1') * self.X1[t - Tao.get('t1')] + ex[t])
-            self.X3.append(C.get('c2') ** ((self.X1[t - Tao.get('t2')])/2) + ez[t])
-            self.X4.append(C.get('c3') ** (self.X3[t - Tao.get('t2')]/2) + ex[t])
-            self.X5.append(C.get('c1') * self.X1[t - Tao.get('t3')] + C.get('c4') * self.X4[t - Tao.get('t1')] + ey[t])
-        
-        return self.X1, self.X2, self.X3, self.X4, self.X5
+            self.X2.append(C.get('c1') * self.X1[t - Tao.get('t1')] + ey[t])
+            self.X3.append(C.get('c2') * ((self.X2[t - Tao.get('t2')])/2) + ez[t])
+            
+            # Subsystem 2
+            self.X4.append(C.get('c3') * (self.X3[t - Tao.get('t2')]/2) + ex[t])
+            self.X5.append(C.get('c4') * self.X1[t - Tao.get('t3')] + ey[t])
+            self.X6.append(C.get('c5') * self.X1[t - Tao.get('t3')] + C.get('c4') * self.X4[t - Tao.get('t1')] + ey[t])
+            
+        return self.X1, self.X2, self.X3, self.X4, self.X5, self.X6
 
 
 if __name__ == '__main__':
@@ -82,21 +72,19 @@ if __name__ == '__main__':
 
     # root = np.random.normal(0, 1.0, 2000)
     time_steps, Tref = 2100, 15
-
-    ex, ey, ez = [], [], []
-    for i in range(3):
-        ex.append(np.random.normal(i + i*0.1, 0.30, time_steps))
-        ey.append(np.random.normal(i + i*0.1, 0.40, time_steps))
-        ez.append(np.random.normal(i + i*0.1, 0.25, time_steps))
-
-    C = {'c1': 0.70, 'c2': 1.0, 'c3': 0.75, 'c4': 1.25, 'c5': 1.60}           # c2:1.75, c5:1.85
+    
+    ex = np.random.normal(0.0, 0.30, 2*time_steps)
+    ey = np.random.normal(0.5, 0.40, 2*time_steps)
+    ez = np.random.normal(1.0, 0.25, 2*time_steps)
+    
+    C = {'c1': 0.70, 'c2': 1.0, 'c3': 0.75, 'c4': 1.25, 'c5': 1.60, 'c6': 1.25}           # c2:1.75, c5:1.85
     Tao = {'t1': 2, 't2': 3, 't3': 4, 't4': 1, 't5': 6, 't6': 5}
     data_obj = SyntheticDataset(root, time_steps, Tref, C, Tao, ex, ey, ez)
-    X1, X2, X3, X4, X5 = data_obj.generate_data()
+    X1, X2, X3, X4, X5, X6 = data_obj.generate_data()
 
-    data = {'Z1': X1[50:], 'Z2': X2[50:], 'Z3': X3[50:], 'Z4': X4[50:], 'Z5': X5[50:]}
-    df = pd.DataFrame(data, columns=['Z1', 'Z2', 'Z3', 'Z4', 'Z5'])
-    df.to_csv(r'/home/ahmad/Projects/deepCausality/datasets/synthetic_datasets/synthetic_data.csv', index_label=False, header=True)
+    data = {'Z1': X1[50:], 'Z2': X2[50:], 'Z3': X3[50:], 'Z4': X4[50:], 'Z5': X5[50:], 'Z6': X6[50:]}
+    df = pd.DataFrame(data, columns=['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'Z6'])
+    df.to_csv(r'/home/ahmad/Projects/gCause/datasets/synthetic_datasets/synthetic_gts.csv', index_label=False, header=True)
     print(df.head(10))
     print("Correlation Matrix")
     print(df.corr(method='pearson'))
