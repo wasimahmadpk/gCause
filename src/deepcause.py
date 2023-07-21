@@ -32,8 +32,7 @@ from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_
 np.random.seed(1)
 mx.random.seed(2)
 
-
-pars = parameters.get_geo_params()
+pars = parameters.get_syn_params()
 num_samples = pars.get("num_samples")
 step = pars.get("step_size")
 training_length = pars.get("train_len")
@@ -43,17 +42,14 @@ plot_path = pars.get("plot_path")
 # Get prior skeleton
 prior_graph = pars.get('prior_graph')
 true_conf_mat = pars.get("true_graph")
+groups = pars.get('groups')
 
+group_one_start = groups.get('g1')[0]
+group_one_end = groups.get('g1')[1]
+group_two_start = groups.get('g2')[0]
+group_two_end = groups.get('g2')[1]
 
-def deepCause(odata, knockoffs, model, params):
-
-    mutual_info = []
-    for a in range(len(odata)):
-            x = odata[:].T
-            y = odata[a].T
-            mi = prep.mutual_information(x, y)
-            # print("MI Value: ", mi)
-            mutual_info.append(mi)
+def deepCause(odata, knockoffs, groups, model, params):
 
     filename = pathlib.Path(model)
     if not filename.exists():
@@ -63,54 +59,47 @@ def deepCause(odata, knockoffs, model, params):
         pickle.dump(predictor, open(filename, 'wb'))
 
     conf_mat = []
-    conf_mat_mean = []
     conf_mat_indist = []
-    conf_mat_outdist = []
     conf_mat_uniform = []
     
     pvalues = []
-    pval_indist, pval_outdist, pval_mean, pval_uniform = [], [], [], []
+    pval_indist, pval_uniform = [], []
 
     kvalues = []
-    kval_indist, kval_outdist, kval_mean, kval_uniform = [], [], [], []
+    kval_indist, kval_uniform = [], []
 
-    for i in range(len(odata)):
+    for i in range(group_two_start, group_two_end):
 
         int_var = odata[i]
         int_var_name = "Z_" + str(i + 1) + ""
         var_list = []
         causal_decision = []
-        mean_cause = []
         indist_cause = []
-        outdist_cause = []
         uni_cause = []
 
 
         # P-Values
-        pvi, pvo, pvm, pvu = [], [], [], []
+        pvi, pvu = [], []
 
         # KL-Divergence
-        kvi, kvo, kvm, kvu = [], [], [], []
+        kvi, kvu = [], []
 
         # Generate Knockoffs
-        data_actual = np.array(odata[:, 0: training_length + prediction_length]).transpose()
+        data_actual = np.array(odata[: , 0: training_length + prediction_length]).transpose()
         obj = Knockoffs()
         n = len(odata[:, 0])
-        knockoffs = obj.GenKnockoffs(n, params.get("dim"), data_actual)
-        knockoff_sample = np.array(knockoffs[:, i])
+        knockoffs = obj.Generate_Knockoffs(n, params.get("dim"), data_actual)
+        
+        knockoff_samples = np.array(knockoffs[:, 0: 3]).transpose()
+        print('Timeseries: ', odata.shape)
+        print('Knockoffs: ', knockoff_samples.shape)
+        uniform_intervention = np.random.uniform(np.min(odata[i]), np.min(odata[i]), knockoff_samples.shape)
+        
+        interventionlist = [knockoff_samples, uniform_intervention]
+        heuristic_itn_types = ['In-dist', 'Uniform']
 
-        mean = np.random.normal(0, 0.05, len(knockoff_sample)) + np.mean(odata[i])
-        outdist = np.random.normal(150, 120, len(knockoff_sample))
-        # outdist = get_shuffled_ts(SAMPLE_RATE, DURATION, odata[i])
-        uniform = np.random.uniform(np.min(odata[i]), np.min(odata[i]), len(knockoff_sample))
-        interventionlist = [knockoff_sample, outdist[: len(knockoff_sample)], mean, uniform]
-        heuristic_itn_types = ['In-dist', 'Out-dist', 'Mean', 'Uniform']
-
-        for j in range(len(odata)):
-            # back_door_int = []
-            # back_door = prior_graph[:, j].nonzero()[0]
-            # print("----------*****-----------------------*****-----------------******-----------")
-            # print(f"Front/Backdoor Paths: {np.array(back_door) + 1} ---> {j + 1}")
+        for j in range(group_two_start, group_two_end):
+        
             print("----------*****-----------------------*****-----------------******-----------")
 
             columns = params.get('col')
@@ -138,15 +127,17 @@ def deepCause(odata, knockoffs, model, params):
                 diff = []
                 start = 10
 
-                for iter in range(19):  # 30
-
+                for iter in range(10):  # 30
+                    print('iter: ', iter)
                     mselist_batch = []
                     mselistint_batch = []
                     mapelist_batch = []
                     mapelistint_batch = []
                     for r in range(2):
 
-                        test_data = odata[:, start: start + training_length + prediction_length].copy()
+                        test_data = odata[: , start: start + training_length + prediction_length].copy()
+                        print('test data shape: ', test_data.shape)
+                        print(test_data)
                         test_ds = ListDataset(
                             [
                                 {'start': "01/04/2001 00:00:00",
@@ -156,8 +147,10 @@ def deepCause(odata, knockoffs, model, params):
                             freq=frequency,
                             one_dim_target=False
                         )
-                        int_data = odata[:, start: start + training_length + prediction_length].copy()
-                        int_data[i, :] = intervene
+                        int_data = odata[: , start: start + training_length + prediction_length].copy()
+                        print('int data shape: ', int_data.shape)
+                        print('intervention shape: ', intervene.shape)
+                        int_data[0: 3, :] = intervene
                         test_dsint = ListDataset(
                             [
                                 {'start': "01/04/2001 00:00:00",
@@ -177,14 +170,14 @@ def deepCause(odata, knockoffs, model, params):
 
                         if m == 0:
                             # Generate multiple version Knockoffs
-                            data_actual = np.array(odata[:, start: start + training_length + prediction_length]).transpose()
+                            data_actual = np.array(odata[: , start: start + training_length + prediction_length]).transpose()
                             obj = Knockoffs()
                             n = len(odata[:, 0])
-                            knockoffs = obj.GenKnockoffs(n, params.get("dim"), data_actual)
-                            knockoff_sample = np.array(knockoffs[:, i])
-                            intervene = knockoff_sample
+                            knockoffs = obj.Generate_Knockoffs(n, params.get("dim"), data_actual)
+                            knockoff_samples = np.array(knockoffs[:, 0: 3]).transpose()
+                            intervene = knockoff_samples
 
-                        np.random.shuffle(intervene)
+                        # np.random.shuffle(intervene)
                         mselist_batch.append(mse)
                         mapelist_batch.append(mape)
                         mselistint_batch.append(mseint)
@@ -208,7 +201,7 @@ def deepCause(odata, knockoffs, model, params):
                 mselolint.append(mselistint)
                 mapelolint.append(mapelistint)
 
-            var_list.append(np.var(mapelolint[1]))
+            var_list.append(np.var(mapelolint[0]))
             # print(f"MSE(Mean): {list(np.mean(mselol, axis=0))}")
             if len(columns) > 0:
 
@@ -243,7 +236,7 @@ def deepCause(odata, knockoffs, model, params):
                     pvals.append(1-p)
                 
                 print(f'Test statistic: {t}, p-value: {p}, KLD: {kld}')
-                if p < 0.10 or mutual_info[i][j] > 0.90:
+                if p < 0.10:
                     print("Null hypothesis is rejected")
                     causal_decision.append(1)
                 else:
@@ -251,14 +244,10 @@ def deepCause(odata, knockoffs, model, params):
                     causal_decision.append(0)
 
             pvi.append(pvals[0])
-            pvo.append(pvals[1])
-            pvm.append(pvals[2])
-            pvu.append(pvals[3])
+            pvu.append(pvals[1])
 
             kvi.append(kvals[0])
-            kvo.append(kvals[1])
-            kvm.append(kvals[2])
-            kvu.append(kvals[3])
+            kvu.append(kvals[1])
 
             # plot residuals distribution
             fig = plt.figure()
@@ -280,44 +269,29 @@ def deepCause(odata, knockoffs, model, params):
             # plt.show()
             # plt.close()
 
-            mean_cause.append(causal_decision[0])
-            indist_cause.append(causal_decision[1])
-            outdist_cause.append(causal_decision[2])
-            uni_cause.append(causal_decision[3])
+            indist_cause.append(causal_decision[0])
+            uni_cause.append(causal_decision[1])
             causal_decision = []
 
         pval_indist.append(pvi)
-        pval_outdist.append(pvo)
-        pval_mean.append(pvm)
         pval_uniform.append(pvu)
 
         kval_indist.append(kvi)
-        kval_outdist.append(kvo)
-        kval_mean.append(kvm)
         kval_uniform.append(kvu)
 
-
-        conf_mat_mean = conf_mat_mean + mean_cause
         conf_mat_indist = conf_mat_indist + indist_cause
-        conf_mat_outdist = conf_mat_outdist + outdist_cause
         conf_mat_uniform = conf_mat_uniform + uni_cause
-        mean_cause, indist_cause, outdist_cause, uni_cause = [], [], [], []
+        indist_cause, uni_cause = [], []
 
     pvalues.append(pval_indist)
-    pvalues.append(pval_outdist)
-    pvalues.append(pval_mean)
     pvalues.append(pval_uniform)
     print("P-Values: ", pvalues)
 
     kvalues.append(kval_indist)
-    kvalues.append(kval_outdist)
-    kvalues.append(kval_mean)
     kvalues.append(kval_uniform)
     print("KL-Divergence: ", kvalues)
 
-    conf_mat.append(conf_mat_mean)
     conf_mat.append(conf_mat_indist)
-    conf_mat.append(conf_mat_outdist)
     conf_mat.append(conf_mat_uniform)
     print("-----------------------------------------------------------------------------")
     print("Discovered Causal Graphs: ", conf_mat)
