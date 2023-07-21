@@ -16,7 +16,6 @@ import matplotlib.pyplot as plt
 from knockoffs import Knockoffs
 from scipy.special import stdtr
 from forecast import modelTest
-from regimes import get_regimes
 from gluonts.trainer import Trainer
 from gluonts.evaluation import Evaluator
 from sklearn.metrics import mean_squared_error
@@ -45,27 +44,21 @@ num_cells = pars.get("num_cells")
 dropout_rate = pars.get("dropout_rate")
 batch_size = pars.get("batch_size")
 plot_path = pars.get("plot_path")
+groups = pars.get("groups")
 
 # Load river discharges data
 # df = prep.load_river_data()
 # df = prep.load_climate_data()
 # df = prep.load_geo_data()
-# df = prep.load_multiregime_data()
+
 df = prep.load_syn_data()
-df = df.iloc[:, 0:4]
-
-# # --------Identify Regimes in Time series--------
-# regimes, _, _, newdf = get_regimes(data, slidingwin_size)
-# # -----------------------------------------------
-
-# for i in range(len(regimes)):
-    # print(regimes[i].head(5))
+df = df.iloc[:, :]
 
 # df = data.loc[:1000].copy()
 print(df.describe())
 print(df.shape)
 print(df.head(5))
-# df = regimes[1].drop('Clusters', axis=1)
+
 # df.plot.scatter(x='BO', y='Awake', c='blue')
 # plt.xlabel("PPFD ($\mu$ mol photons $m^{2}s^{-1}$)")
 # plt.ylabel("NEP ($\mu$ mol $CO_2$ $m^{2}s^{-1}$)")
@@ -111,9 +104,7 @@ estimator = DeepAREstimator(
 )
 
 # load model if not already trained
-model_path = "../models/trained_model_geo13FfullGWLmodel.sav"
-# model_path = "../models/trained_model_syn22Sep.sav"
-# model_path = "../models/trained_model_river16Jun.sav"
+model_path = "../models/trained_model_syn0.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():
@@ -123,11 +114,14 @@ if not filename.exists():
     pickle.dump(predictor, open(filename, 'wb'))
 
 # Generate Knockoffs
-data_actual = np.array(original_data[:, :]).transpose()
+group_start = groups['g1'][0]
+group_end = groups['g1'][1]
+
+data_actual = np.array(original_data[:,: ]).transpose()
 n = len(original_data[:, 0])
 obj = Knockoffs()
-knockoffs = obj.GenKnockoffs(n, dim, data_actual)
+knockoffs = obj.Generate_Knockoffs(n, dim, data_actual)
 
 params = {"dim": dim, "col": columns}
 # Function for estimating causal impact among variables
-deepCause(original_data, knockoffs, model_path, params)
+deepCause(original_data, knockoffs, groups, model_path, params)
