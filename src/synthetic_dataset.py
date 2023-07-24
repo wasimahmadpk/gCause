@@ -13,16 +13,15 @@ import matplotlib.pyplot as plt
 
 class SyntheticDataset:
 
-    def __init__(self, root, time_steps, Tref, C, Tao, ex, ey, ez):
+    def __init__(self, root1, root2, time_steps, Tref, C, Tao, dynamic_noise):
 
         self.time_steps = time_steps
 
-        self.root = root
+        self.root1 = root1
+        self.root2 = root2
         self.C = C
         self.Tao = Tao
-        self.ex = ex
-        self.ey = ey
-        self.ez = ez
+    
         self.X1 = list(np.zeros(10))
         self.X2 = list(np.zeros(10))
         self.X3 = list(np.zeros(10))
@@ -34,15 +33,16 @@ class SyntheticDataset:
 
         for t in range(10, self.time_steps): 
             
-            # Subsystem 1
-            self.X1.append(self.root[t] + ex[t])
-            self.X2.append(C.get('c1') * self.X1[t - Tao.get('t1')] + ey[t])
-            self.X3.append(C.get('c2') * ((self.X2[t - Tao.get('t2')])/2) + ez[t])
+            # Subsystem: 1
+            self.X1.append(self.root1[t] + dynmaic_noise['n1'][t])
+            self.X2.append(C.get('c1') * self.X1[t - Tao.get('t1')] + dynmaic_noise['n2'][t])
+            self.X3.append(C.get('c2') * ((self.X2[t - Tao.get('t2')])/2) + dynmaic_noise['n3'][t])
             
-            # Subsystem 2
-            self.X4.append(C.get('c3') * (self.X3[t - Tao.get('t2')]/2) + ex[t])
-            self.X5.append(C.get('c4') * self.X1[t - Tao.get('t3')] + ey[t])
-            self.X6.append(C.get('c5') * self.X1[t - Tao.get('t3')] + C.get('c4') * self.X4[t - Tao.get('t1')] + ey[t])
+            # Subsystem: 2
+            self.X4.append(self.root2[t] + dynmaic_noise['n4'][t])
+            # self.X4.append(C.get('c1') * self.X1[t - Tao.get('t2')] + dynmaic_noise['n4'][t])
+            self.X5.append(C.get('c4') * self.X4[t - Tao.get('t3')] + dynmaic_noise['n5'][t])
+            self.X6.append(C.get('c5') * self.X4[t - Tao.get('t3')] + C.get('c4') * self.X5[t - Tao.get('t1')] + dynmaic_noise['n6'][t])
             
         return self.X1, self.X2, self.X3, self.X4, self.X5, self.X6
 
@@ -67,19 +67,28 @@ if __name__ == '__main__':
     _, nice_wave = generate_sine_wave(400, SAMPLE_RATE, DURATION)
     _, noise_wave = generate_sine_wave(4000, SAMPLE_RATE, DURATION)
     noise_wave = noise_wave * 0.50
-    noise = np.random.normal(2, 1.10, len(nice_wave))
-    root = noise
+    
+    noise1 = np.random.normal(2, 1.10, len(nice_wave))
+    root1 = noise1
+
+    noise2 = np.random.normal(0, 1.5, len(nice_wave))
+    root2 = noise2
 
     # root = np.random.normal(0, 1.0, 2000)
     time_steps, Tref = 2100, 15
+
+    dynmaic_noise = {'n1': np.random.normal(0.0, 0.30, 2*time_steps),
+                     'n2': np.random.normal(0.5, 0.40, 2*time_steps),
+                     'n3': np.random.normal(1.0, 0.25, 2*time_steps),
+
+                     'n4': np.random.normal(0.75, 0.40, 2*time_steps),
+                     'n5': np.random.normal(1.5, 0.30, 2*time_steps),
+                     'n6': np.random.normal(1.0, 0.50, 2*time_steps)}
     
-    ex = np.random.normal(0.0, 0.30, 2*time_steps)
-    ey = np.random.normal(0.5, 0.40, 2*time_steps)
-    ez = np.random.normal(1.0, 0.25, 2*time_steps)
     
-    C = {'c1': 0.70, 'c2': 1.0, 'c3': 0.75, 'c4': 1.25, 'c5': 1.60, 'c6': 1.25}           # c2:1.75, c5:1.85
+    C = {'c1': 1.50, 'c2': 1.50, 'c3': 0.75, 'c4': 1.25, 'c5': 1.60, 'c6': 1.25}           # c2:1.75, c5:1.85
     Tao = {'t1': 2, 't2': 3, 't3': 4, 't4': 1, 't5': 6, 't6': 5}
-    data_obj = SyntheticDataset(root, time_steps, Tref, C, Tao, ex, ey, ez)
+    data_obj = SyntheticDataset(root1, root2, time_steps, Tref, C, Tao, dynmaic_noise)
     X1, X2, X3, X4, X5, X6 = data_obj.generate_data()
 
     data = {'Z1': X1[50:], 'Z2': X2[50:], 'Z3': X3[50:], 'Z4': X4[50:], 'Z5': X5[50:], 'Z6': X6[50:]}
