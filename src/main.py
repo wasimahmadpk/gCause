@@ -104,7 +104,7 @@ estimator = DeepAREstimator(
 )
 
 # load model if not already trained
-model_path = "../models/trained_model_syn0.sav"
+model_path = "../models/trained_model_syn7.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():
@@ -117,7 +117,7 @@ if not filename.exists():
 group_start = groups['g1'][0]
 group_end = groups['g1'][1]
 
-data_actual = np.array(original_data[:,: ]).transpose()
+data_actual = np.array(original_data[:, :]).transpose()
 n = len(original_data[:, 0])
 obj = Knockoffs()
 knockoffs = obj.Generate_Knockoffs(n, dim, data_actual)
