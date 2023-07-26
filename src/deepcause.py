@@ -42,12 +42,10 @@ plot_path = pars.get("plot_path")
 # Get prior skeleton
 prior_graph = pars.get('prior_graph')
 true_conf_mat = pars.get("true_graph")
+
+group_num = pars.get('group_num')
 groups = pars.get('groups')
 
-group_one_start = groups.get('g1')[0]
-group_one_end = groups.get('g1')[1]
-group_two_start = groups.get('g2')[0]
-group_two_end = groups.get('g2')[1]
 
 def deepCause(odata, knockoffs, groups, model, params):
 
@@ -68,17 +66,32 @@ def deepCause(odata, knockoffs, groups, model, params):
     kvalues = []
     kval_indist, kval_uniform = [], []
 
-    for i in range(group_two_start, group_two_end):
+    # int_var = odata[i]
+    # int_var_name = "Z_" + str(i + 1) + ""
+    var_list = []
+    causal_decision = []
+    indist_cause = []
+    uni_cause = []
 
-        int_var = odata[i]
-        int_var_name = "Z_" + str(i + 1) + ""
-        var_list = []
-        causal_decision = []
-        indist_cause = []
-        uni_cause = []
+    for g in range(group_num):
 
+        if g==0:
+            start = groups.get('g2')[0]
+            end = groups.get('g2')[1]
+            int_start = groups.get('g1')[0]
+            int_end = groups.get('g1')[1]
+            cause_group = 'Group: 1'
+            effect_group = 'Group: 2' 
+        else:
+            start = groups.get('g1')[0]
+            end = groups.get('g1')[1]
+            int_start = groups.get('g2')[0]
+            int_end = groups.get('g2')[1]
+            cause_group = 'Group: 2'
+            effect_group = 'Group: 1'
 
-        # P-Values
+        
+         # P-Values
         pvi, pvu = [], []
 
         # KL-Divergence
@@ -90,15 +103,14 @@ def deepCause(odata, knockoffs, groups, model, params):
         n = len(odata[:, 0])
         knockoffs = obj.Generate_Knockoffs(n, params.get("dim"), data_actual)
         
-        knockoff_samples = np.array(knockoffs[:, 0: 3]).transpose()
-        print('Timeseries: ', odata.shape)
-        print('Knockoffs: ', knockoff_samples.shape)
-        uniform_intervention = np.random.uniform(np.min(odata[i]), np.min(odata[i]), knockoff_samples.shape)
+        knockoff_samples = np.array(knockoffs[:, int_start: int_end]).transpose()
+        uniform_intervention = np.random.uniform(np.min(odata), np.min(odata), knockoff_samples.shape)
         
         interventionlist = [knockoff_samples, uniform_intervention]
         heuristic_itn_types = ['In-dist', 'Uniform']
 
-        for j in range(group_two_start, group_two_end):
+
+        for j in range(start, end):
         
             print("----------*****-----------------------*****-----------------******-----------")
 
@@ -128,7 +140,7 @@ def deepCause(odata, knockoffs, groups, model, params):
                 start = 10
 
                 for iter in range(10):  # 30
-                    print('iter: ', iter)
+                    
                     mselist_batch = []
                     mselistint_batch = []
                     mapelist_batch = []
@@ -136,26 +148,24 @@ def deepCause(odata, knockoffs, groups, model, params):
                     for r in range(2):
 
                         test_data = odata[: , start: start + training_length + prediction_length].copy()
-                        print('test data shape: ', test_data.shape)
-                        print(test_data)
                         test_ds = ListDataset(
                             [
                                 {'start': "01/04/2001 00:00:00",
-                                 'target': test_data
-                                 }
+                                    'target': test_data
+                                }
                             ],
                             freq=frequency,
                             one_dim_target=False
                         )
+                    
                         int_data = odata[: , start: start + training_length + prediction_length].copy()
-                        print('int data shape: ', int_data.shape)
-                        print('intervention shape: ', intervene.shape)
-                        int_data[0: 3, :] = intervene
+                        int_data[int_start: int_end, :] = intervene
+                    
                         test_dsint = ListDataset(
                             [
                                 {'start': "01/04/2001 00:00:00",
-                                 'target': int_data
-                                 }
+                                'target': int_data
+                                }
                             ],
                             freq=frequency,
                             one_dim_target=False
@@ -174,7 +184,7 @@ def deepCause(odata, knockoffs, groups, model, params):
                             obj = Knockoffs()
                             n = len(odata[:, 0])
                             knockoffs = obj.Generate_Knockoffs(n, params.get("dim"), data_actual)
-                            knockoff_samples = np.array(knockoffs[:, 0: 3]).transpose()
+                            knockoff_samples = np.array(knockoffs[:, int_start: int_end]).transpose()
                             intervene = knockoff_samples
 
                         # np.random.shuffle(intervene)
@@ -205,11 +215,11 @@ def deepCause(odata, knockoffs, groups, model, params):
             # print(f"MSE(Mean): {list(np.mean(mselol, axis=0))}")
             if len(columns) > 0:
 
-                print(f"Causal Link: {columns[i]} --------------> {columns[j]}")
+                print(f"Causal Link: {cause_group} --------------> {effect_group}: ({columns[j]})")
                 print("----------*****-----------------------*****-----------------******-----------")
                 fnamehist = plot_path + "{columns[i]}_{columns[j]}:hist"
             else:
-                print(f"Causal Link: Z_{i + 1} --------------> Z_{j + 1}")
+                print(f"Causal Link: {cause_group} --------------> Z_{j + 1}")
                 print("----------*****-----------------------*****-----------------******-----------")
                 fnamehist = plot_path + "{Z_[i + 1]}_{Z_[j + 1]}:hist"
             
@@ -230,10 +240,7 @@ def deepCause(odata, knockoffs, groups, model, params):
                 kld = prep.kl_divergence(np.array(mapelol[z]), np.array(mapelolint[z]))
                 kvals.append(kld)
                 
-                if i==j:
-                    pvals.append(1)
-                else:
-                    pvals.append(1-p)
+                pvals.append(1-p)
                 
                 print(f'Test statistic: {t}, p-value: {p}, KLD: {kld}')
                 if p < 0.10:
@@ -257,14 +264,14 @@ def deepCause(odata, knockoffs, groups, model, params):
 
             if len(columns) > 0:
                 # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
-                ax1.set_ylabel(f"{columns[i]} ---> {columns[j]}")
+                ax1.set_ylabel(f"{cause_group} ---> {columns[j]}")
             else:
                 # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
-                ax1.set_ylabel(f"Z_{i + 1} ---> Z_{j + 1}")
+                ax1.set_ylabel(f"{cause_group} ---> Z_{j + 1}")
 
             plt.gcf()
             ax1.legend()
-            filename = pathlib.Path(plot_path + f"{columns[i]} ---> {columns[j]}.pdf")
+            filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[j]}.pdf")
             plt.savefig(filename)
             # plt.show()
             # plt.close()
@@ -272,16 +279,17 @@ def deepCause(odata, knockoffs, groups, model, params):
             indist_cause.append(causal_decision[0])
             uni_cause.append(causal_decision[1])
             causal_decision = []
+        
+    pval_indist.append(pvi)
+    pval_uniform.append(pvu)
 
-        pval_indist.append(pvi)
-        pval_uniform.append(pvu)
+    kval_indist.append(kvi)
+    kval_uniform.append(kvu)
 
-        kval_indist.append(kvi)
-        kval_uniform.append(kvu)
+    conf_mat_indist = conf_mat_indist + indist_cause
+    conf_mat_uniform = conf_mat_uniform + uni_cause
+    indist_cause, uni_cause = [], []
 
-        conf_mat_indist = conf_mat_indist + indist_cause
-        conf_mat_uniform = conf_mat_uniform + uni_cause
-        indist_cause, uni_cause = [], []
 
     pvalues.append(pval_indist)
     pvalues.append(pval_uniform)
@@ -296,20 +304,20 @@ def deepCause(odata, knockoffs, groups, model, params):
     print("-----------------------------------------------------------------------------")
     print("Discovered Causal Graphs: ", conf_mat)
 
-    for ss in range(len(conf_mat)):
+    # for ss in range(len(conf_mat)):
 
-        # true_conf_mat = conf_mat[ss]
-        fscore = round(f1_score(true_conf_mat, conf_mat[ss], average='binary'), 2)
-        acc = accuracy_score(true_conf_mat, conf_mat[ss])
-        tn, fp, fn, tp = confusion_matrix(true_conf_mat, conf_mat[ss], labels=[0, 1]).ravel()
-        precision = precision_score(true_conf_mat, conf_mat[ss])
-        recall = recall_score(true_conf_mat, conf_mat[ss])
+    #     # true_conf_mat = conf_mat[ss]
+    #     fscore = round(f1_score(true_conf_mat, conf_mat[ss], average='binary'), 2)
+    #     acc = accuracy_score(true_conf_mat, conf_mat[ss])
+    #     tn, fp, fn, tp = confusion_matrix(true_conf_mat, conf_mat[ss], labels=[0, 1]).ravel()
+    #     precision = precision_score(true_conf_mat, conf_mat[ss])
+    #     recall = recall_score(true_conf_mat, conf_mat[ss])
         
-        print("---------***-----------***----------***----------")
-        print(f"Intervention: {heuristic_itn_types[ss]}")
-        print(f"TP: {tp}, TN: {tn}, FP: {fp}, FN: {fn}")
-        print(f"Precision: {precision}")
-        print(f"Recall: {recall}")
-        print(f"Accuracy: {acc}")
-        print(f"F-score: {fscore}")
-        print("---------***-----------***----------***----------")
+    #     print("---------***-----------***----------***----------")
+    #     print(f"Intervention: {heuristic_itn_types[ss]}")
+    #     print(f"TP: {tp}, TN: {tn}, FP: {fp}, FN: {fn}")
+    #     print(f"Precision: {precision}")
+    #     print(f"Recall: {recall}")
+    #     print(f"Accuracy: {acc}")
+    #     print(f"F-score: {fscore}")
+    #     print("---------***-----------***----------***----------")
