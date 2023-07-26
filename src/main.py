@@ -11,12 +11,12 @@ from math import sqrt
 from itertools import islice
 import preprocessing as prep
 from datetime import datetime
-from deepcause import deepCause
 import matplotlib.pyplot as plt
 from knockoffs import Knockoffs
 from scipy.special import stdtr
 from forecast import modelTest
 from gluonts.trainer import Trainer
+from deepcause_kld import deepCause
 from gluonts.evaluation import Evaluator
 from sklearn.metrics import mean_squared_error
 from gluonts.dataset.common import ListDataset
@@ -104,7 +104,7 @@ estimator = DeepAREstimator(
 )
 
 # load model if not already trained
-model_path = "../models/trained_model_syn7.sav"
+model_path = "../models/trained_model_syn13.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():
