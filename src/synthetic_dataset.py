@@ -36,13 +36,13 @@ class SyntheticDataset:
             # Subsystem: 1
             self.X1.append(self.root1[t] + dynmaic_noise['n1'][t])
             self.X2.append(C.get('c1') * self.X1[t - Tao.get('t1')] + dynmaic_noise['n2'][t])
-            self.X3.append(C.get('c2') * ((self.X2[t - Tao.get('t2')])/2) + dynmaic_noise['n3'][t])
+            self.X3.append(C.get('c2') * ((self.X1[t - Tao.get('t2')])/2) + dynmaic_noise['n3'][t])
             
             # Subsystem: 2
-            self.X4.append(self.root2[t] + dynmaic_noise['n4'][t])
-            # self.X4.append(C.get('c1') * self.X1[t - Tao.get('t2')] + dynmaic_noise['n4'][t])
+            # self.X4.append(self.root2[t] + dynmaic_noise['n4'][t])
+            self.X4.append(C.get('c1') * self.X1[t - Tao.get('t2')] + dynmaic_noise['n4'][t])
             self.X5.append(C.get('c4') * self.X4[t - Tao.get('t3')] + dynmaic_noise['n5'][t])
-            self.X6.append(C.get('c5') * self.X4[t - Tao.get('t3')] + C.get('c4') * self.X5[t - Tao.get('t1')] + dynmaic_noise['n6'][t])
+            self.X6.append(C.get('c5') * self.X4[t - Tao.get('t3')] + dynmaic_noise['n6'][t])
             
         return self.X1, self.X2, self.X3, self.X4, self.X5, self.X6
 
@@ -86,7 +86,7 @@ if __name__ == '__main__':
                      'n6': np.random.normal(1.0, 0.50, 2*time_steps)}
     
     
-    C = {'c1': 1.50, 'c2': 1.50, 'c3': 0.75, 'c4': 1.25, 'c5': 1.60, 'c6': 1.25}           # c2:1.75, c5:1.85
+    C = {'c1': 1.50, 'c2': 1.50, 'c3': 1.75, 'c4': 1.25, 'c5': 1.60, 'c6': 1.25}           # c2:1.75, c5:1.85
     Tao = {'t1': 2, 't2': 3, 't3': 4, 't4': 1, 't5': 6, 't6': 5}
     data_obj = SyntheticDataset(root1, root2, time_steps, Tref, C, Tao, dynmaic_noise)
     X1, X2, X3, X4, X5, X6 = data_obj.generate_data()
