@@ -56,7 +56,7 @@ df = df.iloc[:, :]
 
 # df = data.loc[:1000].copy()
 print(df.describe())
-print(df.shape)
+print('Data shape: ', df.shape)
 print(df.head(5))
 
 # df.plot.scatter(x='BO', y='Awake', c='blue')
@@ -69,7 +69,7 @@ print(df.head(5))
 original_data = []
 dim = len(df.columns)
 columns = df.columns
-print(f"Dimension {dim} and Columns: {df.columns}")
+print(f"Variables ({dim}): {df.columns.values}")
 
 for col in df:
     original_data.append(df[col])
@@ -104,7 +104,7 @@ estimator = DeepAREstimator(
 )
 
 # load model if not already trained
-model_path = "../models/trained_model_syn12.sav"
+model_path = "../models/trained_model_syn09.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():
@@ -114,9 +114,6 @@ if not filename.exists():
     pickle.dump(predictor, open(filename, 'wb'))
 
 # Generate Knockoffs
-group_start = groups['g1'][0]
-group_end = groups['g1'][1]
-
 data_actual = np.array(original_data[:, :]).transpose()
 n = len(original_data[:, 0])
 obj = Knockoffs()
@@ -124,4 +121,4 @@ knockoffs = obj.Generate_Knockoffs(n, dim, data_actual)
 
 params = {"dim": dim, "col": columns}
 # Function for estimating causal impact among variables
-deepCause(original_data, knockoffs, groups, model_path, params)
+deepCause(original_data, knockoffs, model_path, params)
