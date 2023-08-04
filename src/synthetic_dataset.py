@@ -39,10 +39,10 @@ class SyntheticDataset:
             self.X3.append(C.get('c2') * ((self.X1[t - Tao.get('t2')])/2) + dynmaic_noise['n3'][t])
             
             # Subsystem: 2
-            # self.X4.append(self.root2[t] + dynmaic_noise['n4'][t])
-            self.X4.append(C.get('c1') * self.X1[t - Tao.get('t2')] + dynmaic_noise['n4'][t])
-            self.X5.append(C.get('c4') * self.X1[t - Tao.get('t3')] + dynmaic_noise['n5'][t])
-            self.X6.append(C.get('c5') * self.X4[t - Tao.get('t3')] + dynmaic_noise['n6'][t])
+            self.X4.append(self.root2[t] + dynmaic_noise['n4'][t])
+            # self.X4.append(C.get('c4') * self.X1[t - Tao.get('t2')] + dynmaic_noise['n4'][t])
+            self.X5.append(C.get('c5') * self.X1[t - Tao.get('t3')] + dynmaic_noise['n5'][t])
+            self.X6.append(C.get('c6') * self.X3[t - Tao.get('t3')] + dynmaic_noise['n6'][t])
             
         return self.X1, self.X2, self.X3, self.X4, self.X5, self.X6
 
@@ -86,15 +86,17 @@ if __name__ == '__main__':
                      'n6': np.random.normal(1.0, 0.50, 2*time_steps)}
     
     
-    C = {'c1': 1.50, 'c2': 1.50, 'c3': 1.75, 'c4': 1.25, 'c5': 1.60, 'c6': 1.25}           # c2:1.75, c5:1.85
+    C = {'c1': 1.50, 'c2': 1.50, 'c3': 1.75, 'c4': 5.25, 'c5': 1.60, 'c6': 1.25}           # c2:1.75, c5:1.85
     Tao = {'t1': 2, 't2': 3, 't3': 4, 't4': 1, 't5': 6, 't6': 5}
     data_obj = SyntheticDataset(root1, root2, time_steps, Tref, C, Tao, dynmaic_noise)
     X1, X2, X3, X4, X5, X6 = data_obj.generate_data()
 
     data = {'Z1': X1[50:], 'Z2': X2[50:], 'Z3': X3[50:], 'Z4': X4[50:], 'Z5': X5[50:], 'Z6': X6[50:]}
+    
     df = pd.DataFrame(data, columns=['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'Z6'])
     df.to_csv(r'/home/ahmad/Projects/gCause/datasets/synthetic_datasets/synthetic_gts.csv', index_label=False, header=True)
     print(df.head(10))
+    
     print("Correlation Matrix")
     print(df.corr(method='pearson'))
 
