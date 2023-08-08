@@ -32,19 +32,19 @@ mx.random.seed(2)
 # Parameters
 # pars = parameters.get_geo_params()
 pars = parameters.get_syn_params()
-freq = pars.get("freq")
-epochs = pars.get("epochs")
-win_size = pars.get("win_size")
-slidingwin_size = pars.get("slidingwin_size")
-training_length = pars.get("train_len")
-prediction_length = pars.get("pred_len")
-num_samples = pars.get("num_samples")
-num_layers = pars.get("num_layers")
-num_cells = pars.get("num_cells")
-dropout_rate = pars.get("dropout_rate")
-batch_size = pars.get("batch_size")
-plot_path = pars.get("plot_path")
-groups = pars.get("groups")
+freq = pars["freq"]
+epochs = pars["epochs"]
+win_size = pars["win_size"]
+slidingwin_size = pars["slidingwin_size"]
+training_length = pars["train_len"]
+prediction_length = pars["pred_len"]
+num_samples = pars["num_samples"]
+num_layers = pars["num_layers"]
+num_cells = pars["num_cells"]
+dropout_rate = pars["dropout_rate"]
+batch_size = pars["batch_size"]
+plot_path = pars["plot_path"]
+groups = pars["groups"]
 
 # Load river discharges data
 # df = prep.load_river_data()
@@ -56,8 +56,6 @@ df = df.iloc[:, :]
 
 # df = data.loc[:1000].copy()
 print(df.describe())
-print('Data shape: ', df.shape)
-print(df.head(5))
 
 # df.plot.scatter(x='BO', y='Awake', c='blue')
 # plt.xlabel("PPFD ($\mu$ mol photons $m^{2}s^{-1}$)")
@@ -69,7 +67,6 @@ print(df.head(5))
 original_data = []
 dim = len(df.columns)
 columns = df.columns
-print(f"Variables ({dim}): {df.columns.values}")
 
 for col in df:
     original_data.append(df[col])
@@ -104,7 +101,7 @@ estimator = DeepAREstimator(
 )
 
 # load model if not already trained
-model_path = "../models/trained_model_syn09.sav"
+model_path = "../models/trained_model_syn01.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():
