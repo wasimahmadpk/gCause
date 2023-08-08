@@ -19,18 +19,18 @@ np.random.seed(1)
 mx.random.seed(2)
 
 pars = parameters.get_syn_params()
-num_samples = pars.get("num_samples")
-step = pars.get("step_size")
-training_length = pars.get("train_len")
-prediction_length = pars.get("pred_len")
-frequency = pars.get("freq")
-plot_path = pars.get("plot_path")
+num_samples = pars["num_samples"]
+step = pars["step_size"]
+training_length = pars["train_len"]
+prediction_length = pars["pred_len"]
+frequency = pars["freq"]
+plot_path = pars["plot_path"]
 # Get prior skeleton
-prior_graph = pars.get('prior_graph')
-true_conf_mat = pars.get("true_graph")
+prior_graph = pars['prior_graph']
+true_conf_mat = pars["true_graph"]
 
-group_num = pars.get('group_num')
-groups = pars.get('groups')
+group_num = pars['group_num']
+groups = pars['groups']
 
 
 def deepCause(odata, knockoffs, model, params):
@@ -42,17 +42,15 @@ def deepCause(odata, knockoffs, model, params):
         # save the model to disk
         pickle.dump(predictor, open(filename, 'wb'))
 
-    conf_mat, conf_mat_indist, conf_mat_uniform = [], [], []
+    conf_mat, conf_mat_indist, conf_mat_uniform, causal_direction = [], [], [], []
     pvalues, pval_indist, pval_uniform = [], [], []
-    kvalues, kval_indist, kval_uniform = [], [], []
-    var_list, causal_decision, indist_cause, uni_cause = [], [], [], []
+    var_list, causal_decision, indist_cause, uni_cause, group_cause = [], [], [], [], []
 
     for g in range(group_num):
-        
+
         for h in range(group_num):
 
-            if g != h:
-
+            if g!=h:
                 
                 start_effect = groups.get(f'g{h+1}')[0]
                 end_effect = groups.get(f'g{h+1}')[1]
@@ -63,9 +61,6 @@ def deepCause(odata, knockoffs, model, params):
                 
                 # P-Values
                 pvi, pvu = [], []
-
-                # KL-Divergence
-                kvi, kvu = [], []
 
                 # Generate Knockoffs
                 data_actual = np.array(odata[: , 0: training_length + prediction_length]).transpose()
@@ -82,7 +77,7 @@ def deepCause(odata, knockoffs, model, params):
 
                 for j in range(start_effect, end_effect):
                 
-                    print("----------*****-----------------------*****-----------------******-----------")
+                    print("----------*****-----------------------*****------------")
 
                     columns = params.get('col')
                     pred_var = odata[j]
@@ -181,14 +176,14 @@ def deepCause(odata, knockoffs, model, params):
                     if len(columns) > 0:
 
                         print(f"Causal Link: {cause_group} --------------> {effect_group} ({columns[j]})")
-                        print("----------*****-----------------------*****-----------------******-----------")
+                        print("----------*****-----------------------*****------------")
                         fnamehist = plot_path + "{columns[i]}_{columns[j]}:hist"
                     else:
                         print(f"Causal Link: {cause_group} --------------> Z_{j + 1}")
-                        print("----------*****-----------------------*****-----------------******-----------")
+                        print("----------*****-----------------------*****------------")
                         fnamehist = plot_path + "{Z_[i + 1]}_{Z_[j + 1]}:hist"
                     
-                    pvals, kvals = [], []
+                    pvals = []
                     
                     for z in range(len(heuristic_itn_types)):
 
@@ -200,13 +195,9 @@ def deepCause(odata, knockoffs, model, params):
                         
                         t, p = ks_2samp(np.array(mapelol[z]), np.array(mapelolint[z]))
                         # t, p = kstest(np.array(mapelolint[z]), np.array(mapelol[z]))
-                        
-                        kld = prep.kl_divergence(np.array(mapelol[z]), np.array(mapelolint[z]))
-                        kvals.append(kld)
-                        
                         pvals.append(1-p)
                         
-                        print(f'Test statistic: {t}, p-value: {p}, KLD: {kld}')
+                        print(f'Test statistic: {t}, p-value: {p}')
                         if p < 0.10:
                             print("Null hypothesis is rejected")
                             causal_decision.append(1)
@@ -216,9 +207,6 @@ def deepCause(odata, knockoffs, model, params):
 
                     pvi.append(pvals[0])
                     pvu.append(pvals[1])
-
-                    kvi.append(kvals[0])
-                    kvu.append(kvals[1])
 
                     # plot residuals distribution
                     fig = plt.figure()
@@ -243,29 +231,21 @@ def deepCause(odata, knockoffs, model, params):
                     indist_cause.append(causal_decision[0])
                     uni_cause.append(causal_decision[1])
                     causal_decision = []
-        
+
     pval_indist.append(pvi)
     pval_uniform.append(pvu)
-
-    kval_indist.append(kvi)
-    kval_uniform.append(kvu)
 
     conf_mat_indist = conf_mat_indist + indist_cause
     conf_mat_uniform = conf_mat_uniform + uni_cause
     indist_cause, uni_cause = [], []
 
-
     pvalues.append(pval_indist)
     pvalues.append(pval_uniform)
     print("P-Values: ", pvalues)
 
-    kvalues.append(kval_indist)
-    kvalues.append(kval_uniform)
-    print("KL-Divergence: ", kvalues)
-
     conf_mat.append(conf_mat_indist)
     conf_mat.append(conf_mat_uniform)
-    print("-----------------------------------------------------------------------------")
+    print("--------------------------------------------------------")
     print("Discovered Causal Graphs: ", conf_mat)
 
     # for ss in range(len(conf_mat)):
