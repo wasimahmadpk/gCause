@@ -11,15 +11,18 @@ import matplotlib.pyplot as plt
 from scipy.sparse import csr_matrix
 # np.random.seed(1)
 
-class SCMS:
+class SCMX:
 
-    def __init__(self, num_nodes, link_density=0.15, time_steps=15000):
+    def __init__(self, num_nodes, link_density=0.15, time_steps=1000):
 
         self.num_nodes = num_nodes
         self.link_density = link_density
         self.time_steps = time_steps
-        self.ts_length = time_steps - 13500
+        self.ts_length = time_steps - 1000
         self.Tao = range(1, 6)
+        self.Coeff = np.arange(0.5, 1.0, 0.1)
+        self.var = np.arange(1, 3 , 0.5)
+        self.lags = np.arange(1, 6, 1)
 
         # adj_mat = np.random.randint(2, size=(self.num_nodes, self.num_nodes))
         adj_mat = self.generate_adj_matrix()
@@ -56,10 +59,12 @@ class SCMS:
             return adj_matrix
 
     # Linear cause-effect relation
-    def linear(self, cause, effect, lags):
-
-        lag_cause, lag_effect = lags[0], lags[1]
-        effect = np.random.rand(1)[0]*effect[lag_effect: lag_effect + self.ts_length] + np.random.rand(1)[0]*cause[lag_cause:lag_cause + self.ts_length]
+    def linear(self, cause, effect):
+        dynamic_noise = np.random.normal(0.0, 0.30, 2*self.time_steps)
+        coeff_c, coeff_e = random.choice(self.Coeff), random.choice(self.Coeff) 
+        lag_cause, lag_effect = random.choice(self.lags), random.choice(self.lags)
+        for t in range(max(self.lags), self.time_steps):
+            effect[t] = coeff_e*effect[t - lag_effect] + coeff_c*cause[t - lag_cause] + dynamic_noise[t]
         return effect, len(effect)
     
     # NOn-linear dependency
@@ -74,7 +79,7 @@ class SCMS:
 
         multivariate_ts = []
         for i in range(self.num_nodes):
-            multivariate_ts.append(np.random.normal(0, np.random.rand(1), self.time_steps))
+            multivariate_ts.append(np.random.normal(0, random.choice(self.var), self.time_steps))
         return np.array(multivariate_ts)
         
         # Generate sine wave and the gaussian noise 
@@ -107,10 +112,10 @@ class SCMS:
         
         for links in range(self.num_links):
 
-            lags = x = [random.choice(self.Tao) for l in range(2)]
             cnode, enode = self.list_links[links][0], self.list_links[links][1]
-            ts , len = self.linear(multivariate_dag_ts[enode], multivariate_dag_ts[cnode], lags)
-            multivariate_dag_ts[enode, : len] = ts  
+            ts , len = self.linear(multivariate_dag_ts[enode], multivariate_dag_ts[cnode])
+            multivariate_dag_ts[enode] = ts  
+            
 
         return multivariate_dag_ts
     
@@ -119,7 +124,7 @@ class SCMS:
         timeseries = self.generate_ts_DAG()
         
         for nodes in range(self.num_nodes):
-            data_dict[self.node_labels[nodes]] = timeseries[nodes][: 1500]
+            data_dict[self.node_labels[nodes]] = timeseries[nodes][:]
         
         df = pd.DataFrame(data=data_dict, columns=self.node_labels)
         df.to_csv(r'/home/ahmad/Projects/gCause/datasets/synthetic_datasets/synthetic_scm.csv', index_label=False, header=True)
@@ -129,9 +134,9 @@ class SCMS:
 
         fig = plt.figure()
         df, links = self.df_timeseries()
-        for i in range(5):
-            ax = fig.add_subplot(int(f'51{i+1}'))
-            ax.plot(df[df.columns[i]][150:1500].values)
+        for i in range(len(self.node_labels)):
+            ax = fig.add_subplot(int(f'{len(self.node_labels)}1{i+1}'))
+            ax.plot(df[df.columns[i]][100:1000].values)
             ax.set_ylabel(f'{df.columns[i]}')
         plt.show()
 
