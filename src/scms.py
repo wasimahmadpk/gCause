@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from scipy.sparse import csr_matrix
 # np.random.seed(1)
 
-class SCMX:
+class SCMS:
 
     def __init__(self, num_nodes, link_density=0.15, time_steps=1000):
 
