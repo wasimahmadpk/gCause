@@ -56,10 +56,9 @@ class SCMS:
             return adj_matrix
 
     # Linear cause-effect relation
-    def linear(self, cause, effect):
-        lag_effect = random.choice(self.Tao)
-        lag_cause = random.choice(self.Tao)
+    def linear(self, cause, effect, lags):
 
+        lag_cause, lag_effect = lags[0], lags[1]
         effect = np.random.rand(1)[0]*effect[lag_effect: lag_effect + self.ts_length] + np.random.rand(1)[0]*cause[lag_cause:lag_cause + self.ts_length]
         return effect, len(effect)
     
@@ -107,8 +106,10 @@ class SCMS:
         multivariate_dag_ts = self.generate_ts()
         
         for links in range(self.num_links):
+
+            lags = x = [random.choice(self.Tao) for l in range(2)]
             cnode, enode = self.list_links[links][0], self.list_links[links][1]
-            ts , len = self.linear(multivariate_dag_ts[enode], multivariate_dag_ts[cnode])
+            ts , len = self.linear(multivariate_dag_ts[enode], multivariate_dag_ts[cnode], lags)
             multivariate_dag_ts[enode, : len] = ts  
 
         return multivariate_dag_ts
@@ -121,7 +122,7 @@ class SCMS:
             data_dict[self.node_labels[nodes]] = timeseries[nodes][: 1500]
         
         df = pd.DataFrame(data=data_dict, columns=self.node_labels)
-        df.to_csv(r'/home/ahmad/Projects/gCause/datasets/synthetic_datasets/synthetic_gts.csv', index_label=False, header=True)
+        df.to_csv(r'/home/ahmad/Projects/gCause/datasets/synthetic_datasets/synthetic_scm.csv', index_label=False, header=True)
         return df, self.list_links
     
     def plot_ts(self):
@@ -147,7 +148,6 @@ class SCMS:
             G.add_edge(self.list_links[e][0]+1, self.list_links[e][1]+1)
 
        # Draw the directed graph with labels
-        # pos = nx.spring_layout(G)  # Positions of nodes for visualization
         pos = nx.circular_layout(G)
         labels = nx.get_node_attributes(G, 'label')  # Get labels from node attributes
         nx.draw(G, pos, with_labels=True, labels=labels, node_size=1000, node_color='lightblue', font_size=12, font_color='black', font_weight='bold', edge_color='gray', width=2.0, arrows=True)
