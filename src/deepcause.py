@@ -33,6 +33,12 @@ group_num = pars['group_num']
 groups = pars['groups']
 
 
+def cause_criteria(list1, list2):
+
+    n1, n2 = np.count_nonzero(list1), np.count_nonzero(list2)
+    c1, c2 = n1/len(list1), n2/len(list2)
+    return [c1, c2]
+
 def deepCause(odata, knockoffs, model, params):
 
     filename = pathlib.Path(model)
@@ -47,7 +53,7 @@ def deepCause(odata, knockoffs, model, params):
     var_list, causal_decision, indist_cause, uni_cause, group_cause = [], [], [], [], []
 
     for g in range(group_num):
-
+        cause_list = []
         for h in range(group_num):
 
             if g!=h:
@@ -228,9 +234,13 @@ def deepCause(odata, knockoffs, model, params):
                     # plt.show()
                     # plt.close()
 
+                    cause_list.append(causal_decision[0])
                     indist_cause.append(causal_decision[0])
                     uni_cause.append(causal_decision[1])
                     causal_decision = []
+    
+        causal_direction.append(cause_list)
+    
 
     pval_indist.append(pvi)
     pval_uniform.append(pvu)
@@ -248,20 +258,19 @@ def deepCause(odata, knockoffs, model, params):
     print("--------------------------------------------------------")
     print("Discovered Causal Graphs: ", conf_mat)
 
-    # for ss in range(len(conf_mat)):
+    print(f'Causal direction: {causal_direction}')
+    c1, c2 = cause_criteria(causal_direction[0], causal_direction[1])
 
-    #     # true_conf_mat = conf_mat[ss]
-    #     fscore = round(f1_score(true_conf_mat, conf_mat[ss], average='binary'), 2)
-    #     acc = accuracy_score(true_conf_mat, conf_mat[ss])
-    #     tn, fp, fn, tp = confusion_matrix(true_conf_mat, conf_mat[ss], labels=[0, 1]).ravel()
-    #     precision = precision_score(true_conf_mat, conf_mat[ss])
-    #     recall = recall_score(true_conf_mat, conf_mat[ss])
-        
-    #     print("---------***-----------***----------***----------")
-    #     print(f"Intervention: {heuristic_itn_types[ss]}")
-    #     print(f"TP: {tp}, TN: {tn}, FP: {fp}, FN: {fn}")
-    #     print(f"Precision: {precision}")
-    #     print(f"Recall: {recall}")
-    #     print(f"Accuracy: {acc}")
-    #     print(f"F-score: {fscore}")
-    #     print("---------***-----------***----------***----------")
+    if c1 > c2:
+        print('gCDMI: Group 1 causes Group 2')
+    elif c2 > c1:
+        print('gCDMI: Group 2 causes Group 1')
+    elif int(c1) & int(c2) == 0:
+        print('gCDMI: No causal connection found')
+    elif c1 == c2:
+        print('gCDMI: Causal direction can\'t be inferred')
+
+
+
+
+
