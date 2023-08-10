@@ -82,13 +82,13 @@ def get_syn_params():
     params = {
 
         'group_num': 2,    
-        'groups': {'g1': [0, 5], 'g2': [5, 10]},
-        'groups_size': {'g1':[5], 'g2':[5]},
-        'epochs': 50,
+        'groups': {'g1': [0, 1], 'g2': [1, 3]},
+        'groups_size': {'g1':[1], 'g2':[2]},
+        'epochs': 75,
         'pred_len': 20,
         'train_len': 555,
-        'num_layers': 6,
-        'num_cells': 60,
+        'num_layers': 4,
+        'num_cells': 45,
         'num_samples': 10,
         'dropout_rate': 0.1,
         'win_size': 1,
