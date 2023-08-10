@@ -101,7 +101,7 @@ estimator = DeepAREstimator(
 )
 
 # load model if not already trained
-model_path = "../models/trained_model_syn01.sav"
+model_path = "../models/trained_model_syn16.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():
@@ -116,6 +116,6 @@ n = len(original_data[:, 0])
 obj = Knockoffs()
 knockoffs = obj.Generate_Knockoffs(n, dim, data_actual)
 
-params = {"dim": dim, "col": columns}
+params = {'dim': dim, 'col': columns}
 # Function for estimating causal impact among variables
 deepCause(original_data, knockoffs, model_path, params)
