@@ -1,4 +1,5 @@
 # import netCDF
+import os
 import math
 import random
 import parameters
@@ -20,11 +21,11 @@ class SCMS:
         self.time_steps = time_steps
         self.ts_length = time_steps - 1000
         self.Tao = range(1, 6)
-        self.Coeff = np.arange(0.5, 1.0, 0.1)
-        self.var = np.arange(1, 3 , 0.5)
-        self.lags = np.arange(1, 6, 1)
-
-        # adj_mat = np.random.randint(2, size=(self.num_nodes, self.num_nodes))
+        self.CoeffC, self.CoeffE = np.arange(0.50, 1.25, 0.25), np.arange(0.75, 1.0, 0.05)
+        self.var = np.arange(1, 3, 0.5)
+        self.lags = np.arange(0, 3)
+        self.path = r'/home/ahmad/Projects/gCause/datasets/synthetic_datasets'
+        
         adj_mat = self.generate_adj_matrix()
         print('Matrix:\n', adj_mat)
         adj_mat_upp = np.triu(adj_mat)
@@ -40,6 +41,43 @@ class SCMS:
                 
         self.node_labels = [f'Z{l+1}'for l in range(num_nodes)]
         self.generate_ts_DAG()
+
+
+    def generate_sine_ts(self, freq, sample_rate, duration):
+        t = np.linspace(0, duration, sample_rate * duration, endpoint=False)
+        frequencies = t*freq
+        # 2pi because np.sin takes radians
+        y = np.sin((2*np.pi)*frequencies)
+        return t, y
+
+    # Time series base
+    def generate_ts(self):
+
+         
+        # Generate sine wave and the gaussian noise 
+        pars = parameters.get_sig_params()
+        sample_rate = pars.get("sample_rate")  # Hertz
+        duration = pars.get("duration")  # Seconds
+
+        multivariate_ts = []
+        
+        for i in range(self.num_nodes):
+            _, sin_ts = self.generate_sine_ts(4000, sample_rate, duration)
+            timeseries = np.random.normal(0, random.choice(self.var), self.time_steps)
+            multivariate_ts.append(timeseries + sin_ts[:self.time_steps])
+        return np.array(multivariate_ts)
+       
+
+        # Generate a 2 hertz sine wave that lasts for 5 seconds
+        # t, y = generate_sine_wave(2, SAMPLE_RATE, DURATION)
+
+        _, nice_wave = generate_sine_wave(400, SAMPLE_RATE, DURATION)
+        _, noise_wave = generate_sine_wave(4000, SAMPLE_RATE, DURATION)
+        noise_wave = noise_wave * 0.50
+    
+        noise1 = np.random.normal(2, 1.10, len(nice_wave))
+        root1 = noise1
+  
 
     def generate_adj_matrix(self):
 
@@ -60,51 +98,25 @@ class SCMS:
 
     # Linear cause-effect relation
     def linear(self, cause, effect):
-        dynamic_noise = np.random.normal(0.0, 0.30, 2*self.time_steps)
-        coeff_c, coeff_e = random.choice(self.Coeff), random.choice(self.Coeff) 
+        
+        dynamic_noise = np.random.normal(0, 0.25, 2*self.time_steps)
+        coeff_c, coeff_e = random.choice(self.CoeffC), random.choice(self.CoeffE) 
         lag_cause, lag_effect = random.choice(self.lags), random.choice(self.lags)
+        
         for t in range(max(self.lags), self.time_steps):
-            effect[t] = coeff_e*effect[t - lag_effect] + coeff_c*cause[t - lag_cause] + dynamic_noise[t]
+            effect[t] = coeff_e*effect[t-lag_effect] + coeff_c*cause[t-lag_cause] + dynamic_noise[t]
         return effect, len(effect)
     
     # NOn-linear dependency
     def non_linear(self, cause, effect):
-        lag_effect = random.choice(self.Tao)
-        lag_cause = random.choice(self.Tao)
-        effect = np.random.rand(1)[0]*effect[lag_effect: lag_effect + self.ts_length] + np.random.rand(1)[0]**cause[lag_cause:lag_cause + self.ts_length]
-        return effect
-    
-    # Time series base
-    def generate_ts(self):
-
-        multivariate_ts = []
-        for i in range(self.num_nodes):
-            multivariate_ts.append(np.random.normal(0, random.choice(self.var), self.time_steps))
-        return np.array(multivariate_ts)
         
-        # Generate sine wave and the gaussian noise 
-        pars = parameters.get_sig_params()
-        SAMPLE_RATE = pars.get("sample_rate")  # Hertz
-        DURATION = pars.get("duration")  # Seconds
-
-        # Generate a 2 hertz sine wave that lasts for 5 seconds
-        # t, y = generate_sine_wave(2, SAMPLE_RATE, DURATION)
-
-        _, nice_wave = generate_sine_wave(400, SAMPLE_RATE, DURATION)
-        _, noise_wave = generate_sine_wave(4000, SAMPLE_RATE, DURATION)
-        noise_wave = noise_wave * 0.50
-    
-        noise1 = np.random.normal(2, 1.10, len(nice_wave))
-        root1 = noise1
-        ts = np.random.normal(0, 1, self.time_stxeps)
-         
-    
-    def generate_sine_wave(freq, sample_rate, duration):
-        t = np.linspace(0, duration, sample_rate * duration, endpoint=False)
-        frequencies = t*freq
-        # 2pi because np.sin takes radians
-        y = np.sin((2*np.pi)*frequencies)
-        return t, y
+        dynamic_noise = np.random.normal(0, 0.25, 2*self.time_steps)
+        coeff_c, coeff_e = random.choice(self.CoeffC), random.choice(self.CoeffE) 
+        lag_cause, lag_effect = random.choice(self.lags), random.choice(self.lags)
+        
+        for t in range(max(self.lags), self.time_steps):
+            effect[t] = coeff_e*effect[t-lag_effect] * coeff_c*cause[t-lag_cause] + dynamic_noise[t]
+        return effect, len(effect)
     
     def generate_ts_DAG(self):
 
@@ -113,13 +125,13 @@ class SCMS:
         for links in range(self.num_links):
 
             cnode, enode = self.list_links[links][0], self.list_links[links][1]
-            ts , len = self.linear(multivariate_dag_ts[enode], multivariate_dag_ts[cnode])
-            multivariate_dag_ts[enode] = ts  
-            
+            time_series , len = self.linear(multivariate_dag_ts[cnode], multivariate_dag_ts[enode])
+            multivariate_dag_ts[enode] = time_series  
 
         return multivariate_dag_ts
     
     def df_timeseries(self):
+        
         data_dict = {}
         timeseries = self.generate_ts_DAG()
         
@@ -127,7 +139,8 @@ class SCMS:
             data_dict[self.node_labels[nodes]] = timeseries[nodes][:]
         
         df = pd.DataFrame(data=data_dict, columns=self.node_labels)
-        df.to_csv(r'/home/ahmad/Projects/gCause/datasets/synthetic_datasets/synthetic_scm.csv', index_label=False, header=True)
+        filename = 'synthetic_gtss.csv'
+        df.to_csv(os.path.join(self.path, filename), index_label=False, header=True)
         return df, self.list_links
     
     def plot_ts(self):
