@@ -41,19 +41,16 @@ class SyntheticDataset:
             # Subsystem: 1
             self.X1.append(self.root1[t] + dynmaic_noise['n1'][t])
             self.X2.append(C.get('c1') * self.X1[t - Tao.get('t1')] + dynmaic_noise['n2'][t])
-            self.X3.append(C.get('c2') * ((self.X1[t - Tao.get('t2')])/2) + dynmaic_noise['n3'][t])
+            self.X3.append(C.get('c2') * (self.X1[t - Tao.get('t2')]/2) + dynmaic_noise['n3'][t])
             self.X4.append(C.get('c1') * self.X2[t - Tao.get('t1')] + dynmaic_noise['n2'][t])
-            self.X5.append(C.get('c3') * ((self.X4[t - Tao.get('t1')])/2) + dynmaic_noise['n1'][t])
             
             # Subsystem: 2
-            self.X6.append(self.root2[t] + dynmaic_noise['n4'][t])
-            # self.X4.append(C.get('c4') * self.X1[t - Tao.get('t2')] + dynmaic_noise['n4'][t])
-            self.X7.append(C.get('c4') * self.X6[t - Tao.get('t2')] + dynmaic_noise['n4'][t])
+            self.X5.append(self.root2[t] + dynmaic_noise['n4'][t])
+            self.X6.append(C.get('c3') * (self.X4[t - Tao.get('t1')]/2) + dynmaic_noise['n1'][t])
+            self.X7.append(C.get('c4') * self.X1[t - Tao.get('t2')] + dynmaic_noise['n4'][t])
             self.X8.append(C.get('c3') * self.X5[t - Tao.get('t3')] + dynmaic_noise['n5'][t])
-            self.X9.append(C.get('c1') * self.X6[t - Tao.get('t4')] + dynmaic_noise['n6'][t])
-            self.X10.append(C.get('c2') * self.X5[t - Tao.get('t1')] + dynmaic_noise['n4'][t])
-            
-        return self.X1, self.X2, self.X3, self.X4, self.X5, self.X6, self.X7, self.X8, self.X9, self.X10
+              
+        return self.X1, self.X2, self.X3, self.X4, self.X5, self.X6, self.X7, self.X8
 
 
 if __name__ == '__main__':
@@ -98,12 +95,12 @@ if __name__ == '__main__':
     C = {'c1': 1.50, 'c2': 1.50, 'c3': 1.75, 'c4': 5.25, 'c5': 1.60, 'c6': 1.25}           # c2:1.75, c5:1.85
     Tao = {'t1': 2, 't2': 3, 't3': 4, 't4': 1, 't5': 6, 't6': 5}
     data_obj = SyntheticDataset(root1, root2, time_steps, Tref, C, Tao, dynmaic_noise)
-    X1, X2, X3, X4, X5, X6, X7, X8, X9, X10 = data_obj.generate_data()
+    X1, X2, X3, X4, X5, X6, X7, X8 = data_obj.generate_data()
 
     data = {'Z1': X1[50:], 'Z2': X2[50:], 'Z3': X3[50:], 'Z4': X4[50:], 'Z5': X5[50:],
-             'Z6': X6[50:], 'Z7': X7[50:], 'Z8': X8[50:], 'Z9': X9[50:], 'Z10': X10[50:]}
+             'Z6': X6[50:], 'Z7': X7[50:], 'Z8': X8[50:]}
     
-    df = pd.DataFrame(data, columns=['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'Z6', 'Z7', 'Z8', 'Z9', 'Z10'])
+    df = pd.DataFrame(data, columns=['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'Z6', 'Z7', 'Z8'])
     df.to_csv(r'/home/ahmad/Projects/gCause/datasets/synthetic_datasets/synthetic_gts.csv', index_label=False, header=True)
     print(df.head(33))
     
