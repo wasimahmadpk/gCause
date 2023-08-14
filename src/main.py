@@ -101,7 +101,7 @@ estimator = DeepAREstimator(
 )
 
 # load model if not already trained
-model_path = "../models/trained_model_syn16.sav"
+model_path = "../models/trained_model_syn14.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():
