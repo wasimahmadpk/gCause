@@ -33,7 +33,7 @@ group_num = pars['group_num']
 groups = pars['groups']
 
 
-def cause_criteria(list1, list2):
+def causal_criteria(list1, list2):
 
     n1, n2 = np.count_nonzero(list1), np.count_nonzero(list2)
     c1, c2 = n1/len(list1), n2/len(list2)
@@ -110,7 +110,7 @@ def deepCause(odata, knockoffs, model, params):
                         diff = []
                         start_batch = 10
 
-                        for iter in range(10):  # 30
+                        for iter in range(15):  # 30
                             
                             mselist_batch = []
                             mselistint_batch = []
@@ -259,7 +259,7 @@ def deepCause(odata, knockoffs, model, params):
     print("Discovered Causal Graphs: ", conf_mat)
 
     print(f'Causal direction: {causal_direction}')
-    c1, c2 = cause_criteria(causal_direction[0], causal_direction[1])
+    c1, c2 = causal_criteria(causal_direction[0], causal_direction[1])
 
     if c1 > c2:
         print('gCDMI: Group 1 causes Group 2')
