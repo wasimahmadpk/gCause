@@ -1,4 +1,3 @@
-# import netCDF
 import os
 import math
 import random
@@ -7,7 +6,6 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 from netCDF4 import Dataset
-import preprocessing as prep
 import matplotlib.pyplot as plt
 from scipy.sparse import csr_matrix
 # np.random.seed(1)
@@ -27,7 +25,7 @@ class SCMS:
         self.path = r'/home/ahmad/Projects/gCause/datasets/synthetic_datasets'
         
         adj_mat = self.generate_adj_matrix()
-        print('Matrix:\n', adj_mat)
+        # print('Matrix:\n', adj_mat)
         adj_mat_upp = np.triu(adj_mat)
         res = np.where(adj_mat_upp==1)
         
@@ -181,3 +179,4 @@ if __name__ == '__main__':
     scms = SCMS(nodes)
     df = scms.df_timeseries()
     scms.plot_ts()
+
