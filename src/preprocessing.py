@@ -209,8 +209,8 @@ def load_flux_data():
     # nee = fluxnet['NEE_VUT_50']
     ogpp = fluxnet['GPP_NT_VUT_50']
     oreco = fluxnet['RECO_NT_VUT_50']
+    
     # ************* LOad FLUXNET2015 data ***************
-
     rg = normalize(down_sample(org, win_size))
     temp = normalize(down_sample(otemp, win_size))
     # gpp = normalize(down_sample(nee, win_size, partition='gpp'))
@@ -227,14 +227,14 @@ def load_flux_data():
 
     return df
 
-
+# Load synthetically generated time series
 def load_syn_data():
     #****************** Load synthetic data *************************
     data = pd.read_csv("../datasets/synthetic_datasets/synthetic_gts.csv")
     df = data.apply(normalize)
     return df
 
-
+# Load synthetically generated multi-regime time series
 def load_multiregime_data():
     # *******************Load synthetic data *************************
     df = pd.read_csv("../datasets/synthetic_datasets/synthetic_data_regimes.csv")
