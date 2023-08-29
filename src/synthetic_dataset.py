@@ -46,9 +46,9 @@ class SyntheticDataset:
             
             # Subsystem: 2
             self.X5.append(self.root2[t] + dynmaic_noise['n4'][t])
-            self.X6.append(C.get('c3') *(self.X1[t - Tao.get('t1')]/2) + dynmaic_noise['n1'][t])
-            self.X7.append(C.get('c4') ** self.X5[t - Tao.get('t2')] + dynmaic_noise['n4'][t])
-            self.X8.append(C.get('c3') * self.X2[t - Tao.get('t3')] + dynmaic_noise['n5'][t])
+            self.X6.append(C.get('c3') *(self.X3[t - Tao.get('t1')]/2) + dynmaic_noise['n1'][t])
+            self.X7.append(C.get('c4') * self.X1[t - Tao.get('t2')] + dynmaic_noise['n4'][t])
+            self.X8.append(C.get('c3') * self.X5[t - Tao.get('t3')] + dynmaic_noise['n5'][t])
               
         return self.X1, self.X2, self.X3, self.X4, self.X5, self.X6, self.X7, self.X8
 
