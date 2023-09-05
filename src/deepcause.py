@@ -3,6 +3,7 @@ import pathlib
 import parameters
 import numpy as np
 import mxnet as mx
+import pandas as pd
 import seaborn as sns
 import preprocessing as prep
 import matplotlib.pyplot as plt
@@ -110,7 +111,7 @@ def deepCause(odata, knockoffs, model, params):
                         diff = []
                         start_batch = 10
 
-                        for iter in range(15):  # 30
+                        for iter in range(18):  # 30
                             
                             mselist_batch = []
                             mselistint_batch = []
@@ -164,7 +165,7 @@ def deepCause(odata, knockoffs, model, params):
                                 mselistint_batch.append(mseint)
                                 mapelistint_batch.append(mapeint)
 
-                            start_batch = start_batch + 5                                       # Step size for sliding window # 10
+                            start_batch = start_batch + 7                           # Step size for sliding window # 10
                             mselist.append(np.mean(mselist_batch))                  # mselist = mselist_batch
                             mapelist.append(np.mean(mapelist_batch))                # mapelist = mapelist_batch
                             mselistint.append(np.mean(mselistint_batch))            # mselistint = mselistint_batch
@@ -233,6 +234,38 @@ def deepCause(odata, knockoffs, model, params):
                     plt.savefig(filename)
                     # plt.show()
                     # plt.close()
+
+
+                    # *****************************************************
+                    mape_df = pd.DataFrame(data=np.transpose(mapelol), columns=columns[start_effect: end_effect])
+                    mape_int_df = pd.DataFrame(data=np.transpose(mapelolint), columns=columns[start_effect: end_effect])
+
+                    # Create a single plot
+                    fig = plt.figure()
+                    ax2 = fig.add_subplot(111)
+
+                    # Plot the first bivariate distribution with transparency
+                    sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+1], fill=True, cmap="Blues", alpha=0.75)
+
+                    # Plot the second bivariate distribution on top with transparency
+                    sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+1], fill=True, cmap="Reds", alpha=0.35)
+
+                    if len(columns) > 0:
+                        # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
+                        ax1.set_ylabel(f"{cause_group} ---> {columns[j]}")
+                    else:
+                        # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
+                        ax1.set_ylabel(f"{cause_group} ---> Z_{j + 1}")
+
+                    # Show the plot
+                    plt.gcf()
+                    ax2.legend()
+                    filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[j]}_2d.pdf")
+                    plt.savefig(filename)
+                    # plt.show()
+                    # *****************************************************
+
+
 
                     cause_list.append(causal_decision[0])
                     indist_cause.append(causal_decision[0])
