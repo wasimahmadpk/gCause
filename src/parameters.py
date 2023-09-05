@@ -82,13 +82,13 @@ def get_syn_params():
     params = {
 
         'group_num': 2,    
-        'groups': {'g1': [0, 4], 'g2': [4, 8]},
-        'groups_size': {'g1':[4], 'g2':[4]},
-        'epochs': 50,
+        'groups': {'g1': [0, 2], 'g2': [2, 4]},
+        'groups_size': {'g1':[2], 'g2':[2]},
+        'epochs': 60,
         'pred_len': 20,
         'train_len': 555,
-        'num_layers': 5,
-        'num_cells': 50,
+        'num_layers': 4,
+        'num_cells': 40,
         'num_samples': 10,
         'dropout_rate': 0.1,
         'win_size': 1,
@@ -140,22 +140,35 @@ def get_real_params():
 
 def get_climate_params():
 
+    # Parameters for flux data
     params = {
-        'epochs': 100,
-        'pred_len': 48,
-        'train_len': 375,
-        'num_layers': 3,
+
+        'group_num': 2,    
+        'groups': {'g1': [0, 2], 'g2': [2, 4]},
+        'groups_size': {'g1':[2], 'g2':[2]},
+        'epochs': 60,
+        'pred_len': 20,
+        'train_len': 555,
+        'num_layers': 4,
+        'num_cells': 40,
         'num_samples': 10,
-        'num_cells': 30,
         'dropout_rate': 0.1,
         'win_size': 1,
-        'dim': 2,
-        'batch_size': 24,
-        'prior_graph': np.array([[1, 0],
-                                 [1, 1]]),
-        'true_graph': [1, 0,
-                       1, 1],
-        'freq': 'H',
+        'slidingwin_size': 100,
+        'step_size': 10,
+        'dim': 5,
+        'batch_size': 32,
+        'prior_graph': np.array([[1, 1, 1, 0, 1],
+                                 [0, 1, 0, 0, 0],
+                                 [0, 0, 1, 1, 0],
+                                 [0, 0, 0, 1, 1],
+                                 [0, 0, 0, 0, 1]]),
+        'true_graph': [1, 1, 1, 0, 1,
+                       0, 1, 0, 0, 0,
+                       0, 0, 1, 1, 0,
+                       0, 0, 0, 1, 1,
+                       0, 0, 0, 0, 1],
+        'freq': '30min',
         'plot_path': "/home/ahmad/Projects/gCause/plots/"
     }
     return params
