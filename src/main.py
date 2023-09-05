@@ -31,7 +31,8 @@ mx.random.seed(2)
 
 # Parameters
 # pars = parameters.get_geo_params()
-pars = parameters.get_syn_params()
+# pars = parameters.get_syn_params()
+pars = parameters.get_climate_params()
 freq = pars["freq"]
 epochs = pars["epochs"]
 win_size = pars["win_size"]
@@ -51,7 +52,8 @@ groups = pars["groups"]
 # df = prep.load_climate_data()
 # df = prep.load_geo_data()
 
-df = prep.load_syn_data()
+# df = prep.load_syn_data()
+df = prep.load_flux_data()
 df = df.iloc[:, :]
 
 # df = data.loc[:1000].copy()
@@ -101,7 +103,8 @@ estimator = DeepAREstimator(
 )
 
 # load model if not already trained
-model_path = "../models/trained_model_syn00.sav"
+# model_path = "../models/trained_model_syn4_0.8.sav"
+model_path = "../models/fluxnet4.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():
