@@ -104,7 +104,7 @@ estimator = DeepAREstimator(
 
 # load model if not already trained
 # model_path = "../models/trained_model_syn4_0.8.sav"
-model_path = "../models/fluxnet4.sav"
+model_path = "../models/US-Ton.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():
