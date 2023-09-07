@@ -6,9 +6,10 @@ import mxnet as mx
 import pandas as pd
 import seaborn as sns
 import preprocessing as prep
+from forecast import modelTest
 import matplotlib.pyplot as plt
 from knockoffs import Knockoffs
-from forecast import modelTest
+from matplotlib.patches import Patch
 from gluonts.dataset.common import ListDataset
 from gluonts.model.deepar._network import DeepARTrainingNetwork
 from gluonts.evaluation.backtest import make_evaluation_predictions
@@ -19,7 +20,7 @@ from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_
 np.random.seed(1)
 mx.random.seed(2)
 
-pars = parameters.get_syn_params()
+pars = parameters.get_climate_params()
 num_samples = pars["num_samples"]
 step = pars["step_size"]
 training_length = pars["train_len"]
@@ -81,7 +82,7 @@ def deepCause(odata, knockoffs, model, params):
                 interventionlist = [knockoff_samples, uniform_intervention]
                 heuristic_itn_types = ['In-dist', 'Uniform']
 
-
+                mapeslol, mapeslolint = [], []
                 for j in range(start_effect, end_effect):
                 
                     print("----------*****-----------------------*****------------")
@@ -220,7 +221,10 @@ def deepCause(odata, knockoffs, model, params):
                     ax1 = fig.add_subplot(111)
                     sns.distplot(mapelol[0], color='red', label='Actual')
                     sns.distplot(mapelolint[0], color='green', label='Counterfactual')
-
+                    
+                    mapeslol.append(mapelol[0])
+                    mapeslolint.append(mapelolint[0])
+                    
                     if len(columns) > 0:
                         # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
                         ax1.set_ylabel(f"{cause_group} ---> {columns[j]}")
@@ -235,42 +239,47 @@ def deepCause(odata, knockoffs, model, params):
                     # plt.show()
                     # plt.close()
 
-
-                    # *****************************************************
-                    mape_df = pd.DataFrame(data=np.transpose(mapelol), columns=columns[start_effect: end_effect])
-                    mape_int_df = pd.DataFrame(data=np.transpose(mapelolint), columns=columns[start_effect: end_effect])
-
-                    # Create a single plot
-                    fig = plt.figure()
-                    ax2 = fig.add_subplot(111)
-
-                    # Plot the first bivariate distribution with transparency
-                    sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+1], fill=True, cmap="Blues", alpha=0.75)
-
-                    # Plot the second bivariate distribution on top with transparency
-                    sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+1], fill=True, cmap="Reds", alpha=0.35)
-
-                    if len(columns) > 0:
-                        # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
-                        ax1.set_ylabel(f"{cause_group} ---> {columns[j]}")
-                    else:
-                        # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
-                        ax1.set_ylabel(f"{cause_group} ---> Z_{j + 1}")
-
-                    # Show the plot
-                    plt.gcf()
-                    ax2.legend()
-                    filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[j]}_2d.pdf")
-                    plt.savefig(filename)
-                    # plt.show()
-                    # *****************************************************
-
-
-
                     cause_list.append(causal_decision[0])
                     indist_cause.append(causal_decision[0])
                     uni_cause.append(causal_decision[1])
                     causal_decision = []
+
+                
+                # *****************************************************
+                mape_df = pd.DataFrame(data=np.transpose(mapeslol), columns=columns[start_effect: end_effect])
+                mape_int_df = pd.DataFrame(data=np.transpose(mapeslolint), columns=columns[start_effect: end_effect])
+
+                # Create a single plot
+                fig = plt.figure()
+                ax2 = fig.add_subplot(111)
+
+                # Plot the first bivariate distribution with transparency
+                sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+1], fill=True, cmap="Blues", alpha=0.75, levels=3, color='blue', label='Actual')
+
+                # Plot the second bivariate distribution on top with transparency
+                sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+1], fill=True, cmap="Reds", alpha=0.35, levels=3, color='red', label='Counterfactual')
+
+                if len(columns) > 0:
+                    # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
+                    ax1.set_ylabel(f"{cause_group} ---> {columns[j]}")
+                else:
+                    # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
+                    ax1.set_ylabel(f"{cause_group} ---> Z_{j + 1}")
+
+                # Show the plot
+                plt.gcf()
+
+                # Add a custom legend
+                legend_elements = [
+                Patch(facecolor='skyblue', alpha=0.5, edgecolor='k', label='Actual'),
+                Patch(facecolor='red', alpha=0.5, edgecolor='k', label='Counterfactual')
+                ]
+                ax2.legend(handles=legend_elements)
+                filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[j]}_2d.pdf")
+                plt.savefig(filename)
+                # plt.show()
+                # *****************************************************
+
     
         causal_direction.append(cause_list)
     
