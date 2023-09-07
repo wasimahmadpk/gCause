@@ -200,8 +200,12 @@ def load_hackathon_data():
 
 def load_flux_data():
 
-    # "Load fluxnet 2015 data for grassland IT-Mbo site"
-    fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/FLX_IT-MBo_FLUXNET2015_SUBSET_2003-2013_1-4/FLX_IT-MBo_FLUXNET2015_SUBSET_HH_2003-2013_1-4.csv")
+    # "Load fluxnet 2015 data for various sites"
+    # US-Ton : FLX_US-Ton_FLUXNET2015_SUBSET_2001-2014_1-4/FLX_US-Ton_FLUXNET2015_SUBSET_HH_2001-2014_1-4.csv
+    # FR-Pue : FLX_FR-Pue_FLUXNET2015_SUBSET_2000-2014_2-4/FLX_FR-Pue_FLUXNET2015_SUBSET_HH_2000-2014_2-4.csv
+    # DE-Hai : FLX_DE-Hai_FLUXNET2015_SUBSET_2000-2012_1-4/FLX_DE-Hai_FLUXNET2015_SUBSET_HH_2000-2012_1-4.csv
+    # IT-MBo : FLX_IT-MBo_FLUXNET2015_SUBSET_2003-2013_1-4/FLX_IT-MBo_FLUXNET2015_SUBSET_HH_2003-2013_1-4.csv
+    fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/FLX_US-Ton_FLUXNET2015_SUBSET_2001-2014_1-4/FLX_US-Ton_FLUXNET2015_SUBSET_HH_2001-2014_1-4.csv") 
     org = fluxnet['SW_IN_F']
     otemp = fluxnet['TA_F']
     ovpd = fluxnet['VPD_F']
@@ -222,7 +226,7 @@ def load_flux_data():
     # swc = normalize(down_sample(oswc, win_size))
     # heat = normalize(down_sample(oheat, win_size))
 
-    data = {'Rg': rg[8000:12000], 'T': temp[8000:12000], 'GPP': gpp[8000:12000], 'Reco': reco[8000:12000]}
+    data = {'Rg': rg[7000:12000], 'T': temp[7000:12000], 'GPP': gpp[7000:12000], 'Reco': reco[7000:12000]}
     df = pd.DataFrame(data, columns=['Rg', 'T', 'GPP', 'Reco'])
 
     return df
