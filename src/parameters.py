@@ -174,6 +174,42 @@ def get_climate_params():
     return params
 
 
+def get_nino_params():
+
+    # Parameters for flux data
+    params = {
+
+        'group_num': 2,    
+        'groups': {'g1': [0, 5], 'g2': [5, 10]},    # 'g1': [0, 33], 'g2': [33, 69]
+        'groups_size': {'g1':[5], 'g2':[5]},
+        'epochs': 75,
+        'pred_len': 10,
+        'train_len': 150,
+        'num_layers': 6,
+        'num_cells': 60,
+        'num_samples': 10,
+        'dropout_rate': 0.1,
+        'win_size': 1,
+        'slidingwin_size': 100,
+        'step_size': 10,
+        'dim': 10,
+        'batch_size': 32,
+        'prior_graph': np.array([[1, 1, 1, 0, 1],
+                                 [0, 1, 0, 0, 0],
+                                 [0, 0, 1, 1, 0],
+                                 [0, 0, 0, 1, 1],
+                                 [0, 0, 0, 0, 1]]),
+        'true_graph': [1, 1, 1, 0, 1,
+                       0, 1, 0, 0, 0,
+                       0, 0, 1, 1, 0,
+                       0, 0, 0, 1, 1,
+                       0, 0, 0, 0, 1],
+        'freq': '30min',
+        'plot_path': "/home/ahmad/Projects/gCause/plots/"
+    }
+    return params
+
+
 def get_geo_params():
 
     params = {
