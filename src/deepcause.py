@@ -20,7 +20,7 @@ from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_
 np.random.seed(1)
 mx.random.seed(2)
 
-pars = parameters.get_climate_params()
+pars = parameters.get_nino_params()
 num_samples = pars["num_samples"]
 step = pars["step_size"]
 training_length = pars["train_len"]
@@ -112,7 +112,7 @@ def deepCause(odata, knockoffs, model, params):
                         diff = []
                         start_batch = 10
 
-                        for iter in range(18):  # 30
+                        for iter in range(15):  # 30
                             
                             mselist_batch = []
                             mselistint_batch = []
@@ -166,7 +166,7 @@ def deepCause(odata, knockoffs, model, params):
                                 mselistint_batch.append(mseint)
                                 mapelistint_batch.append(mapeint)
 
-                            start_batch = start_batch + 7                           # Step size for sliding window # 10
+                            start_batch = start_batch + 1                           # Step size for sliding window # 10
                             mselist.append(np.mean(mselist_batch))                  # mselist = mselist_batch
                             mapelist.append(np.mean(mapelist_batch))                # mapelist = mapelist_batch
                             mselistint.append(np.mean(mselistint_batch))            # mselistint = mselistint_batch
@@ -245,40 +245,44 @@ def deepCause(odata, knockoffs, model, params):
                     causal_decision = []
 
                 
-                # *****************************************************
-                mape_df = pd.DataFrame(data=np.transpose(mapeslol), columns=columns[start_effect: end_effect])
-                mape_int_df = pd.DataFrame(data=np.transpose(mapeslolint), columns=columns[start_effect: end_effect])
+                if h == group_num-1 or g==group_num-1:
+                    
+                    for q in range(start_effect, end_effect):
+                    
+                    # *****************************************************
+                        mape_df = pd.DataFrame(data=np.transpose(mapeslol), columns=columns[start_effect: end_effect])
+                        mape_int_df = pd.DataFrame(data=np.transpose(mapeslolint), columns=columns[start_effect: end_effect])
 
-                # Create a single plot
-                fig = plt.figure()
-                ax2 = fig.add_subplot(111)
+                        # Create a single plot
+                        fig = plt.figure()
+                        ax2 = fig.add_subplot(111)
 
-                # Plot the first bivariate distribution with transparency
-                sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+1], fill=True, cmap="Blues", alpha=0.75, levels=3, color='blue', label='Actual')
+                        # Plot the first bivariate distribution with transparency
+                        sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+4], fill=True, cmap="Blues", alpha=0.5, levels=5, color='blue', label='Actual')
 
-                # Plot the second bivariate distribution on top with transparency
-                sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+1], fill=True, cmap="Reds", alpha=0.35, levels=3, color='red', label='Counterfactual')
+                        # Plot the second bivariate distribution on top with transparency
+                        sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+4], fill=True, cmap="Reds", alpha=0.5, levels=5, color='red', label='Counterfactual')
 
-                if len(columns) > 0:
-                    # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
-                    ax1.set_ylabel(f"{cause_group} ---> {columns[j]}")
-                else:
-                    # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
-                    ax1.set_ylabel(f"{cause_group} ---> Z_{j + 1}")
+                        if len(columns) > 0:
+                            # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
+                            ax1.set_ylabel(f"{cause_group} ---> {columns[q]}")
+                        else:
+                            # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
+                            ax1.set_ylabel(f"{cause_group} ---> Z_{q + 1}")
 
-                # Show the plot
-                plt.gcf()
+                        # Show the plot
+                        plt.gcf()
 
-                # Add a custom legend
-                legend_elements = [
-                Patch(facecolor='skyblue', alpha=0.5, edgecolor='k', label='Actual'),
-                Patch(facecolor='red', alpha=0.5, edgecolor='k', label='Counterfactual')
-                ]
-                ax2.legend(handles=legend_elements)
-                filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[j]}_2d.pdf")
-                plt.savefig(filename)
-                # plt.show()
-                # *****************************************************
+                        # Add a custom legend
+                        legend_elements = [
+                        Patch(facecolor='skyblue', alpha=0.5, edgecolor='k', label='Actual'),
+                        Patch(facecolor='red', alpha=0.5, edgecolor='k', label='Counterfactual')
+                        ]
+                        ax2.legend(handles=legend_elements)
+                        filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q]}_2d.pdf")
+                        plt.savefig(filename)
+                        # plt.show()
+                        # *****************************************************
 
     
         causal_direction.append(cause_list)
