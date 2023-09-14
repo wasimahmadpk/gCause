@@ -32,7 +32,8 @@ mx.random.seed(2)
 # Parameters
 # pars = parameters.get_geo_params()
 # pars = parameters.get_syn_params()
-pars = parameters.get_climate_params()
+pars = parameters.get_nino_params()
+dim = pars['dim']
 freq = pars["freq"]
 epochs = pars["epochs"]
 win_size = pars["win_size"]
@@ -53,11 +54,13 @@ groups = pars["groups"]
 # df = prep.load_geo_data()
 
 # df = prep.load_syn_data()
-df = prep.load_flux_data()
+df = prep.load_nino_data()
 df = df.iloc[:, :]
 
 # df = data.loc[:1000].copy()
+# print(df.head())
 print(df.describe())
+
 
 # df.plot.scatter(x='BO', y='Awake', c='blue')
 # plt.xlabel("PPFD ($\mu$ mol photons $m^{2}s^{-1}$)")
@@ -67,7 +70,7 @@ print(df.describe())
 # plt.show()
 
 original_data = []
-dim = len(df.columns)
+# dim = len(df.columns)
 columns = df.columns
 
 for col in df:
@@ -104,7 +107,7 @@ estimator = DeepAREstimator(
 
 # load model if not already trained
 # model_path = "../models/trained_model_syn4_0.8.sav"
-model_path = "../models/US-Ton.sav"
+model_path = "../models/EI-Nino.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():
