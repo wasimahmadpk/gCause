@@ -57,10 +57,14 @@ groups = pars["groups"]
 df = prep.load_nino_data()
 df = df.iloc[:, :]
 
+# # Calculate the cross-correlation for lags ranging from -10 to 10 months difference
+# cross_corr = [df['0'].corr(df['5'].shift(i)) for i in range(-10, 10)]
+# # Print the cross-correlation values
+# print(cross_corr)
+
 # df = data.loc[:1000].copy()
 # print(df.head())
 print(df.describe())
-
 
 # df.plot.scatter(x='BO', y='Awake', c='blue')
 # plt.xlabel("PPFD ($\mu$ mol photons $m^{2}s^{-1}$)")
@@ -82,7 +86,7 @@ train_ds = ListDataset(
     [
         {'start': "01/03/2015 00:00:00",
          'target': original_data[:, 0: training_length].tolist()
-         }
+        }
     ],
     freq=freq,
     one_dim_target=False
@@ -100,7 +104,7 @@ estimator = DeepAREstimator(
         ctx="cpu",
         epochs=epochs,
         hybridize=False,
-        batch_size=32
+        batch_size=24
     ),
     distr_output=MultivariateGaussianOutput(dim=dim)
 )
