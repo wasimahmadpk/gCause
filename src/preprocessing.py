@@ -225,7 +225,6 @@ def load_nino_data():
 
                     Xregion=xdata.sel(lat=slice(6.,-6.,k), lon = slice(190.,240.,i))
                     Yregion=xdata.sel(lat=slice(65.,50.,j), lon = slice(200.,240.,l))
-
                 
                     # de-seasonlize
                     #----------------
@@ -238,7 +237,7 @@ def load_nino_data():
                     #-----------------------------------------
 
                     def is_ond(month):
-                        return (month >= 10) & (month <= 12)
+                        return (month >= 8) & (month <= 12)
 
                     def is_son(month):
                         return (month >= 9) & (month <= 11)
@@ -247,7 +246,7 @@ def load_nino_data():
                         return ((month >= 11) & (month <= 12)) or (month==1)
 
                     def is_jfm(month):
-                        return (month >= 1) & (month <= 3)
+                        return (month >= 1) & (month <= 5)
 
                     # NINO for oct-nov-dec
                     #--------------------
@@ -277,7 +276,7 @@ def load_nino_data():
                         for var in range(reshaped_Yregion.shape[1]):
                             reshaped_Yregion[:, var] = pp.smooth(reshaped_Yregion[:, var], smooth_width=12 * 10, kernel='gaussian', mask=None,
                                                          residuals=True)
-                        #######
+                        ##################################
                         def shift_by_one(array1, array2, t):
                             if t == 0:
                                 return array1, array2
@@ -292,13 +291,13 @@ def load_nino_data():
                                 newarray2 = array2
                                 return newarray1, newarray2
 
-                        shifted_Yregion, shifted_Xregion = shift_by_one(reshaped_Yregion,reshaped_Xregion, 3)
+                        shifted_Yregion, shifted_Xregion = shift_by_one(reshaped_Yregion,reshaped_Xregion, 4)
                         print(f'X : {shifted_Xregion.shape}, Y: {shifted_Yregion.shape}')
                         shifted_XregionT = np.transpose(shifted_Xregion)
                         shifted_YregionT = np.transpose(shifted_Yregion)
 
-                        XYregion = np.concatenate((shifted_Xregion[0:222, 0:5], shifted_Yregion[0:222, 0:5]), axis=1)
-                        df = pd.DataFrame(XYregion)
+                        XYregion = np.concatenate((shifted_Xregion[0:365, 0:2], shifted_Yregion[0:365, 0:2]), axis=1)
+                        data = pd.DataFrame(data=XYregion, columns=[str(i) for i in range(XYregion.shape[1])])
                         # df = pd.concat([shifted_Xregion, shifted_Yregion], axis=1)
 
                         tigra_Xregion = pp.DataFrame(shifted_Xregion)
@@ -306,7 +305,11 @@ def load_nino_data():
                         print(reshaped_Xregion.shape, reshaped_Yregion.shape)
                         print(shifted_Xregion.shape, shifted_Yregion.shape)
                         
-                        return df
+                        # print(f'Number of Nans: {data.isnull().sum()}')
+                        df = data.apply(normalize, type='std')
+    
+                        if l==3:
+                            return df
 
 
 def load_flux_data():
