@@ -112,13 +112,13 @@ def deepCause(odata, knockoffs, model, params):
                         diff = []
                         start_batch = 10
 
-                        for iter in range(15):  # 30
+                        for iter in range(12):  # 30
                             
                             mselist_batch = []
                             mselistint_batch = []
                             mapelist_batch = []
                             mapelistint_batch = []
-                            for r in range(2):
+                            for r in range(3):
 
                                 test_data = odata[: , start_batch: start_batch + training_length + prediction_length].copy()
                                 test_ds = ListDataset(
@@ -166,7 +166,7 @@ def deepCause(odata, knockoffs, model, params):
                                 mselistint_batch.append(mseint)
                                 mapelistint_batch.append(mapeint)
 
-                            start_batch = start_batch + 1                           # Step size for sliding window # 10
+                            start_batch = start_batch + 6                           # Step size for sliding window # 10
                             mselist.append(np.mean(mselist_batch))                  # mselist = mselist_batch
                             mapelist.append(np.mean(mapelist_batch))                # mapelist = mapelist_batch
                             mselistint.append(np.mean(mselistint_batch))            # mselistint = mselistint_batch
@@ -243,11 +243,10 @@ def deepCause(odata, knockoffs, model, params):
                     indist_cause.append(causal_decision[0])
                     uni_cause.append(causal_decision[1])
                     causal_decision = []
-
                 
                 if h == group_num-1 or g==group_num-1:
                     
-                    for q in range(start_effect, end_effect):
+                    for q in range(1, end_effect-start_effect):
                     
                     # *****************************************************
                         mape_df = pd.DataFrame(data=np.transpose(mapeslol), columns=columns[start_effect: end_effect])
@@ -258,10 +257,10 @@ def deepCause(odata, knockoffs, model, params):
                         ax2 = fig.add_subplot(111)
 
                         # Plot the first bivariate distribution with transparency
-                        sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+4], fill=True, cmap="Blues", alpha=0.5, levels=5, color='blue', label='Actual')
+                        sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], fill=True, cmap="Blues", alpha=0.5, levels=5, color='blue', label='Actual')
 
                         # Plot the second bivariate distribution on top with transparency
-                        sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+4], fill=True, cmap="Reds", alpha=0.5, levels=5, color='red', label='Counterfactual')
+                        sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], fill=True, cmap="Reds", alpha=0.5, levels=5, color='red', label='Counterfactual')
 
                         if len(columns) > 0:
                             # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
@@ -279,7 +278,7 @@ def deepCause(odata, knockoffs, model, params):
                         Patch(facecolor='red', alpha=0.5, edgecolor='k', label='Counterfactual')
                         ]
                         ax2.legend(handles=legend_elements)
-                        filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q]}_2d.pdf")
+                        filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d.pdf")
                         plt.savefig(filename)
                         # plt.show()
                         # *****************************************************
