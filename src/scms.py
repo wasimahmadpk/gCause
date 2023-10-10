@@ -20,8 +20,8 @@ class SCMS:
         self.ts_length = time_steps - 1000
         self.Tao = range(1, 6)
         self.CoeffC, self.CoeffE = np.arange(0.50, 1.25, 0.25), np.arange(0.75, 1.0, 0.05)
-        self.var = np.arange(1, 3, 0.5)
-        self.lags = np.arange(0, 3)
+        self.var = np.arange(0, 1, 0.25)
+        self.lags = np.arange(0, 1)
         self.path = r'/home/ahmad/Projects/gCause/datasets/synthetic_datasets'
         
         adj_mat = self.generate_adj_matrix()
@@ -97,7 +97,7 @@ class SCMS:
     # Linear cause-effect relation
     def linear(self, cause, effect):
         
-        dynamic_noise = np.random.normal(0, 0.25, 2*self.time_steps)
+        dynamic_noise = np.random.normal(0, 0.10, 2*self.time_steps)
         coeff_c, coeff_e = random.choice(self.CoeffC), random.choice(self.CoeffE) 
         lag_cause, lag_effect = random.choice(self.lags), random.choice(self.lags)
         
@@ -108,22 +108,26 @@ class SCMS:
     # NOn-linear dependency
     def non_linear(self, cause, effect):
         
-        dynamic_noise = np.random.normal(0, 0.25, 2*self.time_steps)
+        dynamic_noise = np.random.normal(0, 0.10, 2*self.time_steps)
         coeff_c, coeff_e = random.choice(self.CoeffC), random.choice(self.CoeffE) 
         lag_cause, lag_effect = random.choice(self.lags), random.choice(self.lags)
         
         for t in range(max(self.lags), self.time_steps):
-            effect[t] = coeff_e*effect[t-lag_effect] * coeff_c*cause[t-lag_cause] + dynamic_noise[t]
+            effect[t] = coeff_e*effect[t-lag_effect] + coeff_c*cause[t-lag_cause] + dynamic_noise[t]
         return effect, len(effect)
     
     def generate_ts_DAG(self):
 
         multivariate_dag_ts = self.generate_ts()
-        
+        nonlinear_prob = [1 if random.random() > 0.75 else 0 for _ in range(self.num_links)]
         for links in range(self.num_links):
 
+            nonlinear_func = random.choice(nonlinear_prob)
             cnode, enode = self.list_links[links][0], self.list_links[links][1]
-            time_series , len = self.linear(multivariate_dag_ts[cnode], multivariate_dag_ts[enode])
+            if nonlinear_func:
+                time_series , len = self.linear(multivariate_dag_ts[cnode], multivariate_dag_ts[enode])
+            else:
+                time_series , len = self.linear(multivariate_dag_ts[cnode], multivariate_dag_ts[enode])
             multivariate_dag_ts[enode] = time_series  
 
         return multivariate_dag_ts
@@ -179,4 +183,3 @@ if __name__ == '__main__':
     scms = SCMS(nodes)
     df = scms.df_timeseries()
     scms.plot_ts()
-
