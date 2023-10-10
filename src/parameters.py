@@ -138,17 +138,17 @@ def get_real_params():
     return params
 
 
-def get_climate_params():
+def get_flux_params():
 
     # Parameters for flux data
     params = {
 
         'group_num': 2,    
-        'groups': {'g1': [0, 3], 'g2': [3, 6]},
-        'groups_size': {'g1':[3], 'g2':[3]},
-        'epochs': 60,
-        'pred_len': 20,
-        'train_len': 555,
+        'groups': {'g1': [0, 2], 'g2': [2, 4]},
+        'groups_size': {'g1':[2], 'g2':[2]},
+        'epochs': 80,
+        'pred_len': 15,
+        'train_len': 400,
         'num_layers': 4,
         'num_cells': 40,
         'num_samples': 10,
@@ -156,7 +156,7 @@ def get_climate_params():
         'win_size': 1,
         'slidingwin_size': 100,
         'step_size': 10,
-        'dim': 6,
+        'dim': 4,
         'batch_size': 32,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],
@@ -176,23 +176,22 @@ def get_climate_params():
 
 def get_nino_params():
 
-    # Parameters for flux data
     params = {
 
         'group_num': 2,    
-        'groups': {'g1': [0, 2], 'g2': [2, 4]},    # 'g1': [0, 33], 'g2': [33, 69]
-        'groups_size': {'g1':[2], 'g2':[2]},
+        'groups': {'g1': [0, 5], 'g2': [5, 10]},    # 'g1': [0, 33], 'g2': [33, 69]
+        'groups_size': {'g1':[5], 'g2':[5]},
         'epochs': 75,
-        'pred_len': 10,
-        'train_len': 250,
-        'num_layers': 4,
-        'num_cells': 40,
+        'pred_len': 4,
+        'train_len': 50,
+        'num_layers': 9,
+        'num_cells': 90,
         'num_samples': 10,
         'dropout_rate': 0.1,
         'win_size': 1,
         'slidingwin_size': 100,
         'step_size': 10,
-        'dim': 4,
+        'dim': 10,
         'batch_size': 32,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],
