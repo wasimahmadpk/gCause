@@ -90,14 +90,14 @@ class Knockoffs:
         pars['alphas'] = [1., 2., 4., 8., 16., 32., 64., 128.]
 
         # Initialize the machine
-        # machine = KnockoffMachine(pars)
+        machine = KnockoffMachine(pars)
 
         # Train the machine
-        # print("Fitting the knockoff machine...")
-        # machine.train(X_train)
+        print("Fitting the knockoff machine...")
+        machine.train(X_train)
 
         # Generate deep knockoffs
-        # Xk_train_m = machine.generate(X_train)
+        Xk_train_m = machine.generate(X_train)
         # print("Size of the deep knockoff dataset: %d x %d." % (Xk_train_m.shape))
 
         # Generate second-order knockoffs
@@ -114,7 +114,7 @@ class Knockoffs:
         # print("Generated a test dataset of size: %d x %d." % (X_test.shape))
 
         # Generate deep knockoffs
-        # Xk_test_m = machine.generate(X_test)
+        Xk_test_m = machine.generate(X_test)
         # print("Size of the deep knockoff test dataset: %d x %d." % (Xk_test_m.shape))
         # print("Deep Knockoffs: \n", Xk_test_m)
 
@@ -160,7 +160,7 @@ class Knockoffs:
         # sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
         # plt.title("K-Nearest Neighbors goodness-of-fit")
         # plt.show()
-        return Xk_test_g
+        return Xk_test_m
 
 
 if __name__ == '__main__':
