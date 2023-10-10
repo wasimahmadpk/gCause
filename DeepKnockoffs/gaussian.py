@@ -43,11 +43,11 @@ def solve_sdp(Sigma, tol=1e-3):
     return np.multiply(s, np.diag(Sigma))
     
 class GaussianKnockoffs:
+    
     """
     Class GaussianKnockoffs
     Knockoffs for a multivariate Gaussian model
     """
-
     def __init__(self, Sigma, method="equi", mu=[], tol=1e-3):
         """
         Constructor
