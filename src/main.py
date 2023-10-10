@@ -56,6 +56,7 @@ groups = pars["groups"]
 # df = prep.load_syn_data()
 df = prep.load_nino_data()
 df = df.iloc[:, :]
+print(df.corr())
 
 # # Calculate the cross-correlation for lags ranging from -10 to 10 months difference
 # cross_corr = [df['0'].corr(df['5'].shift(i)) for i in range(-10, 10)]
@@ -111,7 +112,7 @@ estimator = DeepAREstimator(
 
 # load model if not already trained
 # model_path = "../models/trained_model_syn4_0.8.sav"
-model_path = "../models/EI-Nino.sav"
+model_path = "../models/EI-Nino1332.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():
