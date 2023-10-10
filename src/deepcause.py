@@ -112,7 +112,7 @@ def deepCause(odata, knockoffs, model, params):
                         diff = []
                         start_batch = 10
 
-                        for iter in range(12):  # 30
+                        for iter in range(9):  # 30
                             
                             mselist_batch = []
                             mselistint_batch = []
@@ -166,7 +166,7 @@ def deepCause(odata, knockoffs, model, params):
                                 mselistint_batch.append(mseint)
                                 mapelistint_batch.append(mapeint)
 
-                            start_batch = start_batch + 6                           # Step size for sliding window # 10
+                            start_batch = start_batch + 1                           # Step size for sliding window # 10
                             mselist.append(np.mean(mselist_batch))                  # mselist = mselist_batch
                             mapelist.append(np.mean(mapelist_batch))                # mapelist = mapelist_batch
                             mselistint.append(np.mean(mselistint_batch))            # mselistint = mselistint_batch
@@ -257,10 +257,10 @@ def deepCause(odata, knockoffs, model, params):
                         ax2 = fig.add_subplot(111)
 
                         # Plot the first bivariate distribution with transparency
-                        sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], fill=True, cmap="Blues", alpha=0.5, levels=5, color='blue', label='Actual')
+                        sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Blues', alpha=0.80, fill=True, levels=5, color='blue', label='Actual') #fill= True, cmap="Blues", alpha=0.5
 
                         # Plot the second bivariate distribution on top with transparency
-                        sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], fill=True, cmap="Reds", alpha=0.5, levels=5, color='red', label='Counterfactual')
+                        sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Reds', alpha=0.55, fill=True, levels=5, color='red', label='Counterfactual') # fill=True, cmap="Reds", fill=True, cmap="Reds",
 
                         if len(columns) > 0:
                             # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
@@ -274,8 +274,8 @@ def deepCause(odata, knockoffs, model, params):
 
                         # Add a custom legend
                         legend_elements = [
-                        Patch(facecolor='skyblue', alpha=0.5, edgecolor='k', label='Actual'),
-                        Patch(facecolor='red', alpha=0.5, edgecolor='k', label='Counterfactual')
+                        Patch(facecolor=plt.cm.Blues(100), alpha=0.70, edgecolor='k', label='Actual'),
+                        Patch(facecolor=plt.cm.Reds(100), alpha=0.85, edgecolor='k', label='Counterfactual')
                         ]
                         ax2.legend(handles=legend_elements)
                         filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d.pdf")
