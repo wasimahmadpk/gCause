@@ -218,97 +218,97 @@ def load_nino_data():
             for j in range(2,5): # grid coarsening parameter for BCT latitude
                 for l in range(2,5): # grid coarsening parameter for BCT longitude
                     # print(k,i,j,l)
-                
-                    #ENSO LAT 6,-6, LON 190, 240
-                    #BCT LAT 65,50 LON 200, 240
-                    #TATL LAT 25, 5, LON 305, 325
+                    if k==1 and i==3 and j==3 and l==2:
+                    #   if k==3 and i==2 and j==3 and l==2:
+                        #ENSO LAT 6,-6, LON 190, 240
+                        #BCT LAT 65,50 LON 200, 240
+                        #TATL LAT 25, 5, LON 305, 325
 
-                    Xregion=xdata.sel(lat=slice(6.,-6.,k), lon = slice(190.,240.,i))
-                    Yregion=xdata.sel(lat=slice(65.,50.,j), lon = slice(200.,240.,l))
-                
-                    # de-seasonlize
-                    #----------------
-                    monthlymean = Xregion.groupby("time.month").mean("time")
-                    anomalies_Xregion = Xregion.groupby("time.month") - monthlymean
-                    Yregion_monthlymean = Yregion.groupby("time.month").mean("time")
-                    anomalies_Yregion = Yregion.groupby("time.month") - Yregion_monthlymean
+                        Xregion=xdata.sel(lat=slice(6.,-6.,k), lon = slice(190.,240.,i))
+                        Yregion=xdata.sel(lat=slice(65.,50.,j), lon = slice(200.,240.,l))
+                    
+                        # de-seasonlize
+                        #----------------
+                        monthlymean = Xregion.groupby("time.month").mean("time")
+                        anomalies_Xregion = Xregion.groupby("time.month") - monthlymean
+                        Yregion_monthlymean = Yregion.groupby("time.month").mean("time")
+                        anomalies_Yregion = Yregion.groupby("time.month") - Yregion_monthlymean
 
-                    # functions to consider triples on months
-                    #-----------------------------------------
+                        # functions to consider triples on months
+                        #-----------------------------------------
 
-                    def is_ond(month):
-                        return (month >= 8) & (month <= 12)
+                        def is_ond(month):
+                            return (month >= 9) & (month <= 12)
 
-                    def is_son(month):
-                        return (month >= 9) & (month <= 11)
+                        def is_son(month):
+                            return (month >= 9) & (month <= 11)
 
-                    def is_ndj(month):
-                        return ((month >= 11) & (month <= 12)) or (month==1)
+                        def is_ndj(month):
+                            return ((month >= 11) & (month <= 12)) or (month==1)
 
-                    def is_jfm(month):
-                        return (month >= 1) & (month <= 5)
+                        def is_jfm(month):
+                            return (month >= 1) & (month <= 3)
 
-                    # NINO for oct-nov-dec
-                    #--------------------
+                        # NINO for oct-nov-dec
+                        #--------------------
 
-                    ond_Xregion = anomalies_Xregion.sel(time=is_ond(xdata['time.month']))
-                    # ond_Xregion_by_year = ond_Xregion.groupby("time.year").mean()
-                    num_ond_Xregion = np.array(ond_Xregion.to_array())[0]
-                    reshaped_Xregion = np.reshape(num_ond_Xregion, newshape = (num_ond_Xregion.shape[0],num_ond_Xregion.shape[1]*num_ond_Xregion.shape[2]))
+                        ond_Xregion = anomalies_Xregion.sel(time=is_ond(xdata['time.month']))
+                        ond_Xregion_by_year = ond_Xregion.groupby("time.year").mean()
+                        num_ond_Xregion = np.array(ond_Xregion_by_year.to_array())[0]
+                        print(f'Here is the shape: {num_ond_Xregion.shape}')
+                        reshaped_Xregion = np.reshape(num_ond_Xregion, newshape = (num_ond_Xregion.shape[0],num_ond_Xregion.shape[1]*num_ond_Xregion.shape[2]))
 
-                    # BCT for jan-feb-mar
-                    #-------------------
+                        # BCT for jan-feb-mar
+                        #-------------------
 
-                    jfm_Yregion = anomalies_Yregion.sel(time=is_jfm(xdata['time.month']))
-                    # jfm_Yregion_by_year = jfm_Yregion.groupby("time.year").mean()
-                    num_jfm_Yregion = np.array(jfm_Yregion.to_array())[0]
-                    reshaped_Yregion = np.reshape(num_jfm_Yregion, newshape = (num_jfm_Yregion.shape[0],num_jfm_Yregion.shape[1]*num_jfm_Yregion.shape[2]))
+                        jfm_Yregion = anomalies_Yregion.sel(time=is_jfm(xdata['time.month']))
+                        jfm_Yregion_by_year = jfm_Yregion.groupby("time.year").mean()
+                        num_jfm_Yregion = np.array(jfm_Yregion_by_year.to_array())[0]
+                        reshaped_Yregion = np.reshape(num_jfm_Yregion, newshape = (num_jfm_Yregion.shape[0],num_jfm_Yregion.shape[1]*num_jfm_Yregion.shape[2]))
 
-                    #Consider cases where group sizes are not further apart than 10 grid boxes
-                    #------------------------------------------------------------------------
-                    if abs(reshaped_Xregion.shape[1]-reshaped_Yregion.shape[1])<10:
+                        #Consider cases where group sizes are not further apart than 10 grid boxes
+                        #------------------------------------------------------------------------
+                        if abs(reshaped_Xregion.shape[1]-reshaped_Yregion.shape[1])<12:
 
-                        #GAUSSIAN KERNEL SMOOTHING
-                        #-------------------------
-                        for var in range(reshaped_Xregion.shape[1]):
-                            reshaped_Xregion[:, var] = pp.smooth(reshaped_Xregion[:, var], smooth_width=12 * 10, kernel='gaussian', mask=None,
-                                                          residuals=True)
-                        for var in range(reshaped_Yregion.shape[1]):
-                            reshaped_Yregion[:, var] = pp.smooth(reshaped_Yregion[:, var], smooth_width=12 * 10, kernel='gaussian', mask=None,
-                                                         residuals=True)
-                        ##################################
-                        def shift_by_one(array1, array2, t):
-                            if t == 0:
-                                return array1, array2
-                            elif t < 0:
-                                s = -t
-                                newarray1 = array1[:-s, :]
-                                newarray2 = array2[s:, :]
-                                return newarray1, newarray2
+                            #GAUSSIAN KERNEL SMOOTHING
+                            #-------------------------
+                            for var in range(reshaped_Xregion.shape[1]):
+                                reshaped_Xregion[:, var] = pp.smooth(reshaped_Xregion[:, var], smooth_width=12*10, kernel='gaussian', mask=None,
+                                                            residuals=True)
+                            for var in range(reshaped_Yregion.shape[1]):
+                                reshaped_Yregion[:, var] = pp.smooth(reshaped_Yregion[:, var], smooth_width=12*10, kernel='gaussian', mask=None,
+                                                            residuals=True)
+                            ##################################
+                            def shift_by_one(array1, array2, t):
+                                if t == 0:
+                                    return array1, array2
+                                elif t < 0:
+                                    s = -t
+                                    newarray1 = array1[:-s, :]
+                                    newarray2 = array2[s:, :]
+                                    return newarray1, newarray2
 
-                            else:
-                                newarray1 = array1[t:, :]
-                                newarray2 = array2
-                                return newarray1, newarray2
+                                else:
+                                    newarray1 = array1[t:, :]
+                                    newarray2 = array2
+                                    return newarray1, newarray2
 
-                        shifted_Yregion, shifted_Xregion = shift_by_one(reshaped_Yregion,reshaped_Xregion, 4)
-                        print(f'X : {shifted_Xregion.shape}, Y: {shifted_Yregion.shape}')
-                        shifted_XregionT = np.transpose(shifted_Xregion)
-                        shifted_YregionT = np.transpose(shifted_Yregion)
+                            shifted_Yregion, shifted_Xregion = shift_by_one(reshaped_Yregion,reshaped_Xregion, 1)
+                            print(f'X : {shifted_Xregion.shape}, Y: {shifted_Yregion.shape}')
+                            shifted_XregionT = np.transpose(shifted_Xregion)
+                            shifted_YregionT = np.transpose(shifted_Yregion)
+                            cols = ['ENSO$_1$', 'ENSO$_2$', 'BCT$_1$', 'BCT$_2$']
+                            XYregion = np.concatenate((shifted_Xregion[0:72, 0:5], shifted_Yregion[0:72, 0:5]), axis=1)
+                            data = pd.DataFrame(data=XYregion, columns=[str(i) for i in range(XYregion.shape[1])]) #[str(i) for i in range(XYregion.shape[1])]
+                            # df = pd.concat([shifted_Xregion, shifted_Yregion], axis=1)
 
-                        XYregion = np.concatenate((shifted_Xregion[0:365, 0:2], shifted_Yregion[0:365, 0:2]), axis=1)
-                        data = pd.DataFrame(data=XYregion, columns=[str(i) for i in range(XYregion.shape[1])])
-                        # df = pd.concat([shifted_Xregion, shifted_Yregion], axis=1)
-
-                        tigra_Xregion = pp.DataFrame(shifted_Xregion)
-                        tigra_Yregion = pp.DataFrame(shifted_Yregion)
-                        print(reshaped_Xregion.shape, reshaped_Yregion.shape)
-                        print(shifted_Xregion.shape, shifted_Yregion.shape)
-                        
-                        # print(f'Number of Nans: {data.isnull().sum()}')
-                        df = data.apply(normalize, type='std')
-    
-                        if l==3:
+                            tigra_Xregion = pp.DataFrame(shifted_Xregion)
+                            tigra_Yregion = pp.DataFrame(shifted_Yregion)
+                            print(reshaped_Xregion.shape, reshaped_Yregion.shape)
+                            print(shifted_Xregion.shape, shifted_Yregion.shape)
+                            
+                            # print(f'Number of Nans: {data.isnull().sum()}')
+                            df = data.apply(normalize, type='minmax')
                             return df
 
 
@@ -319,7 +319,7 @@ def load_flux_data():
     # FR-Pue : FLX_FR-Pue_FLUXNET2015_SUBSET_2000-2014_2-4/FLX_FR-Pue_FLUXNET2015_SUBSET_HH_2000-2014_2-4.csv
     # DE-Hai : FLX_DE-Hai_FLUXNET2015_SUBSET_2000-2012_1-4/FLX_DE-Hai_FLUXNET2015_SUBSET_HH_2000-2012_1-4.csv
     # IT-MBo : FLX_IT-MBo_FLUXNET2015_SUBSET_2003-2013_1-4/FLX_IT-MBo_FLUXNET2015_SUBSET_HH_2003-2013_1-4.csv
-    fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/FLX_US-Ton_FLUXNET2015_SUBSET_2001-2014_1-4/FLX_US-Ton_FLUXNET2015_SUBSET_HH_2001-2014_1-4.csv") 
+    fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/FLX_DE-Hai_FLUXNET2015_SUBSET_2000-2012_1-4/FLX_DE-Hai_FLUXNET2015_SUBSET_HH_2000-2012_1-4.csv") 
     org = fluxnet['SW_IN_F']
     otemp = fluxnet['TA_F']
     ovpd = fluxnet['VPD_F']
@@ -342,7 +342,7 @@ def load_flux_data():
 
     data = {'Rg': rg[7000:12000], 'T': temp[7000:12000], 'GPP': gpp[7000:12000], 'Reco': reco[7000:12000]}
     df = pd.DataFrame(data, columns=['Rg', 'T', 'GPP', 'Reco'])
-
+    # df = df.apply(normalize)
     return df
 
 # Load synthetically generated time series
