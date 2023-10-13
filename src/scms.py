@@ -12,17 +12,18 @@ from scipy.sparse import csr_matrix
 
 class SCMS:
 
-    def __init__(self, num_nodes, link_density=0.15, time_steps=1000):
+    def __init__(self, num_nodes, link_density=0.15, time_steps=2000):
 
         self.num_nodes = num_nodes
         self.link_density = link_density
         self.time_steps = time_steps
         self.ts_length = time_steps - 1000
         self.Tao = range(1, 6)
-        self.CoeffC, self.CoeffE = np.arange(0.50, 1.25, 0.25), np.arange(0.75, 1.0, 0.05)
-        self.var = np.arange(0, 1, 0.25)
-        self.lags = np.arange(0, 1)
-        self.path = r'/home/ahmad/Projects/gCause/datasets/synthetic_datasets'
+        self.CoeffC, self.CoeffE = np.arange(0.25, 2.00, 0.25), np.arange(0.75, 1.0, 0.05)
+        self.var = np.arange(0.25, 1.0, 0.25)
+        self.lags = np.arange(0, 5)
+        self.path = r'/home/ahmad/Projects/VCM/datasets/synthetic_datasets'
+        self.lag_list = []
         
         adj_mat = self.generate_adj_matrix()
         # print('Matrix:\n', adj_mat)
@@ -45,12 +46,11 @@ class SCMS:
         t = np.linspace(0, duration, sample_rate * duration, endpoint=False)
         frequencies = t*freq
         # 2pi because np.sin takes radians
-        y = np.sin((2*np.pi)*frequencies)
+        y = np.sin((1*np.pi)*frequencies)
         return t, y
 
     # Time series base
     def generate_ts(self):
-
          
         # Generate sine wave and the gaussian noise 
         pars = parameters.get_sig_params()
@@ -60,21 +60,12 @@ class SCMS:
         multivariate_ts = []
         
         for i in range(self.num_nodes):
-            _, sin_ts = self.generate_sine_ts(4000, sample_rate, duration)
-            timeseries = np.random.normal(0, random.choice(self.var), self.time_steps)
-            multivariate_ts.append(timeseries + sin_ts[:self.time_steps])
+            # _, sin_ts = self.generate_sine_ts(6000, sample_rate, duration)
+            # timeseries = np.random.normal(0, random.choice(self.var), self.time_steps)
+            t = np.arange(0, self.time_steps)
+            time_series = np.sin(0.75 * t) + np.random.normal(0.75, 0.33*(i+1), self.time_steps)
+            multivariate_ts.append(time_series)
         return np.array(multivariate_ts)
-       
-
-        # Generate a 2 hertz sine wave that lasts for 5 seconds
-        # t, y = generate_sine_wave(2, SAMPLE_RATE, DURATION)
-
-        _, nice_wave = generate_sine_wave(400, SAMPLE_RATE, DURATION)
-        _, noise_wave = generate_sine_wave(4000, SAMPLE_RATE, DURATION)
-        noise_wave = noise_wave * 0.50
-    
-        noise1 = np.random.normal(2, 1.10, len(nice_wave))
-        root1 = noise1
   
 
     def generate_adj_matrix(self):
@@ -95,25 +86,19 @@ class SCMS:
             return adj_matrix
 
     # Linear cause-effect relation
-    def linear(self, cause, effect):
+    def linear(self, cause, effect, lag_cause, lag_effect, coeff_c, coeff_e):
         
-        dynamic_noise = np.random.normal(0, 0.10, 2*self.time_steps)
-        coeff_c, coeff_e = random.choice(self.CoeffC), random.choice(self.CoeffE) 
-        lag_cause, lag_effect = random.choice(self.lags), random.choice(self.lags)
-        
+        dynamic_noise = np.random.normal(0, 0.5, 2*self.time_steps)
         for t in range(max(self.lags), self.time_steps):
             effect[t] = coeff_e*effect[t-lag_effect] + coeff_c*cause[t-lag_cause] + dynamic_noise[t]
         return effect, len(effect)
     
     # NOn-linear dependency
-    def non_linear(self, cause, effect):
+    def non_linear(self, cause, effect, lag_cause, lag_effect, coeff_c, coeff_e):
         
         dynamic_noise = np.random.normal(0, 0.10, 2*self.time_steps)
-        coeff_c, coeff_e = random.choice(self.CoeffC), random.choice(self.CoeffE) 
-        lag_cause, lag_effect = random.choice(self.lags), random.choice(self.lags)
-        
         for t in range(max(self.lags), self.time_steps):
-            effect[t] = coeff_e*effect[t-lag_effect] + coeff_c*cause[t-lag_cause] + dynamic_noise[t]
+            effect[t] = coeff_e*effect[t-lag_effect] + coeff_c*np.sin(cause[t-lag_cause]) + dynamic_noise[t]
         return effect, len(effect)
     
     def generate_ts_DAG(self):
@@ -121,13 +106,17 @@ class SCMS:
         multivariate_dag_ts = self.generate_ts()
         nonlinear_prob = [1 if random.random() > 0.75 else 0 for _ in range(self.num_links)]
         for links in range(self.num_links):
-
             nonlinear_func = random.choice(nonlinear_prob)
             cnode, enode = self.list_links[links][0], self.list_links[links][1]
+
+            coeff_c, coeff_e = random.choice(self.CoeffC), random.choice(self.CoeffE) 
+            lag_cause, lag_effect = random.choice(self.lags), random.choice(self.lags)
+            self.lag_list.append(lag_cause)
+            
             if nonlinear_func:
-                time_series , len = self.linear(multivariate_dag_ts[cnode], multivariate_dag_ts[enode])
+                time_series , len = self.linear(multivariate_dag_ts[cnode], multivariate_dag_ts[enode], lag_cause, lag_effect, coeff_c, coeff_e)
             else:
-                time_series , len = self.linear(multivariate_dag_ts[cnode], multivariate_dag_ts[enode])
+                time_series , len = self.non_linear(multivariate_dag_ts[cnode], multivariate_dag_ts[enode], lag_cause, lag_effect, coeff_c, coeff_e)
             multivariate_dag_ts[enode] = time_series  
 
         return multivariate_dag_ts
@@ -141,9 +130,9 @@ class SCMS:
             data_dict[self.node_labels[nodes]] = timeseries[nodes][:]
         
         df = pd.DataFrame(data=data_dict, columns=self.node_labels)
-        filename = 'synthetic_gtss.csv'
+        filename = 'synthetic_dataset.csv'
         df.to_csv(os.path.join(self.path, filename), index_label=False, header=True)
-        return df, self.list_links
+        return df, list(zip(self.list_links, self.lag_list))
     
     def plot_ts(self):
 
