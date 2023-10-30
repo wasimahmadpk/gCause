@@ -1,3 +1,5 @@
+import io
+import sys
 import pickle
 import pathlib
 import parameters
@@ -41,11 +43,11 @@ def causal_criteria(list1, list2):
     c1, c2 = n1/len(list1), n2/len(list2)
     return [c1, c2]
 
-def groupCause(odata, knockoffs, model, params):
+def groupCause(odata, model, params):
 
     filename = pathlib.Path(model)
     if not filename.exists():
-        print("Training forecasting model....")
+        print("Training model....")
         predictor = estimator.train(train_ds)
         # save the model to disk
         pickle.dump(predictor, open(filename, 'wb'))
@@ -53,6 +55,20 @@ def groupCause(odata, knockoffs, model, params):
     conf_mat, conf_mat_indist, conf_mat_uniform, causal_direction = [], [], [], []
     pvalues, pval_indist, pval_uniform = [], [], []
     var_list, causal_decision, indist_cause, uni_cause, group_cause = [], [], [], [], []
+
+    # create a text trap and redirect stdout
+    text_trap = io.StringIO()
+    sys.stdout = text_trap
+
+      # Generate Knockoffs
+    data_actual = np.array(odata[: , 0: training_length + prediction_length]).transpose()
+    obj = Knockoffs()
+    n = len(odata[:, 0])
+    knockoffs = obj.Generate_Knockoffs(n, params.get("dim"), data_actual)
+
+    # now restore stdout function
+    sys.stdout = sys.__stdout__
+  
 
     for g in range(group_num):
         cause_list = []
@@ -69,12 +85,6 @@ def groupCause(odata, knockoffs, model, params):
                 
                 # P-Values
                 pvi, pvu = [], []
-
-                # Generate Knockoffs
-                data_actual = np.array(odata[: , 0: training_length + prediction_length]).transpose()
-                obj = Knockoffs()
-                n = len(odata[:, 0])
-                knockoffs = obj.Generate_Knockoffs(n, params.get("dim"), data_actual)
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
                 uniform_intervention = np.random.uniform(np.min(odata), np.min(odata), knockoff_samples.shape)
@@ -152,13 +162,19 @@ def groupCause(odata, knockoffs, model, params):
                                                                     prediction_length, iter, True, m)
 
                                 if m == 0:
+                                     # create a text trap and redirect stdout
+                                    text_trap = io.StringIO()
+                                    sys.stdout = text_trap
                                     # Generate multiple version Knockoffs
                                     data_actual = np.array(odata[: , start_batch: start_batch + training_length + prediction_length]).transpose()
                                     obj = Knockoffs()
                                     n = len(odata[:, 0])
-                                    knockoffs = obj.Generate_Knockoffs(n, params.get("dim"), data_actual)
+                                    # knockoffs = obj.Generate_Knockoffs(n, params.get("dim"), data_actual)
                                     knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
                                     intervene = knockoff_samples
+
+                                    # now restore stdout function
+                                    sys.stdout = sys.__stdout__
 
                                 # np.random.shuffle(intervene)
                                 mselist_batch.append(mse)

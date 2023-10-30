@@ -105,21 +105,21 @@ estimator = DeepAREstimator(
 
 # load model if not already trained
 # model_path = "../models/trained_model_syn4_0.8.sav"
-model_path = "../models/EI-Nino1332.sav"
+model_path = "../models/EI-Nino3232.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():
-    print("Training forecasting model....")
+    print("Training model....")
     predictor = estimator.train(train_ds)
     # save the model to disk
     pickle.dump(predictor, open(filename, 'wb'))
 
-# Generate Knockoffs
-data_actual = np.array(original_data[:, :]).transpose()
-n = len(original_data[:, 0])
-obj = Knockoffs()
-knockoffs = obj.Generate_Knockoffs(n, dim, data_actual)
+# # Generate Knockoffs
+# data_actual = np.array(original_data[:, :]).transpose()
+# n = len(original_data[:, 0])
+# obj = Knockoffs()
+# knockoffs = obj.Generate_Knockoffs(n, dim, data_actual)
 
 params = {'dim': dim, 'col': columns}
 # Function for estimating causal impact among variables
-groupCause(original_data, knockoffs, model_path, params)
+groupCause(original_data, model_path, params)

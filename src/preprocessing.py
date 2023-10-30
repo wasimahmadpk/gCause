@@ -13,7 +13,7 @@ from scipy.special import stdtr
 import matplotlib.pyplot as plt
 from sklearn.feature_selection import f_regression, mutual_info_regression
 
-
+# El Nino imports
 import matplotlib
 import netCDF4
 from netCDF4 import Dataset,num2date
@@ -218,8 +218,8 @@ def load_nino_data():
             for j in range(2,5): # grid coarsening parameter for BCT latitude
                 for l in range(2,5): # grid coarsening parameter for BCT longitude
                     # print(k,i,j,l)
-                    if k==1 and i==3 and j==3 and l==2:
-                    #   if k==3 and i==2 and j==3 and l==2:
+                    # if k==1 and i==3 and j==3 and l==2:
+                      if k==3 and i==2 and j==3 and l==2:
                         #ENSO LAT 6,-6, LON 190, 240
                         #BCT LAT 65,50 LON 200, 240
                         #TATL LAT 25, 5, LON 305, 325
@@ -298,7 +298,7 @@ def load_nino_data():
                             shifted_XregionT = np.transpose(shifted_Xregion)
                             shifted_YregionT = np.transpose(shifted_Yregion)
                             cols = ['ENSO$_1$', 'ENSO$_2$', 'BCT$_1$', 'BCT$_2$']
-                            XYregion = np.concatenate((shifted_Xregion[0:72, 0:5], shifted_Yregion[0:72, 0:5]), axis=1)
+                            XYregion = np.concatenate((shifted_Xregion[0:72, 0:2], shifted_Yregion[0:72, 0:2]), axis=1)
                             data = pd.DataFrame(data=XYregion, columns=[str(i) for i in range(XYregion.shape[1])]) #[str(i) for i in range(XYregion.shape[1])]
                             # df = pd.concat([shifted_Xregion, shifted_Yregion], axis=1)
 
