@@ -16,7 +16,7 @@ from knockoffs import Knockoffs
 from scipy.special import stdtr
 from forecast import modelTest
 from gluonts.trainer import Trainer
-from deepcause import deepCause
+from groupcause import groupCause
 from gluonts.evaluation import Evaluator
 from sklearn.metrics import mean_squared_error
 from gluonts.dataset.common import ListDataset
@@ -66,13 +66,6 @@ print(df.corr())
 # df = data.loc[:1000].copy()
 # print(df.head())
 print(df.describe())
-
-# df.plot.scatter(x='BO', y='Awake', c='blue')
-# plt.xlabel("PPFD ($\mu$ mol photons $m^{2}s^{-1}$)")
-# plt.ylabel("NEP ($\mu$ mol $CO_2$ $m^{2}s^{-1}$)")
-# filename = pathlib.Path(plot_path + "PPFD->NEP_Scatter.pdf")
-# plt.savefig(filename)
-# plt.show()
 
 original_data = []
 # dim = len(df.columns)
@@ -129,4 +122,4 @@ knockoffs = obj.Generate_Knockoffs(n, dim, data_actual)
 
 params = {'dim': dim, 'col': columns}
 # Function for estimating causal impact among variables
-deepCause(original_data, knockoffs, model_path, params)
+groupCause(original_data, knockoffs, model_path, params)
