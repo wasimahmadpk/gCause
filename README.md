@@ -25,7 +25,7 @@ We discover full causal graph in multivariate nonlinear systems by testing model
 4. We perform KS test over distribution $R_i$, $R_k$ of model residuals in various environments. Our NULL hypothesis is that variable $z_i$ does not cause $z_j$, $H_0$: $R_i$ = $R_k$, else the alternate hypothesis $H_1$: $R_i$ != $R_k$ is accepted.
 
 <p align="center">
-<img src="res/gcause.png" width=100% />
+<img src="res/gcause.png" width=66% />
 </p>
 
 ## Data
