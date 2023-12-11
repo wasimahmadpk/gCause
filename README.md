@@ -19,13 +19,10 @@ url={https://openreview.net/forum?id=OcNeMVbIdCF}
 ## Overview
 
 We discover full causal graph in multivariate nonlinear systems by testing model invariance against Knockoffs-based interventional environments:
-1. First we train deep network <img src="https://render.githubusercontent.com/render/math?math=f_i"> $f_i$ using data from observational environment $E_i$ <img src="https://render.githubusercontent.com/render/math?math=E_i">.
-2. Then we expose the model to Knockoffs-based interventional environments <img src="https://render.githubusercontent.com/render/math?math=E_k"> $E_k$. 
-3. For each pair variables {<img src="https://render.githubusercontent.com/render/math?math=z_i"> $z_i$, <img src="https://render.githubusercontent.com/render/math?math=z_j"> $z_j$}  in nonlinear system, we test model invariance across environments. 
-4. We perform KS test over distribution <img src="https://render.githubusercontent.com/render/math?math=R_i"> $R_i$, $R_k$ <img src="https://render.githubusercontent.com/render/math?math=R_k"> of model residuals in various environments. 
-Our NULL hypothesis is that variable <img src="https://render.githubusercontent.com/render/math?math=z_i"> $z_i$ does not cause $z_j$ <img src="https://render.githubusercontent.com/render/math?math=z_j">, 
-<img src="https://render.githubusercontent.com/render/math?math=H_0"> $H_0$: $R_i$ <img src="https://render.githubusercontent.com/render/math?math=R_i"> = <img src="https://render.githubusercontent.com/render/math?math=R_k"> $R_k$, 
-else the alternate hypothesis <img src="https://render.githubusercontent.com/render/math?math=H_1"> $H_1$: $R_i$ <img src="https://render.githubusercontent.com/render/math?math=R_i">  != <img src="https://render.githubusercontent.com/render/math?math=R_k"> $R_k$ is accepted.
+1. First we train deep network $f_i$ using data from observational environment $E_i$.
+2. Then we expose the model to Knockoffs-based interventional environments $E_k$. 
+3. For each pair variables {$z_i$, $z_j$}  in nonlinear system, we test model invariance across environments. 
+4. We perform KS test over distribution $R_i$, $R_k$ of model residuals in various environments. Our NULL hypothesis is that variable $z_i$ does not cause $z_j$, $H_0$: $R_i$ = $R_k$, else the alternate hypothesis $H_1$: $R_i$ != $R_k$ is accepted.
 
 <p align="center">
 <img src="res/gcause.png" width=100% />
