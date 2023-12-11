@@ -358,3 +358,21 @@ def load_multiregime_data():
     df = pd.read_csv("../datasets/synthetic_datasets/synthetic_data_regimes.csv")
     # df = df.apply(normalize)
     return df
+
+
+def load_netsim_data():
+
+    # Load data from a .npz file
+    file_path = r'../datasets/netsim/sim3_subject_4.npz'
+    loaded_data = np.load(file_path)
+
+    n = loaded_data['n.npy']
+    T = loaded_data['T.npy']
+    Gref = loaded_data['Gref.npy']
+    # Access individual arrays within the .npz file
+    data = loaded_data['X_np.npy']
+    cols = ['Var$_1$', 'Var$_2$', 'Var$_3$', 'Var$_4$', 'Var$_5$', 'Var$_6$', 'Var$_7$', 'Var$_8$', 'Var$_9$', 'Var$_10$']
+    data = data.transpose()
+    df = pd.DataFrame(data[:, 5:15], columns=cols)
+    df = df.apply(normalize)
+    return df
