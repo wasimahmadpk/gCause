@@ -32,7 +32,7 @@ mx.random.seed(2)
 # Parameters
 # pars = parameters.get_geo_params()
 # pars = parameters.get_syn_params()
-pars = parameters.get_nino_params()
+pars = parameters.get_netsim_params()
 dim = pars['dim']
 freq = pars["freq"]
 epochs = pars["epochs"]
@@ -54,7 +54,7 @@ groups = pars["groups"]
 # df = prep.load_geo_data()
 
 # df = prep.load_syn_data()
-df = prep.load_nino_data()
+df = prep.load_netsim_data()
 df = df.iloc[:, :]
 print(df.corr())
 
@@ -105,7 +105,7 @@ estimator = DeepAREstimator(
 
 # load model if not already trained
 # model_path = "../models/trained_model_syn4_0.8.sav"
-model_path = "../models/EI-Nino3232.sav"
+model_path = "../models/netsim3_4.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():
