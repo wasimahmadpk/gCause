@@ -28,7 +28,7 @@ Our NULL hypothesis is that variable <img src="https://render.githubusercontent.
 else the alternate hypothesis <img src="https://render.githubusercontent.com/render/math?math=H_1">: <img src="https://render.githubusercontent.com/render/math?math=R_i"> != <img src="https://render.githubusercontent.com/render/math?math=R_k">  is accepted.
 
 <p align="center">
-<img src="res/causality_demo.png" width=100% />
+<img src="res/gcause.png" width=100% />
 </p>
 
 ## Data
