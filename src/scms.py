@@ -38,7 +38,7 @@ class SCMS:
                 self.list_links.append(links)
         self.num_links = len(self.list_links)
                 
-        self.node_labels = [f'Z{l+1}'for l in range(num_nodes)]
+        self.node_labels = [f'Y$_{l+1}$'for l in range(num_nodes)]
         self.generate_ts_DAG()
 
 
@@ -138,10 +138,12 @@ class SCMS:
 
         fig = plt.figure()
         df, links = self.df_timeseries()
-        for i in range(len(self.node_labels)):
+        subplots = 5 if len(self.node_labels)>5 else len(self.node_labels) 
+        for i in range(subplots):
             ax = fig.add_subplot(int(f'{len(self.node_labels)}1{i+1}'))
-            ax.plot(df[df.columns[i]][100:1000].values)
-            ax.set_ylabel(f'{df.columns[i]}')
+            ax.plot(df[df.columns[i]][100:200].values)
+            ax.set_ylabel(f'{df.columns[i]}', fontsize=20)
+        plt.tight_layout()
         plt.show()
 
     def draw_DAG(self):
@@ -150,8 +152,9 @@ class SCMS:
         G = nx.DiGraph()
 
         # Add nodes
+        plt.figure(figsize=(5, 5))
         for n in range(self.num_nodes):
-            G.add_node(n+1, label=f'Z{n+1}')
+            G.add_node(n+1, label=f'$Y_{n+1}$')
 
         for e in range(len(self.list_links)):
             G.add_edge(self.list_links[e][0]+1, self.list_links[e][1]+1)
@@ -159,9 +162,10 @@ class SCMS:
        # Draw the directed graph with labels
         pos = nx.circular_layout(G)
         labels = nx.get_node_attributes(G, 'label')  # Get labels from node attributes
-        nx.draw(G, pos, with_labels=True, labels=labels, node_size=1000, node_color='lightblue', font_size=12, font_color='black', font_weight='bold', edge_color='gray', width=2.0, arrows=True)
+        nx.draw(G, pos, with_labels=True, labels=labels, node_size=2500, node_color='lightblue', font_size=20, font_color='black', font_weight='bold', edge_color='gray', width=2.50, arrows=True)
 
         # Display the directed graph with labels
+        plt.tight_layout()
         plt.show()
 
 
