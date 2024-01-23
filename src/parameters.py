@@ -212,7 +212,7 @@ def get_nino_params():
 def get_geo_params():
 
     params = {
-        'epochs': 150,    # 125
+        'epochs': 80,    # 125
         'pred_len': 15,    # 15
         'train_len': 666,  # 1500
         'num_layers': 5,    # 5
@@ -222,6 +222,41 @@ def get_geo_params():
         'win_size': 1,
         'slidingwin_size': 100,
         'dim': 5,
+        'batch_size': 32,
+        'prior_graph': np.array([[1, 0, 0, 0, 1],
+                                 [0, 1, 0, 0, 1],
+                                 [0, 0, 1, 0, 1],
+                                 [0, 0, 0, 1, 1],
+                                 [0, 0, 0, 0, 1]]),
+        'true_graph': [1, 0, 0, 0, 1,
+                       0, 1, 0, 0, 1,
+                       0, 0, 1, 0, 1,
+                       0, 0, 0, 1, 1,
+                       0, 0, 0, 0, 1],
+        'freq': 'H',
+        'plot_path': "/home/ahmad/Projects/gCause/plots/"
+    }
+    return params
+
+
+def get_geo_params_gc():
+
+    params = {
+        
+        'group_num': 3,    
+        'groups': {'g1': [0, 2], 'g2': [2, 4], 'g3': [4, 6]},    # 'g1': [0, 33], 'g2': [33, 69]
+        'groups_size': {'g1':[2], 'g2':[2], 'g3':[2]},
+        'epochs': 150,
+        'pred_len': 15,
+        'train_len': 666,
+        'num_layers': 5,
+        'num_cells': 50,
+        'num_samples': 10,
+        'dropout_rate': 0.1,
+        'win_size': 1,
+        'slidingwin_size': 100,
+        'step_size': 10,
+        'dim': 6,
         'batch_size': 32,
         'prior_graph': np.array([[1, 0, 0, 0, 1],
                                  [0, 1, 0, 0, 1],

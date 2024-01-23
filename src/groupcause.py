@@ -22,7 +22,7 @@ from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_
 np.random.seed(1)
 mx.random.seed(2)
 
-pars = parameters.get_netsim_params()
+pars = parameters.get_geo_params_gc()
 num_samples = pars["num_samples"]
 step = pars["step_size"]
 training_length = pars["train_len"]
