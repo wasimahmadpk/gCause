@@ -331,7 +331,7 @@ def groupCause(odata, model, params):
                 elif c2 > c1:
                     print(f'gCDMI: Group {n+1} causes Group {m+1}')
                 elif int(c1) & int(c2) == 0:
-                    print('gCDMI: No causal connection found')
+                    print(f'gCDMI: No causal connection found in Group {m+1} and Group {n+1}')
                 elif c1 == c2:
                     print('gCDMI: Causal direction can\'t be inferred')
 
