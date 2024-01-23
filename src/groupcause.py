@@ -320,16 +320,20 @@ def groupCause(odata, model, params):
     print("Discovered Causal Graphs: ", conf_mat)
 
     print(f'Causal direction: {causal_direction}')
-    c1, c2 = causal_criteria(causal_direction[0], causal_direction[1])
 
-    if c1 > c2:
-        print('gCDMI: Group 1 causes Group 2')
-    elif c2 > c1:
-        print('gCDMI: Group 2 causes Group 1')
-    elif int(c1) & int(c2) == 0:
-        print('gCDMI: No causal connection found')
-    elif c1 == c2:
-        print('gCDMI: Causal direction can\'t be inferred')
+    for m in range(group_num):
+        for n in range(group_num):
+            if m < n:
+                c1, c2 = causal_criteria(causal_direction[m], causal_direction[n])
+
+                if c1 > c2:
+                    print(f'gCDMI: Group {m+1} causes Group {n+1}')
+                elif c2 > c1:
+                    print(f'gCDMI: Group {n+1} causes Group {m+1}')
+                elif int(c1) & int(c2) == 0:
+                    print('gCDMI: No causal connection found')
+                elif c1 == c2:
+                    print('gCDMI: Causal direction can\'t be inferred')
 
 
 
