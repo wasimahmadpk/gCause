@@ -2,16 +2,14 @@
 
 This repository contains code for our work on estimating causal influence among subsystems.
 
-- The work is an extention to our method (CDMI) that can be cited using below citation information.
+- The work on causal inference within groups can be cited using below citation information.
 
 ```
-@inproceedings{
-ahmad2022causal,
-title={Causal Discovery using Model Invariance through Knockoff Interventions},
-author={Wasim Ahmad and Maha Shadaydeh and Joachim Denzler},
-booktitle={ICML 2022: Workshop on Spurious Correlations, Invariance and Stability},
-year={2022},
-url={https://openreview.net/forum?id=OcNeMVbIdCF}
+@article{ahmad2024deep,
+  title={Deep Learning-based Group Causal Inference in Multivariate Time-series},
+  author={Ahmad, Wasim and Shadaydeh, Maha and Denzler, Joachim},
+  journal={arXiv preprint arXiv:2401.08386},
+  year={2024}
 }
 ```
 
