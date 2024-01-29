@@ -31,7 +31,7 @@ mx.random.seed(2)
 
 # Parameters
 
-pars = parameters.get_geo_params_gc()
+pars = parameters.get_flux_params()
 dim = pars['dim']
 freq = pars["freq"]
 epochs = pars["epochs"]
@@ -52,8 +52,7 @@ groups = pars["groups"]
 # df = prep.load_climate_data()
 # df = prep.load_geo_data()
 
-df = prep.load_geo_data()
-df = df.iloc[:, :]
+df = prep.load_flux_data()
 print(df.corr())
 
 # # Calculate the cross-correlation for lags ranging from -10 to 10 months difference
@@ -102,7 +101,7 @@ estimator = DeepAREstimator(
 )
 
 # load model if not already trained
-model_path = "../models/geo_gc1.sav"
+model_path = "../models/flux_model_jan-mar_0.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():

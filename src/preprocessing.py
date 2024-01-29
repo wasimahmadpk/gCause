@@ -320,29 +320,19 @@ def load_flux_data():
     # DE-Hai : FLX_DE-Hai_FLUXNET2015_SUBSET_2000-2012_1-4/FLX_DE-Hai_FLUXNET2015_SUBSET_HH_2000-2012_1-4.csv
     # IT-MBo : FLX_IT-MBo_FLUXNET2015_SUBSET_2003-2013_1-4/FLX_IT-MBo_FLUXNET2015_SUBSET_HH_2003-2013_1-4.csv
     fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/FLX_DE-Hai_FLUXNET2015_SUBSET_2000-2012_1-4/FLX_DE-Hai_FLUXNET2015_SUBSET_HH_2000-2012_1-4.csv") 
-    org = fluxnet['SW_IN_F']
-    otemp = fluxnet['TA_F']
-    ovpd = fluxnet['VPD_F']
+    rg = fluxnet['SW_IN_F']
+    temp = fluxnet['TA_F']
+    vpd = fluxnet['VPD_F']
     # oppt = fluxnet['P_F']
     # nee = fluxnet['NEE_VUT_50']
-    ogpp = fluxnet['GPP_NT_VUT_50']
-    oreco = fluxnet['RECO_NT_VUT_50']
-    
-    # ************* LOad FLUXNET2015 data ***************
-    rg = normalize(down_sample(org, win_size))
-    temp = normalize(down_sample(otemp, win_size))
-    # gpp = normalize(down_sample(nee, win_size, partition='gpp'))
-    # reco = normalize(down_sample(nee, win_size, partition='reco'))
-    gpp = normalize(down_sample(ogpp, win_size))
-    reco = normalize(down_sample(oreco, win_size))
-    # ppt = normalize(down_sample(oppt, win_size))
-    vpd = normalize(down_sample(ovpd, win_size))
-    # swc = normalize(down_sample(oswc, win_size))
-    # heat = normalize(down_sample(oheat, win_size))
+    gpp = fluxnet['GPP_NT_VUT_50']
+    reco = fluxnet['RECO_NT_VUT_50']
 
-    data = {'Rg': rg[7000:12000], 'T': temp[7000:12000], 'GPP': gpp[7000:12000], 'Reco': reco[7000:12000]}
+    start, end = 0, 90*24
+
+    data = {'Rg': rg[start: end], 'T': temp[start: end], 'GPP': gpp[start: end], 'Reco': reco[start: end]}
     df = pd.DataFrame(data, columns=['Rg', 'T', 'GPP', 'Reco'])
-    # df = df.apply(normalize)
+    df = df.apply(normalize)
     return df
 
 # Load synthetically generated time series

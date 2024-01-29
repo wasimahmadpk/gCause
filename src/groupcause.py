@@ -22,7 +22,7 @@ from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_
 np.random.seed(1)
 mx.random.seed(2)
 
-pars = parameters.get_geo_params_gc()
+pars = parameters.get_flux_params()
 num_samples = pars["num_samples"]
 step = pars["step_size"]
 training_length = pars["train_len"]
@@ -122,13 +122,13 @@ def groupCause(odata, model, params):
                         diff = []
                         start_batch = 10
 
-                        for iter in range(13):  # 30
+                        for iter in range(15):  # 20 
                             
                             mselist_batch = []
                             mselistint_batch = []
                             mapelist_batch = []
                             mapelistint_batch = []
-                            for r in range(1):
+                            for r in range(2):
 
                                 test_data = odata[: , start_batch: start_batch + training_length + prediction_length].copy()
                                 test_ds = ListDataset(
@@ -182,7 +182,7 @@ def groupCause(odata, model, params):
                                 mselistint_batch.append(mseint)
                                 mapelistint_batch.append(mapeint)
 
-                            start_batch = start_batch +3                           # Step size for sliding window # 10
+                            start_batch = start_batch + 20                           # Step size for sliding window # 15
                             mselist.append(np.mean(mselist_batch))                  # mselist = mselist_batch
                             mapelist.append(np.mean(mapelist_batch))                # mapelist = mapelist_batch
                             mselistint.append(np.mean(mselistint_batch))            # mselistint = mselistint_batch
