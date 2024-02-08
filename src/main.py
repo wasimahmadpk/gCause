@@ -63,6 +63,7 @@ print(df.corr())
 # df = data.loc[:1000].copy()
 # print(df.head())
 print(df.describe())
+print(df.shape)
 
 original_data = []
 # dim = len(df.columns)
@@ -101,7 +102,8 @@ estimator = DeepAREstimator(
 )
 
 # load model if not already trained
-model_path = "../models/flux_model_jan-mar_0.sav"
+# model_path = "../models/flux_model_jan-mar_0.sav"
+model_path = "../models/US-Ton_regime_6.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():

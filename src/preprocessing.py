@@ -5,6 +5,7 @@ import random
 import pathlib
 import parameters
 import numpy as np
+import scipy as sci
 from os import path
 import pandas as pd
 from math import sqrt
@@ -315,11 +316,12 @@ def load_nino_data():
 def load_flux_data():
 
     # "Load fluxnet 2015 data for various sites"
-    # US-Ton : FLX_US-Ton_FLUXNET2015_SUBSET_2001-2014_1-4/FLX_US-Ton_FLUXNET2015_SUBSET_HH_2001-2014_1-4.csv
-    # FR-Pue : FLX_FR-Pue_FLUXNET2015_SUBSET_2000-2014_2-4/FLX_FR-Pue_FLUXNET2015_SUBSET_HH_2000-2014_2-4.csv
-    # DE-Hai : FLX_DE-Hai_FLUXNET2015_SUBSET_2000-2012_1-4/FLX_DE-Hai_FLUXNET2015_SUBSET_HH_2000-2012_1-4.csv
-    # IT-MBo : FLX_IT-MBo_FLUXNET2015_SUBSET_2003-2013_1-4/FLX_IT-MBo_FLUXNET2015_SUBSET_HH_2003-2013_1-4.csv
-    fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/FLX_DE-Hai_FLUXNET2015_SUBSET_2000-2012_1-4/FLX_DE-Hai_FLUXNET2015_SUBSET_HH_2000-2012_1-4.csv") 
+    USTon = 'FLX_US-Ton_FLUXNET2015_SUBSET_2001-2014_1-4/FLX_US-Ton_FLUXNET2015_SUBSET_DD_2001-2014_1-4.csv'
+    FRPue = 'FLX_FR-Pue_FLUXNET2015_SUBSET_2000-2014_2-4/FLX_FR-Pue_FLUXNET2015_SUBSET_DD_2000-2014_2-4.csv'
+    DEHai = 'FLX_DE-Hai_FLUXNET2015_SUBSET_2000-2012_1-4/FLX_DE-Hai_FLUXNET2015_SUBSET_DD_2000-2012_1-4.csv'
+    ITMBo = 'FLX_IT-MBo_FLUXNET2015_SUBSET_2003-2013_1-4/FLX_IT-MBo_FLUXNET2015_SUBSET_DD_2003-2013_1-4.csv'
+    
+    fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/" + USTon)
     rg = fluxnet['SW_IN_F']
     temp = fluxnet['TA_F']
     vpd = fluxnet['VPD_F']
@@ -327,8 +329,8 @@ def load_flux_data():
     # nee = fluxnet['NEE_VUT_50']
     gpp = fluxnet['GPP_NT_VUT_50']
     reco = fluxnet['RECO_NT_VUT_50']
-
-    start, end = 0, 90*24
+    offset = 365*7
+    start, end = offset + 300, offset + 450
 
     data = {'Rg': rg[start: end], 'T': temp[start: end], 'GPP': gpp[start: end], 'Reco': reco[start: end]}
     df = pd.DataFrame(data, columns=['Rg', 'T', 'GPP', 'Reco'])
@@ -361,8 +363,19 @@ def load_netsim_data():
     Gref = loaded_data['Gref.npy']
     # Access individual arrays within the .npz file
     data = loaded_data['X_np.npy']
-    cols = ['Var$_1$', 'Var$_2$', 'Var$_3$', 'Var$_4$', 'Var$_5$', 'Var$_6$', 'Var$_7$', 'Var$_8$', 'Var$_9$', 'Var$_10$']
+    cols = ['Var$_1$', 'Var$_2$', 'Var$_3$', 'Var$_4$', 'Var$_5$', 'Var$_6$', 'Var$_7$', 'Var$_8$', 'Var$_9$', 'Var$_10$', 'Var$_11$', 'Var$_12$', 'Var$_13$', 'Var$_14$', 'Var$_15$']
     data = data.transpose()
-    df = pd.DataFrame(data[:, 5:15], columns=cols)
+    df = pd.DataFrame(data[:, 0:15], columns=cols)
     df = df.apply(normalize)
+    return df
+
+def load_sims_data():
+    # Load .mat file
+    mat_file_path = r'../datasets/sims/sim4.mat'
+    mat_data = sci.io.loadmat(mat_file_path)
+    dim = 25
+    cols = [f'Var$_{i}$' for i in range(1, dim+1)]
+    df = pd.DataFrame(data= mat_data['ts'][: 600, :dim], columns=cols)
+    df = df.apply(normalize)
+
     return df

@@ -146,18 +146,18 @@ def get_flux_params():
         'group_num': 2,    
         'groups': {'g1': [0, 2], 'g2': [2, 4]},
         'groups_size': {'g1':[2], 'g2':[2]},
-        'epochs': 66,
-        'pred_len': 12,
-        'train_len': 1600,
-        'num_layers': 4,
-        'num_cells': 40,
+        'epochs': 100,
+        'pred_len': 7,
+        'train_len': 70,
+        'num_layers': 5,
+        'num_cells': 50,
         'num_samples': 10,
         'dropout_rate': 0.1,
         'win_size': 1,
         'slidingwin_size': 100,
         'step_size': 10,
         'dim': 4,
-        'batch_size': 32,
+        'batch_size': 24,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],
                                  [0, 0, 1, 1, 0],
@@ -309,10 +309,10 @@ def get_netsim_params():
 
     params = {
 
-        'group_num': 2,    
-        'groups': {'g1': [0, 5], 'g2': [5, 10]},    # 'g1': [0, 33], 'g2': [33, 69]
-        'groups_size': {'g1':[5], 'g2':[5]},
-        'epochs': 50,
+        'group_num': 3,    
+        'groups': {'g1': [0, 5], 'g2': [5, 10], 'g3': [10, 15]},    # 'g1': [0, 33], 'g2': [33, 69]
+        'groups_size': {'g1':[5], 'g2':[5], 'g3':[5]},
+        'epochs': 75,
         'pred_len': 5,
         'train_len': 145,
         'num_layers': 5,
@@ -322,7 +322,41 @@ def get_netsim_params():
         'win_size': 1,
         'slidingwin_size': 100,
         'step_size': 10,
-        'dim': 10,
+        'dim': 15,
+        'batch_size': 32,
+        'prior_graph': np.array([[1, 1, 1, 0, 1],
+                                 [0, 1, 0, 0, 0],
+                                 [0, 0, 1, 1, 0],
+                                 [0, 0, 0, 1, 1],
+                                 [0, 0, 0, 0, 1]]),
+        'true_graph': [1, 1, 1, 0, 1,
+                       0, 1, 0, 0, 0,
+                       0, 0, 1, 1, 0,
+                       0, 0, 0, 1, 1,
+                       0, 0, 0, 0, 1],
+        'freq': '30min',
+        'plot_path': "/home/ahmad/Projects/gCause/plots/"
+    }
+    return params
+
+def get_sims_params():
+
+    params = {
+
+        'group_num': 5,    
+        'groups': {'g1': [0, 5], 'g2': [5, 10], 'g3': [10, 15], 'g4': [15, 20], 'g5': [20, 25]},    # 'g1': [0, 33], 'g2': [33, 69]
+        'groups_size': {'g1':[5], 'g2':[5], 'g3':[5], 'g4':[5], 'g5':[5]},
+        'epochs': 75,
+        'pred_len': 15,
+        'train_len': 333,
+        'num_layers': 7,
+        'num_cells': 60,
+        'num_samples': 10,
+        'dropout_rate': 0.1,
+        'win_size': 1,
+        'slidingwin_size': 100,
+        'step_size': 10,
+        'dim': 25,
         'batch_size': 32,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],

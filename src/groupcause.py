@@ -122,7 +122,7 @@ def groupCause(odata, model, params):
                         diff = []
                         start_batch = 10
 
-                        for iter in range(15):  # 20 
+                        for iter in range(22):  # 18
                             
                             mselist_batch = []
                             mselistint_batch = []
@@ -182,7 +182,7 @@ def groupCause(odata, model, params):
                                 mselistint_batch.append(mseint)
                                 mapelistint_batch.append(mapeint)
 
-                            start_batch = start_batch + 20                           # Step size for sliding window # 15
+                            start_batch = start_batch + 2                           # Step size for sliding window # 15
                             mselist.append(np.mean(mselist_batch))                  # mselist = mselist_batch
                             mapelist.append(np.mean(mapelist_batch))                # mapelist = mapelist_batch
                             mselistint.append(np.mean(mselistint_batch))            # mselistint = mselistint_batch
@@ -212,11 +212,6 @@ def groupCause(odata, model, params):
                     for z in range(len(heuristic_itn_types)):
 
                         print("Intervention: " + heuristic_itn_types[z])
-                        
-                        # print(f"Mean: {np.mean(mapelol[z])}, Mean Intervention: {np.mean(mapelolint[z])}")
-                        # print(f"Variance: {np.var(mapelol[z])}, Variance Intervention: {np.var(mapelolint[z])}")
-                        # t, p = ttest_ind(np.array(mapelolint[z]), np.array(mapelol[z]), equal_var=True)
-                        
                         t, p = ks_2samp(np.array(mapelol[z]), np.array(mapelolint[z]))
                         # t, p = kstest(np.array(mapelolint[z]), np.array(mapelol[z]))
                         pvals.append(1-p)
@@ -264,7 +259,6 @@ def groupCause(odata, model, params):
                     
                     for q in range(1, end_effect-start_effect):
                     
-                    # *****************************************************
                         mape_df = pd.DataFrame(data=np.transpose(mapeslol), columns=columns[start_effect: end_effect])
                         mape_int_df = pd.DataFrame(data=np.transpose(mapeslolint), columns=columns[start_effect: end_effect])
 
@@ -297,12 +291,9 @@ def groupCause(odata, model, params):
                         filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d.pdf")
                         plt.savefig(filename)
                         # plt.show()
-                        # *****************************************************
 
-    
         causal_direction.append(cause_list)
     
-
     pval_indist.append(pvi)
     pval_uniform.append(pvu)
 
