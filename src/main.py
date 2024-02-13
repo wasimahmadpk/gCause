@@ -103,7 +103,7 @@ estimator = DeepAREstimator(
 
 # load model if not already trained
 # model_path = "../models/flux_model_jan-mar_0.sav"
-model_path = "../models/US-Ton_regime_6.sav"
+model_path = "../models/FR_Pue_2002_2.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():

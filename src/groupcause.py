@@ -122,7 +122,7 @@ def groupCause(odata, model, params):
                         diff = []
                         start_batch = 10
 
-                        for iter in range(22):  # 18
+                        for iter in range(20):  # 18
                             
                             mselist_batch = []
                             mselistint_batch = []
@@ -182,7 +182,7 @@ def groupCause(odata, model, params):
                                 mselistint_batch.append(mseint)
                                 mapelistint_batch.append(mapeint)
 
-                            start_batch = start_batch + 2                           # Step size for sliding window # 15
+                            start_batch = start_batch + 10                          # Step size for sliding window # 15
                             mselist.append(np.mean(mselist_batch))                  # mselist = mselist_batch
                             mapelist.append(np.mean(mapelist_batch))                # mapelist = mapelist_batch
                             mselistint.append(np.mean(mselistint_batch))            # mselistint = mselistint_batch

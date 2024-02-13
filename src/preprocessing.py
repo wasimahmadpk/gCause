@@ -18,7 +18,6 @@ from sklearn.feature_selection import f_regression, mutual_info_regression
 import matplotlib
 import netCDF4
 from netCDF4 import Dataset,num2date
-import datetime
 from matplotlib import pyplot as plt
 import xarray as xr
 from tigramite import data_processing as pp
@@ -31,6 +30,23 @@ win_size = pars.get("win_size")
 training_length = pars.get("train_len")
 prediction_length = pars.get("pred_len")
 
+# Function to convert timestamp to formatted date
+def convert_timestamp(timestamp):
+    # Assuming the timestamp format is 'YYMMDD'
+    timestamp = str(timestamp)
+    year = int(timestamp[:4])
+    month = int(timestamp[4:6])
+    day = int(timestamp[6:8])
+    hour = int(timestamp[8:10])
+    min = int(timestamp[10:12])
+
+    # Convert to datetime object
+    date_obj = datetime(year, month, day, hour, min)
+
+    # Format the datetime object as 'DD-Mon-YYYY'
+    formatted_date = date_obj.strftime('%d-%b-%Y %H:%M')
+
+    return formatted_date
 
 def get_shuffled_ts(SAMPLE_RATE, DURATION, root):
     # Number of samples in normalized_tone
@@ -316,25 +332,28 @@ def load_nino_data():
 def load_flux_data():
 
     # "Load fluxnet 2015 data for various sites"
-    USTon = 'FLX_US-Ton_FLUXNET2015_SUBSET_2001-2014_1-4/FLX_US-Ton_FLUXNET2015_SUBSET_DD_2001-2014_1-4.csv'
-    FRPue = 'FLX_FR-Pue_FLUXNET2015_SUBSET_2000-2014_2-4/FLX_FR-Pue_FLUXNET2015_SUBSET_DD_2000-2014_2-4.csv'
-    DEHai = 'FLX_DE-Hai_FLUXNET2015_SUBSET_2000-2012_1-4/FLX_DE-Hai_FLUXNET2015_SUBSET_DD_2000-2012_1-4.csv'
-    ITMBo = 'FLX_IT-MBo_FLUXNET2015_SUBSET_2003-2013_1-4/FLX_IT-MBo_FLUXNET2015_SUBSET_DD_2003-2013_1-4.csv'
+    USTon = 'FLX_US-Ton_FLUXNET2015_SUBSET_2001-2014_1-4/FLX_US-Ton_FLUXNET2015_SUBSET_HH_2001-2014_1-4.csv'
+    FRPue = 'FLX_FR-Pue_FLUXNET2015_SUBSET_2000-2014_2-4/FLX_FR-Pue_FLUXNET2015_SUBSET_HH_2000-2014_2-4.csv'
+    DEHai = 'FLX_DE-Hai_FLUXNET2015_SUBSET_2000-2012_1-4/FLX_DE-Hai_FLUXNET2015_SUBSET_HH_2000-2012_1-4.csv'
+    ITMBo = 'FLX_IT-MBo_FLUXNET2015_SUBSET_2003-2013_1-4/FLX_IT-MBo_FLUXNET2015_SUBSET_HH_2003-2013_1-4.csv'
     
-    fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/" + USTon)
-    rg = fluxnet['SW_IN_F']
-    temp = fluxnet['TA_F']
-    vpd = fluxnet['VPD_F']
-    # oppt = fluxnet['P_F']
-    # nee = fluxnet['NEE_VUT_50']
-    gpp = fluxnet['GPP_NT_VUT_50']
-    reco = fluxnet['RECO_NT_VUT_50']
-    offset = 365*7
-    start, end = offset + 300, offset + 450
+    fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/" + FRPue)
+    print(fluxnet.head())
+    # ----------------------------------------------
+    start_date = '15-Jun-2002 00:00'
+    end_date ='15-Aug-2002 23:30'
+    col_list = ['TIMESTAMP_START', 'SW_IN_F', 'TA_F', 'GPP_NT_VUT_50', 'RECO_NT_VUT_50']
+    # Convert the 'date' column to datetime objects
+    fluxnet['TIMESTAMP_START'] = fluxnet['TIMESTAMP_START'].apply(convert_timestamp)
 
-    data = {'Rg': rg[start: end], 'T': temp[start: end], 'GPP': gpp[start: end], 'Reco': reco[start: end]}
-    df = pd.DataFrame(data, columns=['Rg', 'T', 'GPP', 'Reco'])
-    df = df.apply(normalize)
+    fluxnet['TIMESTAMP_START'] = pd.to_datetime(fluxnet['TIMESTAMP_START'])
+    fluxnet = fluxnet[(fluxnet['TIMESTAMP_START'] >= start_date) & (fluxnet['TIMESTAMP_START'] <= end_date)][col_list]
+    fluxnet.set_index('TIMESTAMP_START', inplace=True)
+
+    # ----------------------------------------------
+    # data = {'Rg': rg[start: end], 'T': temp[start: end], 'GPP': gpp[start: end], 'Reco': reco[start: end]}
+    # df = pd.DataFrame(data, columns=['Rg', 'T', 'GPP', 'Reco'])
+    df = fluxnet.apply(normalize)
     return df
 
 # Load synthetically generated time series
