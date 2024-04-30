@@ -1,4 +1,5 @@
 import io
+import re
 import sys
 import time
 import pickle
@@ -38,6 +39,13 @@ group_num = pars['group_num']
 groups = pars['groups']
 
 
+
+
+def convert_variable_name(variable_name):
+    # Use regular expression to find and replace digits with subscript format
+    return re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', variable_name)
+
+
 def causal_criteria(list1, list2):
 
     n1, n2 = np.count_nonzero(list1), np.count_nonzero(list2)
@@ -70,7 +78,6 @@ def groupCause(odata, knockoffs, model, params):
     # now restore stdout function
     # sys.stdout = sys.__stdout__
   
-
     for g in range(group_num):
         cause_list = []
         for h in range(group_num):
@@ -163,9 +170,9 @@ def groupCause(odata, knockoffs, model, params):
                                                                     prediction_length, iter, True, m)
 
                                 if m == 0:
-                                     # create a text trap and redirect stdout
-                                    text_trap = io.StringIO()
-                                    sys.stdout = text_trap
+                                    #  # create a text trap and redirect stdout
+                                    # text_trap = io.StringIO()
+                                    # sys.stdout = text_trap
                                     # Generate multiple version Knockoffs
                                     data_actual = np.array(odata[: , start_batch: start_batch + training_length + prediction_length]).transpose()
                                     obj = Knockoffs()
@@ -174,8 +181,8 @@ def groupCause(odata, knockoffs, model, params):
                                     knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
                                     intervene = knockoff_samples
 
-                                    # now restore stdout function
-                                    sys.stdout = sys.__stdout__
+                                    # # now restore stdout function
+                                    # sys.stdout = sys.__stdout__
 
                                 # np.random.shuffle(intervene)
                                 mselist_batch.append(mse)
@@ -199,7 +206,6 @@ def groupCause(odata, knockoffs, model, params):
                     var_list.append(np.var(mapelolint[0]))
                     # print(f"MSE(Mean): {list(np.mean(mselol, axis=0))}")
                     if len(columns) > 0:
-
                         print(f"Causal Link: {cause_group} --------------> {effect_group} ({columns[j]})")
                         print("----------*****-----------------------*****------------")
                         fnamehist = plot_path + "{columns[i]}_{columns[j]}:hist"
@@ -217,12 +223,12 @@ def groupCause(odata, knockoffs, model, params):
                         # t, p = kstest(np.array(mapelolint[z]), np.array(mapelol[z]))
                         pvals.append(1-p)
                         
-                        print(f'Test statistic: {t}, p-value: {p}')
+                        print(f'Test statistic: {round(t, 2)}, p-value: {round(p, 2)}')
                         if p < 0.05:
-                            print("Null hypothesis is rejected")
+                            print("\033[92mNull hypothesis is rejected\033[0m")
                             causal_decision.append(1)
                         else:
-                            print("Fail to reject null hypothesis")
+                            print("\033[94mFail to reject null hypothesis\033[0m")
                             causal_decision.append(0)
 
                     pvi.append(pvals[0])
@@ -239,7 +245,8 @@ def groupCause(odata, knockoffs, model, params):
                     
                     if len(columns) > 0:
                         # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
-                        ax1.set_ylabel(f"{cause_group} ---> {columns[j]}")
+                        print(f'Cause group: {cause_group} on {columns[j]}')
+                        ax1.set_ylabel(f"{cause_group} ---> {re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])}")
                     else:
                         # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
                         ax1.set_ylabel(f"{cause_group} ---> Z_{j + 1}")
@@ -248,7 +255,7 @@ def groupCause(odata, knockoffs, model, params):
                     ax1.legend()
                     filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[j]}.pdf")
                     plt.savefig(filename)
-                    # plt.show()
+                    plt.show()
                     # plt.close()
 
                     cause_list.append(causal_decision[0])
@@ -275,7 +282,7 @@ def groupCause(odata, knockoffs, model, params):
 
                         if len(columns) > 0:
                             # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
-                            ax1.set_ylabel(f"{cause_group} ---> {columns[q]}")
+                            ax1.set_ylabel(f"{cause_group} ---> {re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[q])}")
                         else:
                             # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
                             ax1.set_ylabel(f"{cause_group} ---> Z_{q + 1}")
@@ -304,7 +311,7 @@ def groupCause(odata, knockoffs, model, params):
 
     pvalues.append(pval_indist)
     pvalues.append(pval_uniform)
-    print("P-Values: ", pvalues)
+    print("p-values: ", pvalues)
 
     conf_mat.append(conf_mat_indist)
     conf_mat.append(conf_mat_uniform)
@@ -314,7 +321,7 @@ def groupCause(odata, knockoffs, model, params):
     print(f'Causal direction: {causal_direction}')
 
     for m in range(group_num):
-        print(f'Group: {m} on group {n}')
+      
         for n in range(group_num):
             if m < n:
                 c1, c2 = causal_criteria(causal_direction[m], causal_direction[n])
@@ -327,7 +334,7 @@ def groupCause(odata, knockoffs, model, params):
                     print(f'gCDMI: No causal connection found in Group {m+1} and Group {n+1}')
                 elif c1 == c2:
                     print('gCDMI: Causal direction can\'t be inferred')
-    
+    print("----------*****-----------------------*****------------")
     end_time = time.time()
 
     return conf_mat, end_time 
