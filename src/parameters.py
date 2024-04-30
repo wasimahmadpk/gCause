@@ -82,8 +82,8 @@ def get_syn_params():
     params = {
 
         'group_num': 2,    
-        'groups': {'g1': [0, 5], 'g2': [5, 10]},
-        'groups_size': {'g1':[5], 'g2':[5]},
+        'groups': {'g1': [0, 2], 'g2': [2, 4]},
+        'groups_size': {'g1':[2], 'g2':[2]},
         'epochs': 75,
         'pred_len': 15,
         'train_len': 666,
@@ -94,7 +94,7 @@ def get_syn_params():
         'win_size': 1,
         'slidingwin_size': 100,
         'step_size': 10,
-        'dim': 10,
+        'dim': 4,
         'batch_size': 32,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],
@@ -107,7 +107,9 @@ def get_syn_params():
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
         'freq': '30min',
-        'plot_path': "/home/ahmad/Projects/gCause/plots/"
+        'plot_path': "/home/ahmad/Projects/gCause/plots/",
+        'model_path': "/home/ahmad/Projects/gCause/models/",
+        'model_name': 'trained_model_syn.sav'
     }
 
     return params
@@ -169,7 +171,9 @@ def get_flux_params():
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
         'freq': '30min',
-        'plot_path': "/home/ahmad/Projects/gCause/plots/"
+        'plot_path': "/home/ahmad/Projects/gCause/plots/",
+        'model_path': "/home/ahmad/Projects/gCause/models/",
+        'model_name': 'trained_model_geotest.sav'
     }
     return params
 

@@ -1,5 +1,6 @@
 import io
 import sys
+import time
 import pickle
 import pathlib
 import parameters
@@ -43,8 +44,9 @@ def causal_criteria(list1, list2):
     c1, c2 = n1/len(list1), n2/len(list2)
     return [c1, c2]
 
-def groupCause(odata, model, params):
-
+def groupCause(odata, knockoffs, model, params):
+    
+    print('Inside gCause')
     filename = pathlib.Path(model)
     if not filename.exists():
         print("Training model....")
@@ -56,18 +58,18 @@ def groupCause(odata, model, params):
     pvalues, pval_indist, pval_uniform = [], [], []
     var_list, causal_decision, indist_cause, uni_cause, group_cause = [], [], [], [], []
 
-    # create a text trap and redirect stdout
-    text_trap = io.StringIO()
-    sys.stdout = text_trap
+    # # create a text trap and redirect stdout
+    # text_trap = io.StringIO()
+    # sys.stdout = text_trap
 
       # Generate Knockoffs
     data_actual = np.array(odata[: , 0: training_length + prediction_length]).transpose()
     obj = Knockoffs()
     n = len(odata[:, 0])
-    knockoffs = obj.Generate_Knockoffs(n, params.get("dim"), data_actual)
+    knockoffs = obj.Generate_Knockoffs(data_actual, params)
 
     # now restore stdout function
-    sys.stdout = sys.__stdout__
+    # sys.stdout = sys.__stdout__
   
 
     for g in range(group_num):
@@ -217,7 +219,7 @@ def groupCause(odata, model, params):
                         pvals.append(1-p)
                         
                         print(f'Test statistic: {t}, p-value: {p}')
-                        if p < 0.10:
+                        if p < 0.05:
                             print("Null hypothesis is rejected")
                             causal_decision.append(1)
                         else:
@@ -325,6 +327,10 @@ def groupCause(odata, model, params):
                     print(f'gCDMI: No causal connection found in Group {m+1} and Group {n+1}')
                 elif c1 == c2:
                     print('gCDMI: Causal direction can\'t be inferred')
+    
+    end_time = time.time()
+
+    return conf_mat, end_time 
 
 
 

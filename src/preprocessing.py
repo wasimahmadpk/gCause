@@ -24,7 +24,7 @@ from tigramite import data_processing as pp
 
 
 np.random.seed(1)
-pars = parameters.get_geo_params()
+pars = parameters.get_flux_params()
 
 win_size = pars.get("win_size")
 training_length = pars.get("train_len")
@@ -338,10 +338,10 @@ def load_flux_data():
     ITMBo = 'FLX_IT-MBo_FLUXNET2015_SUBSET_2003-2013_1-4/FLX_IT-MBo_FLUXNET2015_SUBSET_HH_2003-2013_1-4.csv'
     
     fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/" + FRPue)
-    print(fluxnet.head())
+    # print(fluxnet.head())
     # ----------------------------------------------
-    start_date = '15-Jun-2002 00:00'
-    end_date ='15-Aug-2002 23:30'
+    start_date = '15-Jun-2003 00:00'
+    end_date ='15-Aug-2004 23:30'
     col_list = ['TIMESTAMP_START', 'SW_IN_F', 'TA_F', 'GPP_NT_VUT_50', 'RECO_NT_VUT_50']
     # Convert the 'date' column to datetime objects
     fluxnet['TIMESTAMP_START'] = fluxnet['TIMESTAMP_START'].apply(convert_timestamp)
