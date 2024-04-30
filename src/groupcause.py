@@ -244,9 +244,8 @@ def groupCause(odata, knockoffs, model, params):
                     mapeslolint.append(mapelolint[0])
                     
                     if len(columns) > 0:
-                        # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
-                        print(f'Cause group: {cause_group} on {columns[j]}')
-                        ax1.set_ylabel(f"{cause_group} ---> {re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])}")
+                        effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])
+                        ax1.set_ylabel(f"{cause_group} ---> {effect_var}")
                     else:
                         # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
                         ax1.set_ylabel(f"{cause_group} ---> Z_{j + 1}")
@@ -282,7 +281,8 @@ def groupCause(odata, knockoffs, model, params):
 
                         if len(columns) > 0:
                             # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
-                            ax1.set_ylabel(f"{cause_group} ---> {re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[q])}")
+                            effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[q])
+                            ax1.set_ylabel(f"{cause_group} ---> {effect_var}")
                         else:
                             # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
                             ax1.set_ylabel(f"{cause_group} ---> Z_{q + 1}")
