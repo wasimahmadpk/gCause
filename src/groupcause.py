@@ -23,7 +23,7 @@ from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_
 np.random.seed(1)
 mx.random.seed(2)
 
-pars = parameters.get_flux_params()
+pars = parameters.get_syn_params()
 num_samples = pars["num_samples"]
 step = pars["step_size"]
 training_length = pars["train_len"]
@@ -46,7 +46,6 @@ def causal_criteria(list1, list2):
 
 def groupCause(odata, knockoffs, model, params):
     
-    print('Inside gCause')
     filename = pathlib.Path(model)
     if not filename.exists():
         print("Training model....")
