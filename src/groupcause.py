@@ -314,6 +314,7 @@ def groupCause(odata, knockoffs, model, params):
     print(f'Causal direction: {causal_direction}')
 
     for m in range(group_num):
+        print(f'Group: {m} on group {n}')
         for n in range(group_num):
             if m < n:
                 c1, c2 = causal_criteria(causal_direction[m], causal_direction[n])
