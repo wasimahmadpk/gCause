@@ -237,8 +237,12 @@ def groupCause(odata, knockoffs, model, params):
                     # plot residuals distribution
                     fig = plt.figure()
                     ax1 = fig.add_subplot(111)
-                    sns.distplot(mapelol[0], color='red', label='Actual')
-                    sns.distplot(mapelolint[0], color='green', label='Counterfactual')
+
+                    # Create the KDE plot
+                    sns.kdeplot(mapelol[0], shade=True, color="g", label="Actual")
+                    sns.kdeplot(mapelolint[0], shade=True, color="y", label="Counterfactual")
+                    # sns.distplot(mapelol[0], color='red', label='Actual')
+                    # sns.distplot(mapelolint[0], color='green', label='Counterfactual')
                     
                     mapeslol.append(mapelol[0])
                     mapeslolint.append(mapelolint[0])
@@ -274,10 +278,10 @@ def groupCause(odata, knockoffs, model, params):
                         ax2 = fig.add_subplot(111)
 
                         # Plot the first bivariate distribution with transparency
-                        sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Blues', alpha=0.80, fill=True, levels=5, color='blue', label='Actual') #fill= True, cmap="Blues", alpha=0.5
+                        sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Greens', alpha=0.80, fill=True, levels=5, color='green', label='Actual') #fill= True, cmap="Blues", alpha=0.5
 
                         # Plot the second bivariate distribution on top with transparency
-                        sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Reds', alpha=0.55, fill=True, levels=5, color='red', label='Counterfactual') # fill=True, cmap="Reds", fill=True, cmap="Reds",
+                        sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Oranges', alpha=0.55, fill=True, levels=5, color='orange', label='Counterfactual') # fill=True, cmap="Reds", fill=True, cmap="Reds",
 
                         if len(columns) > 0:
                             # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
@@ -292,8 +296,8 @@ def groupCause(odata, knockoffs, model, params):
 
                         # Add a custom legend
                         legend_elements = [
-                        Patch(facecolor=plt.cm.Blues(100), alpha=0.70, edgecolor='k', label='Actual'),
-                        Patch(facecolor=plt.cm.Reds(100), alpha=0.85, edgecolor='k', label='Counterfactual')
+                        Patch(facecolor=plt.cm.Greens(100), alpha=0.70, edgecolor='g', label='Actual'),
+                        Patch(facecolor=plt.cm.Oranges(100), alpha=0.85, edgecolor='o', label='Counterfactual')
                         ]
                         ax2.legend(handles=legend_elements)
                         filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d.pdf")
