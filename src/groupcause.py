@@ -297,7 +297,7 @@ def groupCause(odata, knockoffs, model, params):
                         # Add a custom legend
                         legend_elements = [
                         Patch(facecolor=plt.cm.Greens(100), alpha=0.70, edgecolor='g', label='Actual'),
-                        Patch(facecolor=plt.cm.Oranges(100), alpha=0.85, edgecolor='o', label='Counterfactual')
+                        Patch(facecolor=plt.cm.Oranges(100), alpha=0.85, edgecolor='orange', label='Counterfactual')
                         ]
                         ax2.legend(handles=legend_elements)
                         filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d.pdf")
