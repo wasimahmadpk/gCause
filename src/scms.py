@@ -35,12 +35,14 @@ class StructuralCausalModel:
         # Randomly assign causal connections based on interaction density
         for i in range(num_nodes):
             # Ensure at least one parent for each node
-            num_parents = min(i, max(1, np.random.binomial(num_nodes-1, interaction_density)))
+            num_parents = min(i, max(1, int(np.random.binomial(num_nodes-1, interaction_density))))
+            if num_parents == 0:
+                continue  # Skip this node if no parents are selected
             parents = np.random.choice(np.arange(i), size=num_parents, replace=False)
             print(f'Parents: {parents}')
             for p in parents:
-                lag_var = np.random.randint(0, 1)  # Random lag between 1 and 4 for the variable itself
-                lag_parent = np.random.randint(0, 1)  # Random lag between 1 and 4 for the parent variable
+                lag_var = np.random.randint(1, 3)  # Random lag between 1 and 4 for the variable itself
+                lag_parent = np.random.randint(1, 3)  # Random lag between 1 and 4 for the parent variable
                 causal_graph[i, p] = lag_parent
                 links.append(((p, i), lag_parent, lag_var))  # Store parent index, parent lag, and variable lag
         
