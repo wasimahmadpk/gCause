@@ -18,7 +18,7 @@ from gluonts.dataset.common import ListDataset
 from gluonts.model.deepar._network import DeepARTrainingNetwork
 from gluonts.evaluation.backtest import make_evaluation_predictions
 from gluonts.distribution.multivariate_gaussian import MultivariateGaussianOutput
-from scipy.stats import ttest_ind, ttest_ind_from_stats, ttest_1samp, ks_2samp, kstest
+from scipy.stats import ttest_ind, ttest_ind_from_stats, ttest_1samp, ks_2samp, kstest, spearmanr
 from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, accuracy_score
 
 np.random.seed(1)
@@ -62,7 +62,6 @@ def groupCause(odata, knockoffs, model, params):
 
     group_num = params['group_num']
     groups = params['groups']
-    print(f'Groups from groupcause: {groups}')
     
     filename = pathlib.Path(model)
     if not filename.exists():
@@ -140,7 +139,7 @@ def groupCause(odata, knockoffs, model, params):
                         diff = []
                         start_batch = 10
 
-                        for iter in range(15):  # 18
+                        for iter in range(20):  # 18
                             
                             mselist_batch = []
                             mselistint_batch = []
@@ -200,7 +199,7 @@ def groupCause(odata, knockoffs, model, params):
                                 mselistint_batch.append(mseint)
                                 mapelistint_batch.append(mapeint)
 
-                            start_batch = start_batch + 5                          # Step size for sliding window # 15
+                            start_batch = start_batch + 9                         # Step size for sliding window # 15
                             mselist.append(np.mean(mselist_batch))                  # mselist = mselist_batch
                             mapelist.append(np.mean(mapelist_batch))                # mapelist = mapelist_batch
                             mselistint.append(np.mean(mselistint_batch))            # mselistint = mselistint_batch
@@ -250,9 +249,12 @@ def groupCause(odata, knockoffs, model, params):
                     fig = plt.figure()
                     ax = fig.add_subplot(111)
 
-                    plt.plot(mapelol[0], color='g', label='Actual $\epsilon$')
-                    plt.plot(mapelolint[0], color='r', label='Counterfactual $\epsilon$')
-                    
+                    # Calculate Spearman correlation coefficient and its p-value
+                    corr, p_val = spearmanr(mapelol[0], mapelolint[0])
+
+                    plt.plot(mapelol[0], color='g', alpha=0.7, label='Actual $\epsilon$')
+                    plt.plot(mapelolint[0], color='r', alpha=0.7, label='Counterfactual $\epsilon$')
+                    plt.title(f'corr: {round(corr, 2)}, p-val: {round(p_val, 2)}')
                     if len(columns) > 0:
                         effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])
                         ax.set_ylabel(f'{cause_group} ---> {effect_var}')
