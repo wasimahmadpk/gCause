@@ -103,7 +103,7 @@ estimator = DeepAREstimator(
 
 # load model if not already trained
 # model_path = "../models/flux_model_jan-mar_0.sav"
-model_path = "../models/FR_Pue_2002_2.sav"
+model_path = "../models/FR_Pue_2002_232.sav"
 
 filename = pathlib.Path(model_path)
 if not filename.exists():
@@ -112,12 +112,12 @@ if not filename.exists():
     # save the model to disk
     pickle.dump(predictor, open(filename, 'wb'))
 
-# # Generate Knockoffs
-# data_actual = np.array(original_data[:, :]).transpose()
-# n = len(original_data[:, 0])
-# obj = Knockoffs()
-# knockoffs = obj.Generate_Knockoffs(n, dim, data_actual)
+# Generate Knockoffs
+data_actual = np.array(original_data[:, :]).transpose()
+n = len(original_data[:, 0])
+obj = Knockoffs()
+params = {"length": n, "dim": dim, "col": columns}
+knockoffs = obj.Generate_Knockoffs(data_actual, params)
 
-params = {'dim': dim, 'col': columns}
 # Function for estimating causal impact among variables
-groupCause(original_data, model_path, params)
+groupCause(original_data, model_path, knockoffs, params)

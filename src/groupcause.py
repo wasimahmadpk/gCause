@@ -24,22 +24,18 @@ from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_
 np.random.seed(1)
 mx.random.seed(2)
 
-pars = parameters.get_syn_params()
-num_samples = pars["num_samples"]
-step = pars["step_size"]
-training_length = pars["train_len"]
-prediction_length = pars["pred_len"]
-frequency = pars["freq"]
-plot_path = pars["plot_path"]
+params = parameters.get_syn_params()
+num_samples = params["num_samples"]
+step = params["step_size"]
+training_length = params["train_len"]
+prediction_length = params["pred_len"]
+frequency = params["freq"]
+plot_path = params["plot_path"]
 # Get prior skeleton
-prior_graph = pars['prior_graph']
-true_conf_mat = pars["true_graph"]
-
-group_num = pars['group_num']
-groups = pars['groups']
-
-
-
+prior_graph = params['prior_graph']
+true_conf_mat = params["true_graph"]
+group_num = params['group_num']
+groups = params['groups']
 
 def convert_variable_name(variable_name):
     # Use regular expression to find and replace digits with subscript format
@@ -53,6 +49,20 @@ def causal_criteria(list1, list2):
     return [c1, c2]
 
 def groupCause(odata, knockoffs, model, params):
+
+    num_samples = params["num_samples"]
+    step = params["step_size"]
+    training_length = params["train_len"]
+    prediction_length = params["pred_len"]
+    frequency = params["freq"]
+    plot_path = params["plot_path"]
+    # Get prior skeleton
+    prior_graph = params['prior_graph']
+    true_conf_mat = params["true_graph"]
+
+    group_num = params['group_num']
+    groups = params['groups']
+    print(f'Groups from groupcause: {groups}')
     
     filename = pathlib.Path(model)
     if not filename.exists():
@@ -91,7 +101,7 @@ def groupCause(odata, knockoffs, model, params):
                 cause_group = f'Group: {g+1}'
                 effect_group = f'Group: {h+1}' 
                 
-                # P-Values
+                # p-values
                 pvi, pvu = [], []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
@@ -130,7 +140,7 @@ def groupCause(odata, knockoffs, model, params):
                         diff = []
                         start_batch = 10
 
-                        for iter in range(20):  # 18
+                        for iter in range(15):  # 18
                             
                             mselist_batch = []
                             mselistint_batch = []
@@ -190,7 +200,7 @@ def groupCause(odata, knockoffs, model, params):
                                 mselistint_batch.append(mseint)
                                 mapelistint_batch.append(mapeint)
 
-                            start_batch = start_batch + 10                          # Step size for sliding window # 15
+                            start_batch = start_batch + 5                          # Step size for sliding window # 15
                             mselist.append(np.mean(mselist_batch))                  # mselist = mselist_batch
                             mapelist.append(np.mean(mapelist_batch))                # mapelist = mapelist_batch
                             mselistint.append(np.mean(mselistint_batch))            # mselistint = mselistint_batch
@@ -234,10 +244,33 @@ def groupCause(odata, knockoffs, model, params):
                     pvi.append(pvals[0])
                     pvu.append(pvals[1])
 
-                    # plot residuals distribution
+                    
+                    # ------------------------- plot residuals ---------------------------------------
+
+                    fig = plt.figure()
+                    ax = fig.add_subplot(111)
+
+                    plt.plot(mapelol[0], color='g', label='Actual $\epsilon$')
+                    plt.plot(mapelolint[0], color='r', label='Counterfactual $\epsilon$')
+                    
+                    if len(columns) > 0:
+                        effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])
+                        ax.set_ylabel(f'{cause_group} ---> {effect_var}')
+                    else:
+                        # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
+                        ax.set_ylabel(f'{cause_group} ---> Z_{j + 1}')
+
+                    plt.gcf()
+                    ax.legend()
+                    filename = pathlib.Path(plot_path + f'res_{cause_group} ---> {columns[j]}.pdf')
+                    plt.savefig(filename)
+                    plt.show()
+                    
+                    
+                    # -------------------------- plot residuals distribution ---------------------------
                     fig = plt.figure()
                     ax1 = fig.add_subplot(111)
-
+                    
                     # Create the KDE plot
                     sns.kdeplot(mapelol[0], shade=True, color="g", label="Actual")
                     sns.kdeplot(mapelolint[0], shade=True, color="y", label="Counterfactual")
@@ -260,7 +293,7 @@ def groupCause(odata, knockoffs, model, params):
                     plt.savefig(filename)
                     plt.show()
                     # plt.close()
-
+                    #-------------------------------------------------------------------------------------
                     cause_list.append(causal_decision[0])
                     indist_cause.append(causal_decision[0])
                     uni_cause.append(causal_decision[1])
@@ -278,10 +311,10 @@ def groupCause(odata, knockoffs, model, params):
                         ax2 = fig.add_subplot(111)
 
                         # Plot the first bivariate distribution with transparency
-                        sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Greens', alpha=0.80, fill=True, levels=5, color='green', label='Actual') #fill= True, cmap="Blues", alpha=0.5
+                        sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Greens', alpha=0.75, fill=True, levels=4, color='green', label='Actual') #fill= True, cmap="Blues", alpha=0.5
 
                         # Plot the second bivariate distribution on top with transparency
-                        sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Oranges', alpha=0.55, fill=True, levels=5, color='orange', label='Counterfactual') # fill=True, cmap="Reds", fill=True, cmap="Reds",
+                        sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Oranges', alpha=0.60, fill=True, levels=4, color='orange', label='Counterfactual') # fill=True, cmap="Reds", fill=True, cmap="Reds",
 
                         if len(columns) > 0:
                             # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
@@ -315,7 +348,7 @@ def groupCause(odata, knockoffs, model, params):
 
     pvalues.append(pval_indist)
     pvalues.append(pval_uniform)
-    print("p-values: ", pvalues)
+    # print("p-values: ", pvalues)
 
     conf_mat.append(conf_mat_indist)
     conf_mat.append(conf_mat_uniform)

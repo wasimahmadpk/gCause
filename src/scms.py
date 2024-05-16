@@ -10,23 +10,31 @@ class StructuralCausalModel:
     
     def __init__(self):
         self.causal_graph = None
+        self.networkx_graph = None
         self.labels = None
+        self.max_lag = 5
+        self.alpha = 0.5
+        self.beta = 0.99
         self.path = r'../datasets/synthetic_datasets'
         self.nonlinear_functions = ['trig'] # [trig, quadratic, exp]
 
-    def generate_multivariate_time_series(self, num_nodes, nonlinearity, interaction_density, num_samples=111):
+    def generate_multi_var_ts(self, num_nodes, nonlinearity, interaction_density, num_samples=111):
         # Step 1: Define initial causal graph structure (acyclic) and generate links
         
         # Generate initial causal graph with randomly assigned 0s and 1s
         causal_graph = np.zeros((num_nodes, num_nodes), dtype=int)
+        networkx_graph = np.zeros((num_nodes, num_nodes), dtype=int)
         links = []
         
         # Calculate the number of possible links (without cycles/loops)
         num_possible_links = num_nodes * (num_nodes - 1)
+        print(f'Possible links: {num_possible_links}')
         
         # Calculate the number of links to retain based on interaction density
         num_links_to_retain = int(num_possible_links * interaction_density)
-        
+        print(f'Retaining links: {num_links_to_retain}')
+
+
         if num_links_to_retain == 0:
             # For interaction_density=0, print a message and break
             print("There are no causal links at all.")
@@ -41,36 +49,59 @@ class StructuralCausalModel:
             parents = np.random.choice(np.arange(i), size=num_parents, replace=False)
             print(f'Parents: {parents}')
             for p in parents:
-                lag_var = np.random.randint(1, 3)  # Random lag between 1 and 4 for the variable itself
-                lag_parent = np.random.randint(1, 3)  # Random lag between 1 and 4 for the parent variable
+                lag_var = np.random.randint(1, 3)  # Random lag for the variable itself
+                lag_parent = np.random.randint(1, 3)  # Random lag for the parent variable
+                networkx_graph[i, p] = 1 
                 causal_graph[i, p] = lag_parent
                 links.append(((p, i), lag_parent, lag_var))  # Store parent index, parent lag, and variable lag
-        
+        for a, b, c in links:
+            print(f'Link: (Child {a[0]}, Parent {a[1]}), Lag Parent: {b}, Lag itself: {c}')
         # Set diagonal elements to represent self-connections (autoregressive dependencies)
         np.fill_diagonal(causal_graph, 1)
+        np.fill_diagonal(networkx_graph, 1)
         
         # Print the causal graph matrix for debugging
-        print("Causal graph matrix:")
+        print("Causal matrix:")
         print(causal_graph)
+
+        print("NetworkX graph:")
+        print(networkx_graph)
         
         # Step 2: Assign functions to variables based on nonlinearity ratio
         num_nonlinear_vars = int(num_nodes * nonlinearity)
         nonlinear_vars = np.random.choice(np.arange(num_nodes), size=num_nonlinear_vars, replace=False)
         
         # Step 3: Generate time series data based on structural equations
-        data = np.zeros((num_samples, num_nodes))
-        for t in range(1, num_samples):
+        # data = np.zeros((num_samples, num_nodes))
+        data = np.random.normal(loc=0, scale=1, size=(num_samples, num_nodes))
+
+        print(f'All edges: {links}')
+        for t in range(10, num_samples-self.max_lag):
+            additive_noise = np.random.normal(0, 0.50)
             for i in range(num_nodes):
-                parents = np.nonzero(causal_graph[i])[0]
+                parents = np.nonzero(causal_graph[:, i])[0]
+                
+                if t==1:
+                    print(f'Parent of node {i}: {parents}')
+                    for p, lp, _ in links: 
+                        print(f'Before: Parents and lags: {p}, {lp}')
+                        if i == p:
+                            print(f'After: Parents and lags: {p}, {lp}')
+              
                 if i in nonlinear_vars:
+                    # print(f'Nonlinear operation called for node  {i}..!')
                     # Calculate the contributions from parent variables
-                    parent_values_sum = sum(data[t-lp, p] for p, lp, _ in links if i == p)  # Sum over parent variables' lagged values
+                    parent_values_sum = sum(self.apply_nonlinear_function(data[t-lp, p[1]], 'trig') for p, lp, lv in links if i == p[0]) # if i == p
+                    # print(f'Print parent sum: {parent_values_sum}')
                     var_lag = next((lv for p, _, lv in links if i == p), 1)  # Get the lag for the variable itself, default to 1 if not found
-                    data[t, i] = 0.5 * data[t-var_lag, i] + parent_values_sum + np.random.normal(0, 0.25)
+                    data[t, i] = self.alpha*data[t-var_lag, i] + self.beta*parent_values_sum + np.random.normal(0, 0.33)
                 else:
-                    # Calculate the contributions from parent variables
-                    parent_values_sum = sum(data[t-lp, p] for p, lp, _ in links if i == p)  # Sum over parent variables' lagged values
-                    data[t, i] = parent_values_sum + np.random.normal(0, 0.25)
+                    # print(f'Linear operation called for node  {i}..!')
+                    # Calculate the contributions from parent variables without applying nonlinear function
+                    parent_values_sum = sum(data[t-lp, p[1]] for p, lp, lv in links if i == p[0])  # if i == p Sum over parent variables' lagged values
+                    # print(f'Print parent sum: {parent_values_sum}')
+                    var_lag = next((lv for p, _, lv in links if i == p), 1)
+                    data[t, i] = self.alpha*data[t-var_lag, i] + self.beta*parent_values_sum + np.random.normal(0, 0.33)
         
         # Create DataFrame with variable names Z1, Z2, ..., Zn
         column_names = [f'Z{i+1}' for i in range(num_nodes)]
@@ -80,9 +111,10 @@ class StructuralCausalModel:
         normalized_df = self.normalize_dataframe(df)
         filename = 'synthetic_dataset_n2n.csv'
         normalized_df.to_csv(os.path.join(self.path, filename), index_label=False, header=True)
-        normalized_df.plot(figsize=(10, 6))
+        normalized_df[0:100].plot(figsize=(10, 6))
         # Save causal graph and labels to class attributes
         self.causal_graph = causal_graph
+        self.networkx_graph = networkx_graph
         self.labels = column_names
         
         return normalized_df, links, causal_graph
@@ -102,7 +134,8 @@ class StructuralCausalModel:
             raise ValueError("Invalid nonlinear function choice")
 
     def draw_causal_graph(self):
-        if self.causal_graph is None or self.labels is None:
+      
+        if self.networkx_graph is None or self.labels is None:
             print("Causal graph and labels are not available.")
             return
         for i, label in enumerate(self.labels):
@@ -112,7 +145,7 @@ class StructuralCausalModel:
         dest_node = []
 
         # Iterate over rows
-        for i, row in enumerate(self.causal_graph):
+        for i, row in enumerate(self.networkx_graph):
             # Iterate over columns
             for j, value in enumerate(row):
                 # If value is not 0, add variable name to FROM list and column name to TO list
@@ -173,7 +206,7 @@ if __name__ == "__main__":
     nonlinearity = 0.5
     interaction_density = 1.0  # Ensure high interaction density
     num_samples = 100
-    normalized_df, links, causal_graph = model.generate_multivariate_time_series(num_nodes, nonlinearity, interaction_density, num_samples)
+    normalized_df, links, causal_graph = model.generate_multi_var_ts(num_nodes, nonlinearity, interaction_density, num_samples)
     print("Causal graph matrix:")
     print(causal_graph)
     model.draw_causal_graph()
