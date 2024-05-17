@@ -206,9 +206,9 @@ class StructuralCausalModel:
 if __name__ == "__main__":
     # Example usage:
     model = StructuralCausalModel()
-    num_nodes = 2  # Set to 2 for testing
+    num_nodes = 2  
     nonlinearity = 0.5
-    interaction_density = 1.0  # Ensure high interaction density
+    interaction_density = 1.0 
     num_samples = 100
     normalized_df, links, causal_graph = model.generate_multi_var_ts(num_nodes, nonlinearity, interaction_density, num_samples)
     print("Causal graph matrix:")

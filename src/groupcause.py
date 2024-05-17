@@ -225,26 +225,7 @@ def groupCause(odata, knockoffs, model, params):
                     
                     pvals = []
                     
-                    for z in range(len(heuristic_itn_types)):
-
-                        print("Intervention: " + heuristic_itn_types[z])
-                        t, p = ks_2samp(np.array(mapelol[z]), np.array(mapelolint[z]))
-                        # t, p = kstest(np.array(mapelolint[z]), np.array(mapelol[z]))
-                        pvals.append(1-p)
-                        
-                        print(f'Test statistic: {round(t, 2)}, p-value: {round(p, 2)}')
-                        if p < 0.05:
-                            print("\033[92mNull hypothesis is rejected\033[0m")
-                            causal_decision.append(1)
-                        else:
-                            print("\033[94mFail to reject null hypothesis\033[0m")
-                            causal_decision.append(0)
-
-                    pvi.append(pvals[0])
-                    pvu.append(pvals[1])
-
-                    
-                    # ------------------------- plot residuals ---------------------------------------
+                      # ------------------------- plot residuals ---------------------------------------
 
                     fig = plt.figure()
                     ax = fig.add_subplot(111)
@@ -267,6 +248,33 @@ def groupCause(odata, knockoffs, model, params):
                     filename = pathlib.Path(plot_path + f'res_{cause_group} ---> {columns[j]}.pdf')
                     plt.savefig(filename)
                     plt.show()
+                     # ---------------------------------------------------------------------------------
+                   
+                    for z in range(len(heuristic_itn_types)):
+
+                        
+                    # Calculate Spearman correlation coefficient and its p-value
+                        corr, pv_corr = spearmanr(mapelol[0], mapelolint[0])
+
+                        print("Intervention: " + heuristic_itn_types[z])
+                        t, p = ks_2samp(np.array(mapelol[z]), np.array(mapelolint[z]))
+                        # t, p = kstest(np.array(mapelolint[z]), np.array(mapelol[z]))
+                        pvals.append(1-p)
+                        
+                        print(f'Test statistic: {round(t, 2)}, p-value: {round(p, 2)}')
+                        if p < 0.05:
+                            print("\033[92mNull hypothesis is rejected\033[0m")
+                            causal_decision.append(1)
+                        else:
+                            if pv_corr > 0.05:
+                                  print("\033[92mNull hypothesis is rejected\033[0m")
+                                  causal_decision.append(1)
+                            else:
+                                print("\033[94mFail to reject null hypothesis\033[0m")
+                                causal_decision.append(0)
+
+                    pvi.append(pvals[0])
+                    pvu.append(pvals[1])
                     
                     
                     # -------------------------- plot residuals distribution ---------------------------
