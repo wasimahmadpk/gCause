@@ -254,7 +254,7 @@ def groupCause(odata, knockoffs, model, params):
 
                         
                     # Calculate Spearman correlation coefficient and its p-value
-                        corr, pv_corr = spearmanr(mapelol[0], mapelolint[0])
+                        corr, pv_corr = spearmanr(mapelol[z], mapelolint[z])
 
                         print("Intervention: " + heuristic_itn_types[z])
                         t, p = ks_2samp(np.array(mapelol[z]), np.array(mapelolint[z]))
@@ -275,8 +275,6 @@ def groupCause(odata, knockoffs, model, params):
 
                     pvi.append(pvals[0])
                     pvu.append(pvals[1])
-                    
-                    
                     # -------------------------- plot residuals distribution ---------------------------
                     fig = plt.figure()
                     ax1 = fig.add_subplot(111)

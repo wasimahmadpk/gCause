@@ -14,6 +14,37 @@ class Knockoffs:
     def __init__(self):
         self.n = 32
 
+    def is_positive_definite(self, C):
+        """Check if a matrix C is positive definite using Cholesky decomposition."""
+        try:
+            np.linalg.cholesky(C)
+            return True
+        except np.linalg.LinAlgError:
+            return False
+
+    def make_positive_definite(self,C, epsilon=1e-10):
+        """Make a matrix C positive definite by adding a small value to the diagonal."""
+        C_new = C + epsilon * np.eye(C.shape[0])
+        return C_new
+    
+        # """Adjust the matrix to be positive definite by using the nearest positive definite matrix algorithm."""
+        # # Ensure the matrix is symmetric
+        # C = (C + C.T) / 2
+        
+        # # Perform eigen decomposition
+        # eigvals, eigvecs = np.linalg.eigh(C)
+        
+        # # Set any negative eigenvalues to a small positive number
+        # eigvals[eigvals < 0] = 1e-10
+        
+        # # Reconstruct the matrix
+        # C_new = eigvecs @ np.diag(eigvals) @ eigvecs.T
+        
+        # # Ensure symmetry
+        # C_new = (C_new + C_new.T) / 2
+        
+        # return C_new
+
     def Generate_Knockoffs(self, datax, params):
 
         import data
@@ -47,8 +78,18 @@ class Knockoffs:
         # Compute the empirical covariance matrix of the training data
         SigmaHat = np.cov(X_train, rowvar=False)
 
+        # Check if the matrix is positive definite
+        if self.is_positive_definite(SigmaHat):
+            print("The matrix is positive definite.")
+            SigmaHat = self.make_positive_definite(SigmaHat)
+            print(f'Matrix adjusted!')
+        else:
+            print("The matrix is not positive definite. Adjusting the matrix.")
+            SigmaHat = self.make_positive_definite(SigmaHat)
+            print("Adjusted matrix is now positive definite:", self.is_positive_definite(SigmaHat))
+
         # Initialize generator of second-order knockoffs
-        second_order = GaussianKnockoffs(SigmaHat, mu=np.mean(X_train, axis=0), method='sdp')
+        second_order = GaussianKnockoffs(SigmaHat, mu=np.mean(X_train, axis=0), method='equi')
 
         # Measure pairwise second-order knockoff correlations
         corr_g = (np.diag(SigmaHat) - np.diag(second_order.Ds)) / np.diag(SigmaHat)
