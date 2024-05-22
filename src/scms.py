@@ -6,6 +6,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+np.random.seed(1)
+
 class StructuralCausalModel:
     
     def __init__(self):
@@ -93,14 +95,14 @@ class StructuralCausalModel:
                     parent_values_sum = sum(self.apply_nonlinear_function(data[t-lp, p[1]], 'trig') for p, lp, lv in links if i == p[0]) # if i == p
                     # print(f'Print parent sum: {parent_values_sum}')
                     var_lag = next((lv for p, _, lv in links if i == p), 1)  # Get the lag for the variable itself, default to 1 if not found
-                    data[t, i] = self.alpha*data[t-var_lag, i] + self.beta*parent_values_sum + np.random.normal(0, 0.5)
+                    data[t, i] = self.alpha*data[t-var_lag, i] + self.beta*parent_values_sum + np.random.normal(0, 1.0)
                 else:
                     # print(f'Linear operation called for node  {i}..!')
                     # Calculate the contributions from parent variables without applying nonlinear function
                     parent_values_sum = sum(data[t-lp, p[1]] for p, lp, lv in links if i == p[0])  # if i == p Sum over parent variables' lagged values
                     # print(f'Print parent sum for node {i}: {parent_values_sum}')
                     var_lag = next((lv for p, _, lv in links if i == p), 1)
-                    data[t, i] = self.alpha*data[t-var_lag, i] + self.beta*parent_values_sum + np.random.normal(0, 0.5)
+                    data[t, i] = self.alpha*data[t-var_lag, i] + self.beta*parent_values_sum + np.random.normal(0, 1.0)
         
         # Create DataFrame with variable names Z1, Z2, ..., Zn
         column_names = [f'Z{i+1}' for i in range(num_nodes)]

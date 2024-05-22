@@ -78,18 +78,18 @@ class Knockoffs:
         # Compute the empirical covariance matrix of the training data
         SigmaHat = np.cov(X_train, rowvar=False)
 
-        # Check if the matrix is positive definite
-        if self.is_positive_definite(SigmaHat):
-            print("The matrix is positive definite.")
-            SigmaHat = self.make_positive_definite(SigmaHat)
-            print(f'Matrix adjusted!')
-        else:
-            print("The matrix is not positive definite. Adjusting the matrix.")
-            SigmaHat = self.make_positive_definite(SigmaHat)
-            print("Adjusted matrix is now positive definite:", self.is_positive_definite(SigmaHat))
+        # # Check if the matrix is positive definite
+        # if self.is_positive_definite(SigmaHat):
+        #     print("The matrix is positive definite.")
+        #     SigmaHat = self.make_positive_definite(SigmaHat)
+        #     print(f'Matrix adjusted!')
+        # else:
+        #     print("The matrix is not positive definite. Adjusting the matrix.")
+        #     SigmaHat = self.make_positive_definite(SigmaHat)
+        #     print("Adjusted matrix is now positive definite:", self.is_positive_definite(SigmaHat))
 
         # Initialize generator of second-order knockoffs
-        second_order = GaussianKnockoffs(SigmaHat, mu=np.mean(X_train, axis=0), method='equi')
+        second_order = GaussianKnockoffs(SigmaHat, mu=np.mean(X_train, axis=0), method='sdp')
 
         # Measure pairwise second-order knockoff correlations
         corr_g = (np.diag(SigmaHat) - np.diag(second_order.Ds)) / np.diag(SigmaHat)

@@ -82,19 +82,19 @@ def get_syn_params():
     params = {
 
         'group_num': 2,
-        'groups': {'g1': [0, 10], 'g2': [10, 20]},
-        'groups_size': {'g1':[10], 'g2':[10]},
-        'epochs': 100,
+        'groups': {'g1': [0, 3], 'g2': [3, 6]},
+        'groups_size': {'g1':[3], 'g2':[3]},
+        'epochs': 75,
         'pred_len': 15,
         'train_len': 555,
-        'num_layers': 10,
+        'num_layers': 5,
         'num_cells': 60,
         'num_samples': 10,
         'dropout_rate': 0.1,
         'win_size': 1,
         'slidingwin_size': 100,
         'step_size': 10,
-        'dim': 10,
+        'dim': 6,
         'batch_size': 32,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],
@@ -115,30 +115,6 @@ def get_syn_params():
     return params
 
 
-def get_real_params():
-
-    params = {
-        'epochs': 150,
-        'pred_len': 28,
-        'train_len': 555,
-        'num_layers': 3,
-        'num_samples': 10,
-        'num_cells': 33,
-        'dropout_rate': 0.1,
-        'win_size': 1,
-        'dim': 3,
-        'batch_size': 32,
-        'prior_graph': np.array([[1, 1, 0],
-                                 [0, 1, 0],
-                                 [0, 0, 1]]),
-        'true_graph': [1, 1, 0,
-                       0, 1, 0,
-                       0, 0, 1],
-        'freq': 'D',
-        'plot_path': "/home/ahmad/Projects/gCause/plots/"
-    }
-    return params
-
 
 def get_flux_params():
 
@@ -148,9 +124,9 @@ def get_flux_params():
         'group_num': 2,    
         'groups': {'g1': [0, 2], 'g2': [2, 4]},
         'groups_size': {'g1':[2], 'g2':[2]},
-        'epochs': 100,
-        'pred_len': 24,
-        'train_len': 1400,
+        'epochs': 50,
+        'pred_len': 14,
+        'train_len': 1000,
         'num_layers': 4,
         'num_cells': 40,
         'num_samples': 10,
@@ -173,7 +149,7 @@ def get_flux_params():
         'freq': '30min',
         'plot_path': "/home/ahmad/Projects/gCause/plots/",
         'model_path': "/home/ahmad/Projects/gCause/models/",
-        'model_name': 'trained_model_geotest.sav'
+        'model_name': 'trained_model_geotest2.sav'
     }
     return params
 
@@ -183,10 +159,10 @@ def get_nino_params():
     params = {
 
         'group_num': 2,    
-        'groups': {'g1': [0, 2], 'g2': [2, 4]},    # 'g1': [0, 33], 'g2': [33, 69]
-        'groups_size': {'g1':[2], 'g2':[2]},
+        'groups': {'g1': [0, 7], 'g2': [7, 16]},    # 'g1': [0, 33], 'g2': [33, 69]
+        'groups_size': {'g1':[7], 'g2':[9]},
         'epochs': 75,
-        'pred_len': 4,
+        'pred_len': 8,
         'train_len': 40,
         'num_layers': 4,
         'num_cells': 50,
@@ -195,7 +171,7 @@ def get_nino_params():
         'win_size': 1,
         'slidingwin_size': 100,
         'step_size': 10,
-        'dim': 4,
+        'dim': 16,
         'batch_size': 32,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],

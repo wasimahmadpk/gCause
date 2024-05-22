@@ -341,7 +341,7 @@ def load_flux_data():
     # print(fluxnet.head())
     # ----------------------------------------------
     start_date = '15-Jun-2003 00:00'
-    end_date ='15-Aug-2004 23:30'
+    end_date ='15-Aug-2003 23:30'
     col_list = ['TIMESTAMP_START', 'SW_IN_F', 'TA_F', 'GPP_NT_VUT_50', 'RECO_NT_VUT_50']
     # Convert the 'date' column to datetime objects
     fluxnet['TIMESTAMP_START'] = fluxnet['TIMESTAMP_START'].apply(convert_timestamp)

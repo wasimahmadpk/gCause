@@ -251,7 +251,6 @@ def groupCause(odata, knockoffs, model, params):
                      # ---------------------------------------------------------------------------------
                    
                     for z in range(len(heuristic_itn_types)):
-
                         
                     # Calculate Spearman correlation coefficient and its p-value
                         corr, pv_corr = spearmanr(mapelol[z], mapelolint[z])
