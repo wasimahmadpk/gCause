@@ -48,6 +48,7 @@ def causal_criteria(list1, list2):
     c1, c2 = n1/len(list1), n2/len(list2)
     return [c1, c2]
 
+
 def groupCause(odata, knockoffs, model, params):
 
     num_samples = params["num_samples"]
