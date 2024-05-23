@@ -1,6 +1,5 @@
-import math
+import time
 import pickle
-import random
 import pathlib
 import parameters
 import numpy as np
@@ -14,9 +13,10 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 from knockoffs import Knockoffs
 from scipy.special import stdtr
-from forecast import modelTest
+from inference import modelTest
 from gluonts.trainer import Trainer
-from groupcause import groupCause
+from gctest import groupCause
+from scms import StructuralCausalModel
 from gluonts.evaluation import Evaluator
 from sklearn.metrics import mean_squared_error
 from gluonts.dataset.common import ListDataset
@@ -29,9 +29,9 @@ from gluonts.distribution.multivariate_gaussian import MultivariateGaussianOutpu
 np.random.seed(1)
 mx.random.seed(2)
 
-# Parameters
-
-pars = parameters.get_flux_params()
+start_time = time.time()
+# ------------------ Parameters -------------------------------
+pars = parameters.get_syn_params()
 dim = pars['dim']
 freq = pars["freq"]
 epochs = pars["epochs"]
@@ -46,14 +46,16 @@ dropout_rate = pars["dropout_rate"]
 batch_size = pars["batch_size"]
 plot_path = pars["plot_path"]
 groups = pars["groups"]
+model_name = pars.get('model_name') + 'newsyngaia'
+path = pars.get('model_path')
 
-# Load river discharges data
+# ------------- Load river discharges data -------------------
 # df = prep.load_river_data()
 # df = prep.load_climate_data()
 # df = prep.load_geo_data()
 
-df = prep.load_flux_data()
-print(df.corr())
+# df = prep.load_flux_data()
+# print(df.corr())
 
 # # Calculate the cross-correlation for lags ranging from -10 to 10 months difference
 # cross_corr = [df['0'].corr(df['5'].shift(i)) for i in range(-10, 10)]
@@ -62,8 +64,19 @@ print(df.corr())
 
 # df = data.loc[:1000].copy()
 # print(df.head())
-print(df.describe())
-print(df.shape)
+# print(df.describe())
+# print(df.shape)
+# ---------------------------------------------------------
+# ------------ SCMs----------------------------------------
+ # Load synthetic data
+model = StructuralCausalModel()
+num_nodes = 12
+nonlinearity = 0.1
+interaction_density = 0.25
+df, links, causal_graph = model.generate_multi_var_ts(
+    num_nodes, nonlinearity, interaction_density, num_samples=2000)
+df.head()
+# ---------------------------------------------------------
 
 original_data = []
 # dim = len(df.columns)
@@ -84,28 +97,26 @@ train_ds = ListDataset(
     one_dim_target=False
 )
 
-# create estimator
+# ------------------- create estimator -------------------
 estimator = DeepAREstimator(
     prediction_length=prediction_length,
     context_length=prediction_length,
     freq=freq,
     num_layers=num_layers,
-    num_cells=num_cells,
+    # num_cells=num_cells,
     dropout_rate=dropout_rate,
     trainer=Trainer(
         ctx="cpu",
         epochs=epochs,
         hybridize=False,
-        batch_size=24
+        batch_size=32
     ),
     distr_output=MultivariateGaussianOutput(dim=dim)
 )
-
+# --------------------------------------------------------
 # load model if not already trained
 # model_path = "../models/flux_model_jan-mar_0.sav"
 # model_path = "../models/FR_Pue_2002_232.sav"
-model_name = pars.get('model_name')
-path = pars.get('model_path')
 model_path = pathlib.Path(path + model_name)
 
 filename = pathlib.Path(model_path)
@@ -115,12 +126,18 @@ if not filename.exists():
     # save the model to disk
     pickle.dump(predictor, open(filename, 'wb'))
 
-# Generate Knockoffs
+# ----------- Generate Knockoffs -----------------------
 data_actual = np.array(original_data[:, :]).transpose()
 n = len(original_data[:, 0])
 obj = Knockoffs()
 pars.update({'length': n, 'dim': dim, 'col': columns})
 knockoffs = obj.Generate_Knockoffs(data_actual, pars)
+# ------------------------------------------------------
 
 # Function for estimating causal impact among variables
-groupCause(original_data, knockoffs, model_path, pars)
+predicted_graph, end_time = groupCause(original_data, knockoffs, model_path, pars)
+
+# Calculate difference
+elapsed_time = end_time - start_time
+# Print elapsed time
+print("Computation time: ", round(elapsed_time/60), "mins")

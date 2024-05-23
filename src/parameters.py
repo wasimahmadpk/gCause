@@ -81,9 +81,9 @@ def get_syn_params():
     # Parameters for synthetic data
     params = {
 
-        'group_num': 2,
-        'groups': {'g1': [0, 3], 'g2': [3, 6]},
-        'groups_size': {'g1':[3], 'g2':[3]},
+        'group_num': 4,    
+        'groups': {'g1': [0, 3], 'g2': [3, 6], 'g3': [6, 9], 'g4': [9, 12]},
+        'groups_size': {'g1':[3], 'g2':[3], 'g3':[3], 'g4':[3]},
         'epochs': 75,
         'pred_len': 15,
         'train_len': 555,
@@ -94,7 +94,7 @@ def get_syn_params():
         'win_size': 1,
         'slidingwin_size': 100,
         'step_size': 10,
-        'dim': 6,
+        'dim': 12,
         'batch_size': 32,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],
