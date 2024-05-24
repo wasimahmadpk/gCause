@@ -46,7 +46,7 @@ dropout_rate = pars["dropout_rate"]
 batch_size = pars["batch_size"]
 plot_path = pars["plot_path"]
 groups = pars["groups"]
-model_name = pars.get('model_name') + 'newsyngaia'
+model_name = pars.get('model_name') + '000'
 path = pars.get('model_path')
 
 # ------------- Load river discharges data -------------------

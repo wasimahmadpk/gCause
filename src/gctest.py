@@ -66,6 +66,11 @@ def groupCause(odata, knockoffs, model, params):
     groups = params['groups']
 
     columns = params.get('col')
+
+     # Extract variable name and number using regular expressions
+    formatted_names = [re.match(r'([A-Za-z]+)(\d+)', name).groups() for name in columns]
+    # Create formatted variable names
+    formatted_columns = [f'${name}_{{{number}}}$' for name, number in formatted_names]
     
     filename = pathlib.Path(model)
     if not filename.exists():
@@ -90,7 +95,53 @@ def groupCause(odata, knockoffs, model, params):
 
     # now restore stdout function
     # sys.stdout = sys.__stdout__
-  
+    
+    # ------------------------------------------------------------------------------
+    #         Inference for joint distribution of the multivarite system 
+    # ------------------------------------------------------------------------------
+    mse_realization, mape_realization = [], []
+    data_range = list(range(len(odata)))
+    for r in range(2):  # realizations
+                        
+        start_batch = 10
+        mse_batches, mape_batches = [], []
+        
+        for iter in range(15): # batches
+
+            test_data = odata[: , start_batch: start_batch + training_length + prediction_length].copy()
+            test_ds = ListDataset(
+                [
+                    {'start': "01/04/2001 00:00:00",
+                        'target': test_data
+                    }
+                ],
+                freq=frequency,
+                one_dim_target=False
+            )
+
+            multi_var_point_mse, muti_var_point_mape = modelTest(model, test_ds, num_samples, test_data, data_range,
+                                        prediction_length, iter, False, 0)
+                # # now restore stdout function
+                # sys.stdout = sys.__stdout__
+
+            mse_batches.append(multi_var_point_mse)
+            mape_batches.append(multi_var_point_mse)
+            start_batch = start_batch + 5
+        
+        mse_realization.append(np.array(mse_batches))
+        mape_realization.append(np.array(mape_batches))
+    
+    mse_realization = np.array(mse_realization)
+    mape_realization = np.array(mape_realization)
+    # print('Forecast Multivariate_Point')
+    # print(np.array(multi_var_point_mse).shape)
+
+    # print('Forecast Multivariate Realization')
+    # print(np.array(mape_realization).shape)
+    # print(np.stack(mape_realization))
+    # print(np.array(mape_realization))
+    # ------------------------------------------------------------------------------------
+
     for g in range(group_num):
         cause_list = []
         for h in range(group_num):
@@ -119,18 +170,12 @@ def groupCause(odata, knockoffs, model, params):
                 for m in range(len(interventionlist)):  # apply all types of intervention methods
 
                     intervene = interventionlist[m]
-
-                    mse_list_batches = []      # list of MSE values for multiple realization without intervention
-                    imse_list_batches = []   # list of MSE values for multiple realization with intervention
-
-                    mape_list_batches = []     # list of MAPE values for multiple realization without intervention
-                    imape_list_batches = []  # list of MAPE values for multiple realization with intervention
+                    imse_realization, imape_realization = [], []
                     
-                    mse_realization, imse_realization, mape_realization, imape_realization = [], [], [], []
                     for r in range(2):  # realizations
                         
                         start_batch = 10
-                        mse_batches, imse_batches, mape_batches, imape_batches = [], [], [], []
+                        imse_batches, imape_batches = [], []
                         
                         for iter in range(15): # batches
 
@@ -158,8 +203,7 @@ def groupCause(odata, knockoffs, model, params):
                                 one_dim_target=False
                             )
 
-                            multi_var_point_mse, muti_var_point_mape = modelTest(model, test_ds, num_samples, test_data, range_effect_group,
-                                                        prediction_length, iter, False, 0)
+                            # Get the required inference here
 
                             multi_var_point_imse, muti_var_point_imape = modelTest(model, test_dsint, num_samples, test_data,
                                                         range_effect_group, prediction_length, iter, True, m)
@@ -178,20 +222,13 @@ def groupCause(odata, knockoffs, model, params):
 
                                 # # now restore stdout function
                                 # sys.stdout = sys.__stdout__
-
-                            # ------------------- updated code ---------------------
-                            mse_batches.append(multi_var_point_mse)
+                          
                             imse_batches.append(multi_var_point_imse)
-
-                            mape_batches.append(multi_var_point_mse)
                             imape_batches.append(multi_var_point_imse)
-                            # ------------------------------------------------------
                             # np.random.shuffle(intervene)
                             start_batch = start_batch + 5
                         
-                        mse_realization.append(np.array(mse_batches))
                         imse_realization.append(np.array(imse_batches))
-                        mape_realization.append(np.array(mape_batches))
                         imape_realization.append(np.array(imape_batches))
                     
                     # print('Forecast Multivariate_Point')
@@ -201,14 +238,14 @@ def groupCause(odata, knockoffs, model, params):
                     # print(np.array(mape_realization).shape)
                     # print(np.stack(mape_realization))    
                         
-                    mse_mean = np.mean(np.stack(mse_realization), axis=0)
+                    mse_mean = np.mean(np.stack(mse_realization[:, :, start_effect: end_effect]), axis=0)
                     imse_mean = np.mean(np.stack(imse_realization), axis=0)
-                    mape_mean = np.mean(np.stack(mape_realization), axis=0)
+                    mape_mean = np.mean(np.stack(mape_realization[:, :, start_effect: end_effect]), axis=0)
                     imape_mean = np.mean(np.stack(imape_realization), axis=0)
 
-                    # print('Forecast Multivariate')
-                    # print(mape_mean.shape)
-                    # print(mape_mean)
+                    print('Forecast Multivariate')
+                    print(f'Full: {mape_mean.shape}')
+                    print(f'Group: {imape_mean.shape}')
 
                     mse_interventions.append(mse_mean)
                     imse_interventions.append(imse_mean)
@@ -248,7 +285,8 @@ def groupCause(odata, knockoffs, model, params):
                         plt.plot(imape_interventions[m][:, j-start_effect], color='r', alpha=0.7, label='Counterfactual $\epsilon$')
                         plt.title(f'corr: {round(corr, 2)}, p-val: {round(p_val, 2)}')
                         if len(columns) > 0:
-                            effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])
+                            # effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])
+                            effect_var = formatted_columns[j]
                             ax.set_ylabel(f'{cause_group} ---> {effect_var}')
                         else:
                             # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
@@ -293,7 +331,8 @@ def groupCause(odata, knockoffs, model, params):
                         # sns.distplot(mapelolint[0], color='green', label='Counterfactual')
                         
                         if len(columns) > 0:
-                            effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])
+                            # effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])
+                            effect_var = formatted_columns[j]
                             ax1.set_ylabel(f"{cause_group} ---> {effect_var}")
                         else:
                             # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
@@ -330,7 +369,8 @@ def groupCause(odata, knockoffs, model, params):
 
                             if len(columns) > 0:
                                 # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
-                                effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[q])
+                                # effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[q])
+                                effect_var = formatted_columns[q]
                                 ax1.set_ylabel(f"{cause_group} ---> {effect_var}")
                             else:
                                 # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
