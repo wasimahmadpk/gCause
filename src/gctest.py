@@ -2,6 +2,7 @@ import io
 import re
 import sys
 import time
+import math
 import pickle
 import pathlib
 import parameters
@@ -141,7 +142,6 @@ def groupCause(odata, knockoffs, model, params):
     # print(np.stack(mape_realization))
     # print(np.array(mape_realization))
     # ------------------------------------------------------------------------------------
-
     for g in range(group_num):
         cause_list = []
         for h in range(group_num):
@@ -204,7 +204,6 @@ def groupCause(odata, knockoffs, model, params):
                             )
 
                             # Get the required inference here
-
                             multi_var_point_imse, muti_var_point_imape = modelTest(model, test_dsint, num_samples, test_data,
                                                         range_effect_group, prediction_length, iter, True, m)
 
@@ -243,10 +242,6 @@ def groupCause(odata, knockoffs, model, params):
                     mape_mean = np.mean(np.stack(mape_realization[:, :, start_effect: end_effect]), axis=0)
                     imape_mean = np.mean(np.stack(imape_realization), axis=0)
 
-                    print('Forecast Multivariate')
-                    print(f'Full: {mape_mean.shape}')
-                    print(f'Group: {imape_mean.shape}')
-
                     mse_interventions.append(mse_mean)
                     imse_interventions.append(imse_mean)
                     mape_interventions.append(mape_mean)
@@ -273,6 +268,30 @@ def groupCause(odata, knockoffs, model, params):
                         
                         pvals = []
                         
+                        # ------------- Invariance testing (distribution and correlation) --------------
+                        
+                        # Calculate Spearman correlation coefficient and its p-value
+                        corr, pv_corr = spearmanr(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
+
+                        print("Intervention: " + heuristic_itn_types[m])
+                        t, p = ks_2samp(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
+                        pvals.append(1-p)
+                        
+                        print(f'Test statistic: {round(t, 2)}, p-value: {round(p, 2)}')
+                        if p < 0.05:
+                            print("\033[92mNull hypothesis is rejected\033[0m")
+                            causal_decision.append(1)
+                        else:
+                            if pv_corr > 0.05:
+                                print("\033[92mNull hypothesis is rejected\033[0m")
+                                causal_decision.append(1)
+                            else:
+                                print("\033[94mFail to reject null hypothesis\033[0m")
+                                causal_decision.append(0)
+                    
+
+                        pvi.append(pvals[0])
+
                         # --------------------------- plot residuals ----------------------------------
 
                         fig = plt.figure()
@@ -297,29 +316,7 @@ def groupCause(odata, knockoffs, model, params):
                         filename = pathlib.Path(plot_path + f'res_{cause_group} ---> {columns[j]}.pdf')
                         plt.savefig(filename)
                         plt.show()
-                        # ---------------------------------------------------------------------------------
-
-                         # Calculate Spearman correlation coefficient and its p-value
-                        corr, pv_corr = spearmanr(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
-
-                        print("Intervention: " + heuristic_itn_types[m])
-                        t, p = ks_2samp(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
-                        pvals.append(1-p)
-                        
-                        print(f'Test statistic: {round(t, 2)}, p-value: {round(p, 2)}')
-                        if p < 0.05:
-                            print("\033[92mNull hypothesis is rejected\033[0m")
-                            causal_decision.append(1)
-                        else:
-                            if pv_corr > 0.05:
-                                print("\033[92mNull hypothesis is rejected\033[0m")
-                                causal_decision.append(1)
-                            else:
-                                print("\033[94mFail to reject null hypothesis\033[0m")
-                                causal_decision.append(0)
                     
-
-                        pvi.append(pvals[0])
                         # -------------------------- plot residuals distribution ---------------------------
                         fig = plt.figure()
                         ax1 = fig.add_subplot(111)
@@ -362,10 +359,12 @@ def groupCause(odata, knockoffs, model, params):
                             ax2 = fig.add_subplot(111)
 
                             # Plot the first bivariate distribution with transparency
-                            sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Greens', alpha=0.75, fill=True, levels=4, color='green', label='Actual') #fill= True, cmap="Blues", alpha=0.5
+                            sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Greens',
+                                         alpha=0.75, fill=True, levels=4, color='green', label='Actual') #fill= True, cmap="Blues", alpha=0.5
 
                             # Plot the second bivariate distribution on top with transparency
-                            sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Oranges', alpha=0.60, fill=True, levels=4, color='orange', label='Counterfactual') # fill=True, cmap="Reds", fill=True, cmap="Reds",
+                            sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Oranges',
+                                         alpha=0.60, fill=True, levels=4, color='orange', label='Counterfactual') # fill=True, cmap="Reds", fill=True, cmap="Reds",
 
                             if len(columns) > 0:
                                 # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
@@ -406,16 +405,15 @@ def groupCause(odata, knockoffs, model, params):
     print(f'Causal direction: {causal_direction}')
 
     for m in range(group_num):
-      
         for n in range(group_num):
-            if m < n:
+            if m > n:
                 c1, c2 = causal_criteria(causal_direction[m], causal_direction[n])
 
                 if c1 > c2:
                     print(f'gCDMI: Group {m+1} causes Group {n+1}')
-                elif c2 > c1:
-                    print(f'gCDMI: Group {n+1} causes Group {m+1}')
-                elif int(c1) & int(c2) == 0:
+                # elif c2 > c1:
+                #     print(f'gCDMI: Group {n+1} causes Group {m+1}')
+                elif math.ceil(c1) & math.ceil(c2) == 0:
                     print(f'gCDMI: No causal connection found in Group {m+1} and Group {n+1}')
                 elif c1 == c2:
                     print('gCDMI: Causal direction can\'t be inferred')
