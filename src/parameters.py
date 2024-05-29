@@ -82,8 +82,8 @@ def get_syn_params():
     params = {
 
         'group_num': 2,    
-        'groups': {'g1': [0, 2], 'g2': [2, 6]},
-        'groups_size': {'g1':[2], 'g2':[4]},
+        'groups': {'g1': [0, 3], 'g2': [3, 6]},
+        'groups_size': {'g1':[3], 'g2':[3]},
         'epochs': 75,
         'pred_len': 15,
         'train_len': 555,

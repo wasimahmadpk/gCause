@@ -107,7 +107,7 @@ def groupCause(odata, knockoffs, model, params):
         start_batch = 10
         mse_batches, mape_batches = [], []
         
-        for iter in range(15): # batches
+        for iter in range(25): # batches
 
             test_data = odata[: , start_batch: start_batch + training_length + prediction_length].copy()
             test_ds = ListDataset(
@@ -127,7 +127,7 @@ def groupCause(odata, knockoffs, model, params):
 
             mse_batches.append(multi_var_point_mse)
             mape_batches.append(multi_var_point_mse)
-            start_batch = start_batch + 5
+            start_batch = start_batch + 3
         
         mse_realization.append(np.array(mse_batches))
         mape_realization.append(np.array(mape_batches))
@@ -177,7 +177,7 @@ def groupCause(odata, knockoffs, model, params):
                         start_batch = 10
                         imse_batches, imape_batches = [], []
                         
-                        for iter in range(15): # batches
+                        for iter in range(25): # batches
 
                             test_data = odata[: , start_batch: start_batch + training_length + prediction_length].copy()
                             test_ds = ListDataset(
@@ -225,7 +225,7 @@ def groupCause(odata, knockoffs, model, params):
                             imse_batches.append(multi_var_point_imse)
                             imape_batches.append(multi_var_point_imse)
                             # np.random.shuffle(intervene)
-                            start_batch = start_batch + 5
+                            start_batch = start_batch + 3
                         
                         imse_realization.append(np.array(imse_batches))
                         imape_realization.append(np.array(imape_batches))
@@ -281,13 +281,17 @@ def groupCause(odata, knockoffs, model, params):
                         if p < 0.05:
                             print("\033[92mNull hypothesis is rejected\033[0m")
                             causal_decision.append(1)
+                            print("-------------------------------------------------------")
                         else:
                             if pv_corr > 0.05:
                                 print("\033[92mNull hypothesis is rejected\033[0m")
                                 causal_decision.append(1)
+                                print("-------------------------------------------------------")
                             else:
                                 print("\033[94mFail to reject null hypothesis\033[0m")
                                 causal_decision.append(0)
+                                print("-------------------------------------------------------")
+                        
                     
 
                         pvi.append(pvals[0])
