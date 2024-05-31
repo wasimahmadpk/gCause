@@ -49,7 +49,7 @@ class SyntheticDataset:
            
             ## Subsystem: 
             self.X3.append(C.get('c3') * np.sin(self.X1[t - Tao.get('t3')]) + dynmaic_noise['n1'][t])
-            self.X4.append(C.get('c3') * self.X3[t - Tao.get('t3')] + dynmaic_noise['n3'][t])
+            self.X4.append(C.get('c3') * self.X2[t - Tao.get('t3')] + dynmaic_noise['n3'][t])
             
             # Extra
             self.X5.append(C.get('c1') * self.X1[t - Tao.get('t1')]  + dynmaic_noise['n4'][t])
@@ -104,9 +104,9 @@ if __name__ == '__main__':
     data_obj = SyntheticDataset(root1, root2, time_steps, Tref, C, Tao, dynmaic_noise)
     X1, X2, X3, X4, X5, X6, X7, X8 = data_obj.generate_data()
 
-    data = {'Z1': X1[50:], 'Z2': X2[50:], 'Z3': X3[50:], 'Z4': X4[50:], 'Z5': X5[50:], 'Z6': X6[50:]}
+    data = {'Z1': X1[50:], 'Z2': X2[50:], 'Z3': X3[50:], 'Z4': X4[50:]}
     
-    df = pd.DataFrame(data, columns=['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'Z6'])
+    df = pd.DataFrame(data, columns=['Z1', 'Z2', 'Z3', 'Z4'])
     df.to_csv(r'/home/ahmad/Projects/gCause/datasets/synthetic_datasets/synthetic_gts.csv', index_label=False, header=True)
     print(df.head(33))
     

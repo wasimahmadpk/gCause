@@ -82,19 +82,19 @@ def get_syn_params():
     params = {
 
         'group_num': 2,    
-        'groups': {'g1': [0, 3], 'g2': [3, 6]},
-        'groups_size': {'g1':[3], 'g2':[3]},
+        'groups': {'g1': [0, 4], 'g2': [4, 8]},
+        'groups_size': {'g1':[4], 'g2':[4]},
         'epochs': 75,
         'pred_len': 15,
         'train_len': 555,
-        'num_layers': 4,
+        'num_layers': 6,
         'num_cells': 60,
         'num_samples': 10,
         'dropout_rate': 0.1,
         'win_size': 1,
         'slidingwin_size': 100,
         'step_size': 10,
-        'dim': 6,
+        'dim': 8,
         'batch_size': 32,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],
@@ -109,7 +109,7 @@ def get_syn_params():
         'freq': '30min',
         'plot_path': "/home/ahmad/Projects/gCause/plots/",
         'model_path': "/home/ahmad/Projects/gCause/models/",
-        'model_name': 'trained_model_synthetic4bar.sav'
+        'model_name': 'trained_model_synthetic.sav'
     }
 
     return params
