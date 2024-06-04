@@ -52,7 +52,7 @@ class StructuralCausalModel:
 
             for p in parents:
                 lag_var = np.random.randint(1, 3)  # Random lag for the variable itself
-                lag_parent = np.random.randint(1, 3)  # Random lag for the parent variable
+                lag_parent = np.random.randint(1, 6)  # Random lag for the parent variable
                 networkx_graph[i, p] = 1 
                 causal_graph[i, p] = lag_parent
                 links.append(((p, i), lag_parent, lag_var))  # Store parent index, parent lag, and variable lag

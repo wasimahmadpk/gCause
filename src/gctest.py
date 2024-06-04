@@ -50,6 +50,52 @@ def causal_criteria(list1, list2):
     c1, c2 = n1/len(list1), n2/len(list2)
     return [c1, c2]
 
+def get_ground_truth(n):
+    # Generate an upper triangular matrix with ones using NumPy
+    matrix = np.tril(np.ones((n, n), dtype=int))
+    # Convert the NumPy array to a list of lists
+    matrix_list = matrix.tolist()
+    return matrix_list
+
+def evaluate(actual, predicted):
+
+    y_true_flat = [item for sublist in actual for item in sublist]
+    y_pred_flat = [item for sublist in predicted for item in sublist]
+    
+    # Calculate confusion matrix
+    cm = confusion_matrix(y_true_flat, y_pred_flat)
+    
+    # Extract TP, TN, FP, FN from confusion matrix
+    tn, fp, fn, tp = cm.ravel()
+    
+    # Calculate rates
+    tpr = tp / (tp + fn) if (tp + fn) != 0 else 0  # True Positive Rate (Sensitivity)
+    tnr = tn / (tn + fp) if (tn + fp) != 0 else 0  # True Negative Rate (Specificity)
+    fpr = fp / (fp + tn) if (fp + tn) != 0 else 0  # False Positive Rate
+    fnr = fn / (fn + tp) if (fn + tp) != 0 else 0  # False Negative Rate
+    accuracy = (tp + tn) / (tp + tn + fp + fn) if (tp + tn + fp + fn) != 0 else 0
+    precision = tp / (tp + fp) if (tp + fp) != 0 else 0
+    recall = tp / (tp + fn) if (tp + fn) != 0 else 0
+    f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) != 0 else 0
+    
+    # Create a dictionary to store metrics
+    metrics = {
+        'TP': tp,
+        'TN': tn,
+        'FP': fp,
+        'FN': fn,
+        'TPR': tpr,
+        'TNR': tnr,
+        'FPR': fpr,
+        'FNR': fnr,
+        'Accuracy': accuracy,
+        'Precision': precision,
+        'Recall': recall,
+        'F1 Score': f1_score
+    }
+    
+    return metrics
+
 
 def groupCause(odata, knockoffs, model, params):
 
@@ -101,6 +147,7 @@ def groupCause(odata, knockoffs, model, params):
     #         Inference for joint distribution of the multivarite system 
     # ------------------------------------------------------------------------------
     mse_realization, mape_realization = [], []
+    causal_matrix = []
     data_range = list(range(len(odata)))
     for r in range(2):  # realizations
                         
@@ -143,9 +190,12 @@ def groupCause(odata, knockoffs, model, params):
     # print(np.array(mape_realization))
     # ------------------------------------------------------------------------------------
     for g in range(group_num):
-        cause_list = []
+        causal_links = []
         for h in range(group_num):
-
+            cause_list = []
+         
+            if g==h:
+                causal_links.append(1)
             if g!=h:
                 
                 start_effect = groups.get(f'g{h+1}')[0]
@@ -391,37 +441,32 @@ def groupCause(odata, knockoffs, model, params):
                             filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d.pdf")
                             plt.savefig(filename)
                             # plt.show()
+                
+                causal_links.append(1 if 1 in cause_list else 0)
 
-        causal_direction.append(cause_list)
+        causal_matrix.append(causal_links)
     
     pval_indist.append(pvi)
 
     conf_mat_indist = conf_mat_indist + indist_cause
-    indist_cause, uni_cause = [], []
+    indist_cause = []
 
     pvalues.append(pval_indist)
     # print("p-values: ", pvalues)
-
+    ground_truth = get_ground_truth(group_num)
     conf_mat.append(conf_mat_indist)
     print("--------------------------------------------------------")
-    print("Discovered Causal Graphs: ", conf_mat)
-
-    print(f'Causal direction: {causal_direction}')
-
-    for m in range(group_num):
-        for n in range(group_num):
-            if m > n:
-                c1, c2 = causal_criteria(causal_direction[m], causal_direction[n])
-
-                if c1 > c2:
-                    print(f'gCDMI: Group {m+1} causes Group {n+1}')
-                # elif c2 > c1:
-                #     print(f'gCDMI: Group {n+1} causes Group {m+1}')
-                elif math.ceil(c1) & math.ceil(c2) == 0:
-                    print(f'gCDMI: No causal connection found in Group {m+1} and Group {n+1}')
-                elif c1 == c2:
-                    print('gCDMI: Causal direction can\'t be inferred')
+    print("Pair-wise Graph: ", conf_mat)
+    print(f'Actual Causal Graph: {ground_truth}')
+    print(f'Discovered Causal Graph: {causal_matrix}')
     print("----------*****-----------------------*****------------")
+     
+    # Calculate metrics
+    metrics = evaluate(ground_truth, causal_matrix)
+    # Print metrics
+    for metric, value in metrics.items():
+        print(f"{metric}: {value:.2f}")
+
     end_time = time.time()
 
     return conf_mat, end_time 
