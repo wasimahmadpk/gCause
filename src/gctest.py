@@ -37,6 +37,7 @@ prior_graph = params['prior_graph']
 true_conf_mat = params["true_graph"]
 group_num = params['group_num']
 groups = params['groups']
+num_sliding_win = params['num_sliding_win']
 
 
 def convert_variable_name(variable_name):
@@ -80,10 +81,10 @@ def evaluate(actual, predicted):
     
     # Create a dictionary to store metrics
     metrics = {
-        'TP': tp,
-        'TN': tn,
-        'FP': fp,
-        'FN': fn,
+        # 'TP': tp,
+        # 'TN': tn,
+        # 'FP': fp,
+        # 'FN': fn,
         'TPR': tpr,
         'TNR': tnr,
         'FPR': fpr,
@@ -91,7 +92,7 @@ def evaluate(actual, predicted):
         'Accuracy': accuracy,
         'Precision': precision,
         'Recall': recall,
-        'F1 Score': f1_score
+        'Fscore': f1_score
     }
     
     return metrics
@@ -154,7 +155,7 @@ def groupCause(odata, knockoffs, model, params):
         start_batch = 10
         mse_batches, mape_batches = [], []
         
-        for iter in range(25): # batches
+        for iter in range(num_sliding_win): # batches
 
             test_data = odata[: , start_batch: start_batch + training_length + prediction_length].copy()
             test_ds = ListDataset(
@@ -227,7 +228,7 @@ def groupCause(odata, knockoffs, model, params):
                         start_batch = 10
                         imse_batches, imape_batches = [], []
                         
-                        for iter in range(25): # batches
+                        for iter in range(num_sliding_win): # batches
 
                             test_data = odata[: , start_batch: start_batch + training_length + prediction_length].copy()
                             test_ds = ListDataset(
@@ -469,7 +470,7 @@ def groupCause(odata, knockoffs, model, params):
 
     end_time = time.time()
 
-    return conf_mat, end_time 
+    return metrics, conf_mat, end_time 
 
 
 
