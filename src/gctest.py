@@ -343,8 +343,6 @@ def groupCause(odata, knockoffs, model, params):
                                 causal_decision.append(0)
                                 print("-------------------------------------------------------")
                         
-                    
-
                         pvi.append(pvals[0])
 
                         # --------------------------- plot residuals ----------------------------------
