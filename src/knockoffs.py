@@ -26,24 +26,6 @@ class Knockoffs:
         """Make a matrix C positive definite by adding a small value to the diagonal."""
         C_new = C + epsilon * np.eye(C.shape[0])
         return C_new
-    
-        # """Adjust the matrix to be positive definite by using the nearest positive definite matrix algorithm."""
-        # # Ensure the matrix is symmetric
-        # C = (C + C.T) / 2
-        
-        # # Perform eigen decomposition
-        # eigvals, eigvecs = np.linalg.eigh(C)
-        
-        # # Set any negative eigenvalues to a small positive number
-        # eigvals[eigvals < 0] = 1e-10
-        
-        # # Reconstruct the matrix
-        # C_new = eigvecs @ np.diag(eigvals) @ eigvecs.T
-        
-        # # Ensure symmetry
-        # C_new = (C_new + C_new.T) / 2
-        
-        # return C_new
 
     def Generate_Knockoffs(self, datax, params):
 
