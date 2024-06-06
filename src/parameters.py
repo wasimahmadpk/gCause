@@ -81,20 +81,20 @@ def get_syn_params():
     # Parameters for synthetic data
     params = {
 
-        'group_num': 4,    
-        'groups': {'g1': [0, 2], 'g2': [2, 4], 'g3': [4, 6], 'g4': [6, 8]},
-        'groups_size': {'g1':[2], 'g2':[2], 'g3':[2], 'g4':[2]},
+        'group_num': 3,    
+        'groups': {'g1': [0, 3], 'g2': [3, 6], 'g3': [6, 9]},
+        'groups_size': {'g1':[3], 'g2':[3], 'g3':[3]},
         'epochs': 75,
         'pred_len': 15,
         'train_len': 555,
-        'num_layers': 6,
+        'num_layers': 8,
         'num_cells': 60,
         'num_samples': 10,
         'dropout_rate': 0.1,
         'win_size': 1,
-        'num_sliding_win': 25,
+        'num_sliding_win': 21,
         'step_size': 5,
-        'dim': 8,
+        'dim': 9,
         'batch_size': 32,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],
@@ -109,7 +109,7 @@ def get_syn_params():
         'freq': '30min',
         'plot_path': "/home/ahmad/Projects/gCause/plots/",
         'model_path': "/home/ahmad/Projects/gCause/models/",
-        'model_name': 'trained_model_synthetic.sav'
+        'model_name': 'trained_synthetic'
     }
 
     return params

@@ -414,12 +414,12 @@ def groupCause(odata, knockoffs, model, params):
                             ax2 = fig.add_subplot(111)
 
                             # Plot the first bivariate distribution with transparency
-                            sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Greens',
-                                         alpha=0.75, fill=True, levels=4, color='green', label='Actual') #fill= True, cmap="Blues", alpha=0.5
+                            sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Blues',
+                                         alpha=0.75, fill=True, levels=4, color='blue', label='Actual') #fill= True, cmap="Blues", alpha=0.5
 
                             # Plot the second bivariate distribution on top with transparency
-                            sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Oranges',
-                                         alpha=0.60, fill=True, levels=4, color='orange', label='Counterfactual') # fill=True, cmap="Reds", fill=True, cmap="Reds",
+                            sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Reds',
+                                         alpha=0.60, fill=True, levels=4, color='red', label='Counterfactual') # fill=True, cmap="Reds", fill=True, cmap="Reds",
 
                             if len(columns) > 0:
                                 # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
@@ -435,8 +435,8 @@ def groupCause(odata, knockoffs, model, params):
 
                             # Add a custom legend
                             legend_elements = [
-                            Patch(facecolor=plt.cm.Greens(100), alpha=0.70, edgecolor='g', label='Actual'),
-                            Patch(facecolor=plt.cm.Oranges(100), alpha=0.85, edgecolor='orange', label='Counterfactual')
+                            Patch(facecolor=plt.cm.Greens(100), alpha=0.70, edgecolor='b', label='Actual'),
+                            Patch(facecolor=plt.cm.Oranges(100), alpha=0.85, edgecolor='r', label='Counterfactual')
                             ]
                             ax2.legend(handles=legend_elements)
                             filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d.pdf")

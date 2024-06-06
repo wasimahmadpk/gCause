@@ -48,6 +48,36 @@ plot_path = pars["plot_path"]
 groups = pars["groups"]
 path = pars.get('model_path')
 
+# Calculate average metrics
+def calculate_average_metrics(performance_dicts):
+    sums = {}
+    count = len(performance_dicts)
+    
+    for metrics in performance_dicts.values():
+        for key, value in metrics.items():
+            if key not in sums:
+                sums[key] = 0
+            sums[key] += value
+    
+    avg_metrics = {key: value / count for key, value in sums.items()}
+    return avg_metrics
+
+# Plot metrics
+def plot_metrics(performance_dicts, metric_name):
+    x = sorted(performance_dicts.keys())
+    y = [performance_dicts[param][metric_name] for param in x]
+
+    plt.figure()
+    plt.plot(x, y, marker='o', label=f'{metric_name}')
+    plt.xlabel('Nonlinearity')
+    plt.ylabel(metric_name)
+    # plt.title(f'{metric_name.capitalize()} vs Parameter Value')
+    plt.grid(True)
+    plt.legend()
+    filename = pathlib.Path(plot_path + f'{metric_name}_nonlinearity.pdf')
+    plt.savefig(filename)  # Save the figure
+    # plt.show()
+
 # ------------- Load river discharges data -------------------
 # df = prep.load_river_data()
 # df = prep.load_climate_data()
@@ -65,18 +95,18 @@ path = pars.get('model_path')
 # print(df.head())
 # print(df.describe())
 # print(df.shape)
-# ---------------------------------------------------------
+# ------------------------------------------------------------
 metrics_dict = {}
 
-for nonlin in np.arange(0.2, 1 + 0.2, 0.2):
-    model_name = pars.get('model_name') + 'nonlinearity_' + '{nonlin}'
+for idense in np.arange(0.1, 1 + 0.1, 0.1):
+    model_name = pars.get('model_name') + '_idense_full_' + f'{idense}' + '.sav'
     # Run CDMI n times
     # ------------ SCMs----------------------------------------
     # Load synthetic data
     model = StructuralCausalModel()
-    num_nodes = 8
-    nonlinearity = nonlin
-    interaction_density = 0.25
+    num_nodes = 9
+    nonlinearity = 0.20
+    interaction_density = idense
     df, links, causal_graph = model.generate_multi_var_ts(
         num_nodes, nonlinearity, interaction_density, num_samples=2000)
     df.head()
@@ -145,44 +175,11 @@ for nonlin in np.arange(0.2, 1 + 0.2, 0.2):
     # elapsed_time = end_time - start_time
     # Print elapsed time
     # print("Computation time: ", round(elapsed_time/60), "mins")
-    metrics_dict[nonlin] = metrics
+    metrics_dict[idense] = metrics
 
 # Calculate the average for each metric
-avg_metrics = {}
-
-
-# Set to store inner keys
-performance_metrics_keys = set()
-
-# Iterate over the outer dictionary
-for params_keys, inner_dict in metrics_dict.items():
-    # Update the set with keys from the inner dictionary
-    performance_metrics_keys.update(inner_dict.keys())
-
-# Convert set to list if needed
-performance_metrics_keys = list(performance_metrics_keys)
-
-keys = metrics_dict.keys()
-for key in performance_metrics_keys:
-    avg_metrics[key] = np.mean([metrics[key] for metrics in metrics_dict.values])
-
-print(avg_metrics)
-
-
-# Extract and plot metrics
-def plot_metrics(metrics_dict, metric_name):
-    x = list(metrics_dict.keys())
-    y = [metrics[metric_name] for metrics in metrics_dict.values()]
-
-    plt.figure()
-    plt.plot(x, y, marker='o')
-    plt.xlabel('Nonlinearity')
-    plt.ylabel(metric_name.capitalize())
-    plt.title(f'{metric_name.capitalize()} vs Nonlinearity')
-    plt.grid(True)
-    filename = pathlib.Path(plot_path + f'{metric_name}_nonlinearity.pdf')
-    plt.savefig(filename)  # Save the figure
-    plt.show()
+avg_metrics = calculate_average_metrics(metrics_dict)
+print("Average Metrics:", avg_metrics)
 
 # Plot and save accuracy
 metics = ['Accuracy', 'Fscore', 'FPR', 'TPR']
