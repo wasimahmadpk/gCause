@@ -69,14 +69,45 @@ def plot_metrics(performance_dicts, metric_name):
 
     plt.figure()
     plt.plot(x, y, marker='o', label=f'{metric_name}')
-    plt.xlabel('Nonlinearity')
+    plt.xlabel('Groups')
     plt.ylabel(metric_name)
     # plt.title(f'{metric_name.capitalize()} vs Parameter Value')
     plt.grid(True)
     plt.legend()
-    filename = pathlib.Path(plot_path + f'{metric_name}_nonlinearity.pdf')
+    filename = pathlib.Path(plot_path + f'{metric_name}_groups.pdf')
     plt.savefig(filename)  # Save the figure
     # plt.show()
+
+def generate_group_dicts(num_nodes, num_groups):
+    groups = {}
+    group_sizes = {}
+    
+    base_group_size = num_nodes // num_groups
+    remainder = num_nodes % num_groups
+    
+    start_idx = 0
+    
+    for i in range(num_groups):
+        group_key = f"g{i+1}"
+        
+        if i < remainder:
+            group_size = base_group_size + 1
+        else:
+            group_size = base_group_size
+        
+        end_idx = start_idx + group_size
+        groups[group_key] = [start_idx, end_idx]
+        group_sizes[group_key] = [group_size]
+        
+        start_idx = end_idx
+    
+    result = {
+        'group_num': num_groups,
+        'groups': groups,
+        'groups_size': group_sizes
+    }
+    
+    return result
 
 # ------------- Load river discharges data -------------------
 # df = prep.load_river_data()
@@ -97,8 +128,8 @@ def plot_metrics(performance_dicts, metric_name):
 # print(df.shape)
 # ------------------------------------------------------------
 metrics_dict = {}
-
-for idense in np.arange(0.1, 1 + 0.1, 0.1):
+groups_variation = True
+for idense in np.arange(0.5, 0.5 + 0.1, 0.1):
     model_name = pars.get('model_name') + '_idense_full_' + f'{idense}' + '.sav'
     # Run CDMI n times
     # ------------ SCMs----------------------------------------
@@ -168,14 +199,26 @@ for idense in np.arange(0.1, 1 + 0.1, 0.1):
     knockoffs = obj.Generate_Knockoffs(data_actual, pars)
     # ------------------------------------------------------
 
-    # Function for estimating causal impact among variables
-    metrics, predicted_graph, end_time = groupCause(original_data, knockoffs, model_path, pars)
+    if groups_variation:
 
-    # Calculate difference
-    # elapsed_time = end_time - start_time
-    # Print elapsed time
-    # print("Computation time: ", round(elapsed_time/60), "mins")
-    metrics_dict[idense] = metrics
+      
+        for numgroup in range(2, 6):
+
+            group_dict = generate_group_dicts(num_nodes, numgroup)
+
+            pars['group_num'] = group_dict['group_num']
+            pars['groups'] = group_dict['groups']
+            pars['group_size'] = group_dict['groups_size']
+            # Function for estimating causal impact among variables
+            metrics, predicted_graph, end_time = groupCause(original_data, knockoffs, model_path, pars)
+            # Calculate difference
+            # elapsed_time = end_time - start_time
+            # Print elapsed time
+            # print("Computation time: ", round(elapsed_time/60), "mins")
+            metrics_dict[numgroup] = metrics
+    else:
+            metrics, predicted_graph, end_time = groupCause(original_data, knockoffs, model_path, pars)
+            metrics_dict[idense] = metrics
 
 # Calculate the average for each metric
 avg_metrics = calculate_average_metrics(metrics_dict)
