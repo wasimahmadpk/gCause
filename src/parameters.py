@@ -81,9 +81,9 @@ def get_syn_params():
     # Parameters for synthetic data
     params = {
 
-        'group_num': 3,    
-        'groups': {'g1': [0, 3], 'g2': [3, 6], 'g3': [6, 9]},
-        'groups_size': {'g1':[3], 'g2':[3], 'g3':[3]},
+        'group_num': 4,    
+        'groups': {'g1': [0, 3], 'g2': [3, 5], 'g3': [5, 7], 'g4': [7, 9]},
+        'groups_size': {'g1':[3], 'g2':[2], 'g3':[2], 'g4':[2]},
         'epochs': 75,
         'pred_len': 15,
         'train_len': 555,

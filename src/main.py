@@ -2,6 +2,8 @@ import time
 import pickle
 import pathlib
 import parameters
+import vgc
+import pcmci
 import numpy as np
 import mxnet as mx
 import pandas as pd
@@ -67,8 +69,9 @@ def plot_metrics(performance_dicts, metric_name):
     x = sorted(performance_dicts.keys())
     y = [performance_dicts[param][metric_name] for param in x]
 
-    plt.figure()
-    plt.plot(x, y, marker='o', label=f'{metric_name}')
+    fig, ax = plt.subplots()
+    ax.plot(x, y, label=f'{metric_name}')
+    ax.set_xticks(x)
     plt.xlabel('Groups')
     plt.ylabel(metric_name)
     # plt.title(f'{metric_name.capitalize()} vs Parameter Value')
@@ -79,6 +82,7 @@ def plot_metrics(performance_dicts, metric_name):
     # plt.show()
 
 def generate_group_dicts(num_nodes, num_groups):
+    
     groups = {}
     group_sizes = {}
     
@@ -108,7 +112,6 @@ def generate_group_dicts(num_nodes, num_groups):
     }
     
     return result
-
 # ------------- Load river discharges data -------------------
 # df = prep.load_river_data()
 # df = prep.load_climate_data()
@@ -201,7 +204,6 @@ for idense in np.arange(0.5, 0.5 + 0.1, 0.1):
 
     if groups_variation:
 
-      
         for numgroup in range(2, 6):
 
             group_dict = generate_group_dicts(num_nodes, numgroup)
