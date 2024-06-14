@@ -51,12 +51,41 @@ def causal_criteria(list1, list2):
     c1, c2 = n1/len(list1), n2/len(list2)
     return [c1, c2]
 
-def get_ground_truth(n):
-    # Generate an upper triangular matrix with ones using NumPy
-    matrix = np.tril(np.ones((n, n), dtype=int))
-    # Convert the NumPy array to a list of lists
-    matrix_list = matrix.tolist()
-    return matrix_list
+def get_ground_truth(matrix, group_sizes):
+    # # Generate an upper triangular matrix with ones using NumPy
+    # matrix = np.tril(np.ones((n, n), dtype=int))
+    # # Convert the NumPy array to a list of lists
+    # matrix_list = matrix.tolist()
+    # return matrix_list
+    # Convert the input matrix to a numpy array
+    matrix = np.array(matrix)
+    
+    # Determine the number of groups
+    num_groups = len(group_sizes)
+    
+    # Initialize the reduced matrix with zeros
+    reduced_matrix = np.zeros((num_groups, num_groups), dtype=int)
+    
+    # Determine the indices that belong to each group
+    groups = []
+    start_idx = 0
+    for size in group_sizes:
+        groups.append(list(range(start_idx, start_idx + size)))
+        start_idx += size
+    
+    # Fill in the reduced matrix
+    for i, group_i in enumerate(groups):
+        for j, group_j in enumerate(groups):
+            for var_i in group_i:
+                for var_j in group_j:
+                    if matrix[var_i, var_j] == 1:
+                        reduced_matrix[i, j] = 1
+                        break  # No need to check further if one causal relationship is found
+    
+    # Ensure all groups have self-connection
+    np.fill_diagonal(reduced_matrix, 1)
+    
+    return reduced_matrix
 
 def evaluate(actual, predicted):
 
@@ -98,7 +127,7 @@ def evaluate(actual, predicted):
     return metrics
 
 
-def groupCause(odata, knockoffs, model, params):
+def groupCause(odata, knockoffs, model, params, ground_truth):
 
     num_samples = params["num_samples"]
     step = params["step_size"]
@@ -452,7 +481,7 @@ def groupCause(odata, knockoffs, model, params):
 
     pvalues.append(pval_indist)
     # print("p-values: ", pvalues)
-    ground_truth = get_ground_truth(group_num)
+    # ground_truth = get_ground_truth(group_num)
     conf_mat.append(conf_mat_indist)
     print("--------------------------------------------------------")
     print("Pair-wise Graph: ", conf_mat)
