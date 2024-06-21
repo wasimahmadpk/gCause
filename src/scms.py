@@ -118,7 +118,7 @@ class StructuralCausalModel:
         self.networkx_graph = networkx_graph
         self.labels = column_names
         
-        return normalized_df, links, causal_graph
+        return normalized_df, links, networkx_graph
 
 
     def apply_nonlinear_function(self, x, function_choice):
