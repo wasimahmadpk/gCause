@@ -52,11 +52,6 @@ def causal_criteria(list1, list2):
     return [c1, c2]
 
 def get_ground_truth(matrix, group_sizes):
-    # # Generate an upper triangular matrix with ones using NumPy
-    # matrix = np.tril(np.ones((n, n), dtype=int))
-    # # Convert the NumPy array to a list of lists
-    # matrix_list = matrix.tolist()
-    # return matrix_list
     # Convert the input matrix to a numpy array
     matrix = np.array(matrix)
     
@@ -78,8 +73,8 @@ def get_ground_truth(matrix, group_sizes):
         for j, group_j in enumerate(groups):
             for var_i in group_i:
                 for var_j in group_j:
-                    if matrix[var_i, var_j] == 1:
-                        reduced_matrix[i, j] = 1
+                    if matrix[var_j, var_i] == 1:  # Check if var_j causes var_i
+                        reduced_matrix[j, i] = 1  # Since rows are causes, update [j, i]
                         break  # No need to check further if one causal relationship is found
     
     # Ensure all groups have self-connection
@@ -204,7 +199,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth):
 
             mse_batches.append(multi_var_point_mse)
             mape_batches.append(multi_var_point_mse)
-            start_batch = start_batch + 3
+            start_batch = start_batch + 5
         
         mse_realization.append(np.array(mse_batches))
         mape_realization.append(np.array(mape_batches))
@@ -305,7 +300,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth):
                             imse_batches.append(multi_var_point_imse)
                             imape_batches.append(multi_var_point_imse)
                             # np.random.shuffle(intervene)
-                            start_batch = start_batch + 3
+                            start_batch = start_batch + 5
                         
                         imse_realization.append(np.array(imse_batches))
                         imape_realization.append(np.array(imape_batches))
