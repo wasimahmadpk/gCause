@@ -51,37 +51,6 @@ def causal_criteria(list1, list2):
     c1, c2 = n1/len(list1), n2/len(list2)
     return [c1, c2]
 
-def get_ground_truth(matrix, group_sizes):
-    # Convert the input matrix to a numpy array
-    matrix = np.array(matrix)
-    
-    # Determine the number of groups
-    num_groups = len(group_sizes)
-    
-    # Initialize the reduced matrix with zeros
-    reduced_matrix = np.zeros((num_groups, num_groups), dtype=int)
-    
-    # Determine the indices that belong to each group
-    groups = []
-    start_idx = 0
-    for size in group_sizes:
-        groups.append(list(range(start_idx, start_idx + size)))
-        start_idx += size
-    
-    # Fill in the reduced matrix
-    for i, group_i in enumerate(groups):
-        for j, group_j in enumerate(groups):
-            for var_i in group_i:
-                for var_j in group_j:
-                    if matrix[var_j, var_i] == 1:  # Check if var_j causes var_i
-                        reduced_matrix[j, i] = 1  # Since rows are causes, update [j, i]
-                        break  # No need to check further if one causal relationship is found
-    
-    # Ensure all groups have self-connection
-    np.fill_diagonal(reduced_matrix, 1)
-    
-    return reduced_matrix
-
 def evaluate(actual, predicted):
 
     y_true_flat = [item for sublist in actual for item in sublist]
@@ -124,9 +93,9 @@ def evaluate(actual, predicted):
 
 def groupCause(odata, knockoffs, model, params, ground_truth):
 
-    num_samples = params["num_samples"]
-    step = params["step_size"]
-    training_length = params["train_len"]
+    num_samples = params['num_samples']
+    step = params['step_size']
+    training_length = params['train_len']
     prediction_length = params["pred_len"]
     frequency = params["freq"]
     plot_path = params["plot_path"]
@@ -143,13 +112,6 @@ def groupCause(odata, knockoffs, model, params, ground_truth):
     formatted_names = [re.match(r'([A-Za-z]+)(\d+)', name).groups() for name in columns]
     # Create formatted variable names
     formatted_columns = [f'${name}_{{{number}}}$' for name, number in formatted_names]
-    
-    filename = pathlib.Path(model)
-    if not filename.exists():
-        print("Training model....")
-        predictor = estimator.train(train_ds)
-        # save the model to disk
-        pickle.dump(predictor, open(filename, 'wb'))
 
     conf_mat, conf_mat_indist, conf_mat_uniform, causal_direction = [], [], [], []
     pvalues, pval_indist, pval_uniform = [], [], []
@@ -353,12 +315,12 @@ def groupCause(odata, knockoffs, model, params, ground_truth):
                         pvals.append(1-p)
                         
                         print(f'Test statistic: {round(t, 2)}, p-value: {round(p, 2)}')
-                        if p < 0.05:
+                        if p < 0.10:
                             print("\033[92mNull hypothesis is rejected\033[0m")
                             causal_decision.append(1)
                             print("-------------------------------------------------------")
                         else:
-                            if pv_corr > 0.05:
+                            if pv_corr > 0.10:
                                 print("\033[92mNull hypothesis is rejected\033[0m")
                                 causal_decision.append(1)
                                 print("-------------------------------------------------------")
@@ -490,9 +452,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth):
     for metric, value in metrics.items():
         print(f"{metric}: {value:.2f}")
 
-    end_time = time.time()
-
-    return metrics, conf_mat, end_time 
+    return metrics, conf_mat
 
 
 

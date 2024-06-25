@@ -12,7 +12,7 @@ import parameters
 class Knockoffs:
 
     def __init__(self):
-        self.n = 32
+        self.n = 1000
 
     def is_positive_definite(self, C):
         """Check if a matrix C is positive definite using Cholesky decomposition."""

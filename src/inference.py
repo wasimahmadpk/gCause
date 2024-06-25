@@ -29,10 +29,10 @@ def mean_absolute_percentage_error(y_true, y_pred):
     return mape
 
 
-def modelTest(model_path, test_ds, num_samples, data, effect_range, prediction_length, count, intervention, in_type):
-    filename = pathlib.Path(model_path)
+def modelTest(model, test_ds, num_samples, data, effect_range, prediction_length, count, intervention, in_type):
+   
     # load the model from disk
-    predictor = pickle.load(open(filename, 'rb'))
+    predictor = pickle.load(open(model, 'rb'))
 
     if intervention == True:
         heuristic_itn_types = ['In-dist', 'Uniform']

@@ -13,7 +13,6 @@ from datetime import datetime
 from scipy.special import stdtr
 import matplotlib.pyplot as plt
 from sklearn.feature_selection import f_regression, mutual_info_regression
-
 # El Nino imports
 import matplotlib
 import netCDF4
@@ -370,6 +369,18 @@ def load_multiregime_data():
     # df = df.apply(normalize)
     return df
 
+def generate_variable_list(N):
+    """
+    Generates a list of variable names in the format Var$_i$ where i ranges from 1 to N.
+    
+    Parameters:
+    N (int): The number of variables to generate.
+    
+    Returns:
+    list: A list of variable names formatted as Var$_i$.
+    """
+    return [f'Var$_{i}$' for i in range(1, N + 1)]
+
 
 def load_netsim_data():
 
@@ -381,10 +392,11 @@ def load_netsim_data():
     T = loaded_data['T.npy']
     Gref = loaded_data['Gref.npy']
     # Access individual arrays within the .npz file
+    nvars = 15
+    cols = generate_variable_list(nvars)
     data = loaded_data['X_np.npy']
-    cols = ['Var$_1$', 'Var$_2$', 'Var$_3$', 'Var$_4$', 'Var$_5$', 'Var$_6$', 'Var$_7$', 'Var$_8$', 'Var$_9$', 'Var$_10$', 'Var$_11$', 'Var$_12$', 'Var$_13$', 'Var$_14$', 'Var$_15$']
     data = data.transpose()
-    df = pd.DataFrame(data[:, 0:15], columns=cols)
+    df = pd.DataFrame(data[:, 0:nvars], columns=cols)
     df = df.apply(normalize)
     return df
 

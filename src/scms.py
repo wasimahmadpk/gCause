@@ -52,7 +52,7 @@ class StructuralCausalModel:
 
             for p in parents:
                 lag_var = np.random.randint(1, 3)  # Random lag for the variable itself
-                lag_parent = np.random.randint(1, 6)  # Random lag for the parent variable
+                lag_parent = np.random.randint(2, 8)  # Random lag for the parent variable
                 networkx_graph[i, p] = 1 
                 causal_graph[i, p] = lag_parent
                 links.append(((p, i), lag_parent, lag_var))  # Store parent index, parent lag, and variable lag
@@ -66,8 +66,8 @@ class StructuralCausalModel:
         print("Causal matrix:")
         print(causal_graph)
 
-        print("NetworkX graph:")
-        print(networkx_graph)
+        # print("NetworkX graph:")
+        # print(networkx_graph)
         
         # Step 2: Assign functions to variables based on nonlinearity ratio
         num_nonlinear_vars = int(num_nodes * nonlinearity)
@@ -90,19 +90,21 @@ class StructuralCausalModel:
                             print(f'Self connection: Parents and lags: {p}, {lp}')
               
                 if i in nonlinear_vars:
-                    # print(f'Nonlinear operation called for node  {i}..!')
+                    if t >= num_samples-self.max_lag-1:
+                        print(f'Nonlinear operation called for node  {i}..!')
                     # Calculate the contributions from parent variables
                     parent_values_sum = sum(self.apply_nonlinear_function(data[t-lp, p[1]], 'trig') for p, lp, lv in links if i == p[0]) # if i == p
                     # print(f'Print parent sum: {parent_values_sum}')
                     var_lag = next((lv for p, _, lv in links if i == p), 1)  # Get the lag for the variable itself, default to 1 if not found
-                    data[t, i] = self.alpha*data[t-var_lag, i] + self.beta*parent_values_sum + np.random.normal(0, 05.0)
+                    data[t, i] = self.beta*parent_values_sum + np.random.normal(0, 0.33)    #self.alpha*data[t-var_lag, i] +
                 else:
-                    # print(f'Linear operation called for node  {i}..!')
+                    if t >= num_samples-self.max_lag-1:
+                        print(f'Linear operation called for node  {i}..!')
                     # Calculate the contributions from parent variables without applying nonlinear function
                     parent_values_sum = sum(data[t-lp, p[1]] for p, lp, lv in links if i == p[0])  # if i == p Sum over parent variables' lagged values
                     # print(f'Print parent sum for node {i}: {parent_values_sum}')
                     var_lag = next((lv for p, _, lv in links if i == p), 1)
-                    data[t, i] = self.alpha*data[t-var_lag, i] + self.beta*parent_values_sum + np.random.normal(0, 05.0)
+                    data[t, i] = self.beta*parent_values_sum + np.random.normal(0, 0.33) #self.alpha*data[t-var_lag, i] +
         
         # Create DataFrame with variable names Z1, Z2, ..., Zn
         column_names = [f'Z{i+1}' for i in range(num_nodes)]
