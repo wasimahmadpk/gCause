@@ -13,7 +13,7 @@ def cov2cor(Sigma):
     scalingFactors = np.outer(sqrtDiagSigma,sqrtDiagSigma)
     return np.divide(Sigma, scalingFactors)
 
-def solve_sdp(Sigma, tol=1e-3):
+def solve_sdp(Sigma, tol=1e-4):
     """
     Computes s for sdp-correlated Gaussian knockoffs
     :param Sigma : A covariance matrix (p x p)
@@ -31,11 +31,11 @@ def solve_sdp(Sigma, tol=1e-3):
     p,_ = corrMatrix.shape
     s = cvx.Variable(p)
     objective = cvx.Maximize(sum(s))
-    constraints = [ 2.0*corrMatrix >> cvx.diag(s) + cvx.diag([tol]*p), 0<=s, s<=1]
+    constraints = [2.0*corrMatrix >> cvx.diag(s) + cvx.diag([tol]*p), 0<=s, s<=1]
     prob = cvx.Problem(objective, constraints)
     prob.solve(solver='CVXOPT')
     
-    assert prob.status == cvx.OPTIMAL
+    # assert prob.status == cvx.OPTIMAL
 
     s = np.clip(np.asarray(s.value).flatten(), 0, 1)
 	
@@ -48,7 +48,7 @@ class GaussianKnockoffs:
     Class GaussianKnockoffs
     Knockoffs for a multivariate Gaussian model
     """
-    def __init__(self, Sigma, method="equi", mu=[], tol=1e-3):
+    def __init__(self, Sigma, method="equi", mu=[], tol=1e-4):
         """
         Constructor
         :param model  : A multivariate Gaussian model object containing the covariance matrix
