@@ -90,16 +90,16 @@ class StructuralCausalModel:
                             print(f'Self connection: Parents and lags: {p}, {lp}')
               
                 if i in nonlinear_vars:
-                    if t >= num_samples-self.max_lag-1:
-                        print(f'Nonlinear operation called for node  {i}..!')
+                    # if t >= num_samples-self.max_lag-1:
+                    #     print(f'Nonlinear operation called for node  {i}..!')
                     # Calculate the contributions from parent variables
                     parent_values_sum = sum(self.apply_nonlinear_function(data[t-lp, p[1]], 'trig') for p, lp, lv in links if i == p[0]) # if i == p
                     # print(f'Print parent sum: {parent_values_sum}')
                     var_lag = next((lv for p, _, lv in links if i == p), 1)  # Get the lag for the variable itself, default to 1 if not found
                     data[t, i] = self.beta*parent_values_sum + np.random.normal(0, 0.33)    #self.alpha*data[t-var_lag, i] +
                 else:
-                    if t >= num_samples-self.max_lag-1:
-                        print(f'Linear operation called for node  {i}..!')
+                    # if t >= num_samples-self.max_lag-1:
+                    #     print(f'Linear operation called for node  {i}..!')
                     # Calculate the contributions from parent variables without applying nonlinear function
                     parent_values_sum = sum(data[t-lp, p[1]] for p, lp, lv in links if i == p[0])  # if i == p Sum over parent variables' lagged values
                     # print(f'Print parent sum for node {i}: {parent_values_sum}')

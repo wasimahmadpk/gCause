@@ -105,7 +105,7 @@ def groupCause(odata, knockoffs, model, params):
                 pvi, pvu = [], []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                uniform_intervention = np.random.uniform(np.min(odata), np.min(odata), knockoff_samples.shape)
+                uniform_intervention = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                 
                 interventionlist = [knockoff_samples, uniform_intervention]
                 heuristic_itn_types = ['In-dist', 'Uniform']

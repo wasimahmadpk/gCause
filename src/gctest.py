@@ -19,7 +19,7 @@ from gluonts.dataset.common import ListDataset
 from gluonts.model.deepar._network import DeepARTrainingNetwork
 from gluonts.evaluation.backtest import make_evaluation_predictions
 from gluonts.distribution.multivariate_gaussian import MultivariateGaussianOutput
-from scipy.stats import ttest_ind, ttest_ind_from_stats, ttest_1samp, ks_2samp, kstest, spearmanr
+from scipy.stats import ttest_ind, ttest_ind_from_stats, ttest_1samp, ks_2samp, anderson_ksamp, kstest, spearmanr
 from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, accuracy_score
 
 np.random.seed(1)
@@ -91,7 +91,7 @@ def evaluate(actual, predicted):
     return metrics
 
 
-def groupCause(odata, knockoffs, model, params, ground_truth):
+def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
 
     num_samples = params['num_samples']
     step = params['step_size']
@@ -102,11 +102,13 @@ def groupCause(odata, knockoffs, model, params, ground_truth):
     # Get prior skeleton
     prior_graph = params['prior_graph']
     true_conf_mat = params["true_graph"]
-
     group_num = params['group_num']
-    groups = params['groups']
-
     columns = params.get('col')
+    
+    if not canonical:
+        groups = params['groups']
+    else:
+        groups = params['groups_cc']
 
      # Extract variable name and number using regular expressions
     formatted_names = [re.match(r'([A-Za-z]+)(\d+)', name).groups() for name in columns]
@@ -196,6 +198,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth):
                 pvi, pvu = [], []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
+                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                 interventionlist = [knockoff_samples]
                 heuristic_itn_types = ['In-dist']
 
@@ -254,6 +257,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth):
                                 n = len(odata[:, 0])
                                 # knockoffs = obj.Generate_Knockoffs(n, params.get("dim"), data_actual)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
+                                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                                 intervene = knockoff_samples
 
                                 # # now restore stdout function
@@ -261,7 +265,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth):
                           
                             imse_batches.append(multi_var_point_imse)
                             imape_batches.append(multi_var_point_imse)
-                            # np.random.shuffle(intervene)
+                            np.random.shuffle(intervene)
                             start_batch = start_batch + 5
                         
                         imse_realization.append(np.array(imse_batches))
@@ -311,6 +315,9 @@ def groupCause(odata, knockoffs, model, params, ground_truth):
                         corr, pv_corr = spearmanr(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
 
                         print("Intervention: " + heuristic_itn_types[m])
+                        # adtest = anderson_ksamp([np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect])])
+                        # t, p = adtest.statistic, adtest.significance_level
+                        # t, p = ttest_ind(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
                         t, p = ks_2samp(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
                         pvals.append(1-p)
                         
@@ -332,7 +339,6 @@ def groupCause(odata, knockoffs, model, params, ground_truth):
                         pvi.append(pvals[0])
 
                         # --------------------------- plot residuals ----------------------------------
-
                         fig = plt.figure()
                         ax = fig.add_subplot(111)
 
@@ -380,6 +386,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth):
                         plt.savefig(filename)
                         plt.show()
                         # plt.close()
+                        
                         #-------------------------------------------------------------------------------------
                         cause_list.append(causal_decision[0])
                         indist_cause.append(causal_decision[0])
@@ -441,9 +448,9 @@ def groupCause(odata, knockoffs, model, params, ground_truth):
     # ground_truth = get_ground_truth(group_num)
     conf_mat.append(conf_mat_indist)
     print("--------------------------------------------------------")
-    print("Pair-wise Graph: ", conf_mat)
-    print(f'Actual Causal Graph: {ground_truth}')
-    print(f'Discovered Causal Graph: {causal_matrix}')
+    # print("Pair-wise Graph: ", conf_mat)
+    print(f'Actual Causal Graph: \n {ground_truth}')
+    print(f'Discovered Causal Graph: \n {np.array(causal_matrix)}')
     print("----------*****-----------------------*****------------")
      
     # Calculate metrics

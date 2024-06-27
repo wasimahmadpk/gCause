@@ -82,8 +82,12 @@ def get_syn_params():
     params = {
 
         'group_num': 5,    
-        'groups': {'g1': [0, 3], 'g2': [3, 6], 'g3': [6, 9], 'g4': [9, 12], 'g5': [12, 15]}, # 'g3': [8, 12], 'g4': [12, 16], 'g5': [16, 20]
-        'groups_size': {'g1':[3], 'g2':[3], 'g3':[3], 'g4':[3], 'g5':[3]},    # 'g3':[4], 'g4':[4], 'g5':[4]
+        'groups': {'g1': [0, 4], 'g2': [4, 8], 'g3': [8, 12], 'g4': [12, 16], 'g5': [16, 20]}, # 'g3': [8, 12], 'g4': [12, 16], 'g5': [16, 20]
+        'groups_size': {'g1':[4], 'g2':[4], 'g3':[4], 'g4':[4], 'g5':[4]},    # 'g3':[4], 'g4':[4], 'g5':[4]
+         
+        'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5]}, # 'g3': [8, 12], 'g4': [12, 16], 'g5': [16, 20]
+        'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1], 'g5':[1]},   
+        
         'epochs': 70,
         'pred_len': 12,
         'train_len': 600,
@@ -92,9 +96,10 @@ def get_syn_params():
         'num_samples': 10,
         'dropout_rate': 0.1,
         'win_size': 1,
-        'num_sliding_win': 20,
-        'step_size': 5,
+        'num_sliding_win': 30,
+        'step_size': 3,
         'dim': 15,
+        'dim_cc': 5,
         'batch_size': 32,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],
@@ -109,7 +114,8 @@ def get_syn_params():
         'freq': '30min',
         'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs/",
         'model_path': "/home/ahmad/Projects/gCause/models/gc/",
-        'model_name': 'trained_synthetic'
+        'model_name': 'trained_synthetic',
+        'model_name_cc': 'trained_synthetic_cc'
     }
 
     return params

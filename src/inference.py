@@ -88,10 +88,8 @@ def modelTest(model, test_ds, num_samples, data, effect_range, prediction_length
 
     # forecasts_int = list(forecast_itint)
     # tss_int = list(ts_itint)
-   
 
     mse_effect_variables, mape_effect_variables  = [], []
-       
     for idx in effect_range:
         
         y_pred = [] 
@@ -108,7 +106,6 @@ def modelTest(model, test_ds, num_samples, data, effect_range, prediction_length
 
         mse_effect_variables.append(mse)
         mape_effect_variables.append(mape)
-
         # meanerror = np.mean(np.mean(y_pred, axis=0))
 
         counter = -1
