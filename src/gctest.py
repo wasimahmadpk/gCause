@@ -126,7 +126,6 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
     # Generate Knockoffs
     data_actual = np.array(odata[: , 0: training_length + prediction_length]).transpose()
     obj = Knockoffs()
-    n = len(odata[:, 0])
     knockoffs = obj.Generate_Knockoffs(data_actual, params)
 
     # now restore stdout function
@@ -163,7 +162,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
 
             mse_batches.append(multi_var_point_mse)
             mape_batches.append(multi_var_point_mse)
-            start_batch = start_batch + 5
+            start_batch = start_batch + 3
         
         mse_realization.append(np.array(mse_batches))
         mape_realization.append(np.array(mape_batches))
@@ -198,7 +197,8 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                 pvi, pvu = [], []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(0.5, 0.5, knockoff_samples.shape)
+                # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                 interventionlist = [knockoff_samples]
                 heuristic_itn_types = ['In-dist']
 
@@ -210,6 +210,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                 for m in range(len(interventionlist)):  # apply all types of intervention methods
 
                     intervene = interventionlist[m]
+                    np.random.shuffle(intervene)
                     imse_realization, imape_realization = [], []
                     
                     for r in range(2):  # realizations
@@ -254,10 +255,10 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                                 # Generate multiple version Knockoffs
                                 data_actual = np.array(odata[: , start_batch: start_batch + training_length + prediction_length]).transpose()
                                 obj = Knockoffs()
-                                n = len(odata[:, 0])
                                 # knockoffs = obj.Generate_Knockoffs(n, params.get("dim"), data_actual)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
+                                knockoff_samples = knockoff_samples + np.random.normal(0.5, 0.5, knockoff_samples.shape)
+                                # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                                 intervene = knockoff_samples
 
                                 # # now restore stdout function
@@ -266,7 +267,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                             imse_batches.append(multi_var_point_imse)
                             imape_batches.append(multi_var_point_imse)
                             np.random.shuffle(intervene)
-                            start_batch = start_batch + 5
+                            start_batch = start_batch + 3
                         
                         imse_realization.append(np.array(imse_batches))
                         imape_realization.append(np.array(imape_batches))
@@ -327,7 +328,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                             causal_decision.append(1)
                             print("-------------------------------------------------------")
                         else:
-                            if pv_corr > 0.10:
+                            if pv_corr > 0.05:
                                 print("\033[92mNull hypothesis is rejected\033[0m")
                                 causal_decision.append(1)
                                 print("-------------------------------------------------------")

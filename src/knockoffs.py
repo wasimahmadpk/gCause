@@ -34,7 +34,6 @@ class Knockoffs:
 
         # Number of features
         p = params.get('dim')
-
         # Load the built-in Gaussian model and its default parameters
         # The currently available built-in models are:
         # - gaussian : Multivariate Gaussian distribution

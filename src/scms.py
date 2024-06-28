@@ -20,6 +20,37 @@ class StructuralCausalModel:
         self.path = r'../datasets/synthetic_datasets'
         self.nonlinear_functions = ['trig'] # [trig, quadratic, exp]
 
+    def get_reduced_ground_truth(self, matrix, group_sizes):
+        # Convert the input matrix to a numpy array
+        matrix = np.array(matrix)
+        
+        # Determine the number of groups
+        num_groups = len(group_sizes)
+        
+        # Initialize the reduced matrix with zeros
+        reduced_matrix = np.zeros((num_groups, num_groups), dtype=int)
+        
+        # Determine the indices that belong to each group
+        groups = []
+        start_idx = 0
+        for size in group_sizes:
+            groups.append(list(range(start_idx, start_idx + size)))
+            start_idx += size
+        
+        # Fill in the reduced matrix
+        for i, group_i in enumerate(groups):
+            for j, group_j in enumerate(groups):
+                for var_i in group_i:
+                    for var_j in group_j:
+                        if matrix[var_j, var_i] == 1:  # Check if var_j causes var_i
+                            reduced_matrix[j, i] = 1  # Since rows are causes, update [j, i]
+                            break  # No need to check further if one causal relationship is found
+        
+        # Ensure all groups have self-connection
+        np.fill_diagonal(reduced_matrix, 1)
+        
+        return reduced_matrix
+
     def generate_multi_var_ts(self, num_nodes, nonlinearity, interaction_density, num_samples=111):
         # Step 1: Define initial causal graph structure (acyclic) and generate links
         
@@ -33,14 +64,15 @@ class StructuralCausalModel:
         print(f'Possible links: {num_possible_links}')
         
         # Calculate the number of links to retain based on interaction density
-        num_links_to_retain = int(num_possible_links * interaction_density)
+        num_links_to_retain = int((num_possible_links * interaction_density)/2)
         print(f'Retaining links: {num_links_to_retain}')
 
 
         if num_links_to_retain == 0:
             # For interaction_density=0, print a message and break
-            print("There are no causal links at all.")
-            return None, None, None
+            num_links_to_retain = 1
+            # print("There are no causal links at all.")
+            # return None, None, None
         
         # Randomly assign causal connections based on interaction density
         for i in range(num_nodes):
