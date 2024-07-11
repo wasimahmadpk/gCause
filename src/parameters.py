@@ -81,25 +81,25 @@ def get_syn_params():
     # Parameters for synthetic data
     params = {
 
-        'group_num': 5,    
-        'groups': {'g1': [0, 2], 'g2': [2, 4], 'g3': [4, 6], 'g4': [6, 8], 'g5': [8, 10]}, # 'g3': [8, 12], 'g4': [12, 16], 'g5': [16, 20]
-        'groups_size': {'g1':[2], 'g2':[2], 'g3':[2], 'g4':[2], 'g5':[2]},    # 'g3':[4], 'g4':[4], 'g5':[4]
+        'group_num': 3,    
+        'groups': {'g1': [0, 2], 'g2': [2, 4], 'g3': [4, 6]}, # 'g3': [8, 12], 'g4': [12, 16], 'g5': [16, 20]
+        'groups_size': {'g1':[2], 'g2':[2], 'g3':[2]},    # 'g3':[4], 'g4':[4], 'g5':[4]
          
-        'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5]}, # 'g3': [8, 12], 'g4': [12, 16], 'g5': [16, 20]
-        'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1], 'g5':[1]},   
+        'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3]}, # 'g3': [8, 12], 'g4': [12, 16], 'g5': [16, 20]
+        'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1]},   
         
         'epochs': 75,
-        'pred_len': 10,
+        'pred_len': 15,
         'train_len': 500,
-        'num_layers': 5,
-        'num_cells': 50,
+        'num_layers': 4,
+        'num_cells': 40,
         'num_samples': 10,
         'dropout_rate': 0.1,
         'win_size': 1,
-        'num_sliding_win': 30,
+        'num_sliding_win': 21,
         'step_size': 3,
-        'dim': 10,
-        'dim_cc': 5,
+        'dim': 6,
+        'dim_cc': 3,
         'batch_size': 32,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],
