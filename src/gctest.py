@@ -197,14 +197,12 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                 pvi, pvu = [], []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                knockoff_samples = knockoff_samples + np.random.normal(0.0, 0.25, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                 interventionlist = [knockoff_samples]
                 heuristic_itn_types = ['In-dist']
 
                 mapeslol, mapeslolint = [], []
                 range_effect_group = list(range(start_effect, end_effect))
-
                 mse_interventions, imse_interventions, mape_interventions, imape_interventions = [], [], [], []
                     
                 for m in range(len(interventionlist)):  # apply all types of intervention methods
@@ -255,9 +253,8 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                                 # Generate multiple version Knockoffs
                                 data_actual = np.array(odata[: , start_batch: start_batch + training_length + prediction_length]).transpose()
                                 obj = Knockoffs()
-                                # knockoffs = obj.Generate_Knockoffs(n, params.get("dim"), data_actual)
+                                knockoffs = obj.Generate_Knockoffs(n, params.get("dim"), data_actual)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                                knockoff_samples = knockoff_samples + np.random.normal(0.0, 0.25, knockoff_samples.shape)
                                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                                 intervene = knockoff_samples
 
@@ -313,13 +310,13 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                         # ------------- Invariance testing (distribution and correlation) --------------
                         
                         # Calculate Spearman correlation coefficient and its p-value
-                        corr, pv_corr = spearmanr(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
+                        corr, pv_corr = spearmanr(mse_interventions[m][:, j-start_effect], imse_interventions[m][:, j-start_effect])
 
                         print("Intervention: " + heuristic_itn_types[m])
                         # adtest = anderson_ksamp([np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect])])
                         # t, p = adtest.statistic, adtest.significance_level
                         # t, p = ttest_ind(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
-                        t, p = ks_2samp(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
+                        t, p = ks_2samp(np.array(mse_interventions[m][:, j-start_effect]), np.array(imse_interventions[m][:, j-start_effect]))
                         pvals.append(1-p)
                         
                         print(f'Test statistic: {round(t, 2)}, p-value: {round(p, 2)}')
@@ -344,10 +341,10 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                         ax = fig.add_subplot(111)
 
                         # Calculate Spearman correlation coefficient and its p-value
-                        corr, p_val = spearmanr(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
+                        corr, p_val = spearmanr(mse_interventions[m][:, j-start_effect], imse_interventions[m][:, j-start_effect])
 
-                        plt.plot(mape_interventions[m][:, j-start_effect], color='g', alpha=0.7, label='Actual $\epsilon$')
-                        plt.plot(imape_interventions[m][:, j-start_effect], color='r', alpha=0.7, label='Counterfactual $\epsilon$')
+                        plt.plot(mse_interventions[m][:, j-start_effect], color='g', alpha=0.7, label='Actual $\epsilon$')
+                        plt.plot(imse_interventions[m][:, j-start_effect], color='r', alpha=0.7, label='Counterfactual $\epsilon$')
                         plt.title(f'corr: {round(corr, 2)}, p-val: {round(p_val, 2)}')
                         if len(columns) > 0:
                             # effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])
@@ -368,8 +365,8 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                         ax1 = fig.add_subplot(111)
                         
                         # Create the KDE plot
-                        sns.kdeplot(mape_interventions[m][:, j-start_effect], shade=True, color="g", label="Actual")
-                        sns.kdeplot(imape_interventions[m][:, j-start_effect], shade=True, color="y", label="Counterfactual")
+                        sns.kdeplot(mse_interventions[m][:, j-start_effect], shade=True, color="g", label="Actual")
+                        sns.kdeplot(imse_interventions[m][:, j-start_effect], shade=True, color="y", label="Counterfactual")
                         # sns.distplot(mapelol[0], color='red', label='Actual')
                         # sns.distplot(mapelolint[0], color='green', label='Counterfactual')
                         
@@ -398,8 +395,8 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                         
                         for q in range(1, end_effect-start_effect):
                         
-                            mape_df = pd.DataFrame(data=mape_mean, columns=columns[start_effect: end_effect])
-                            mape_int_df = pd.DataFrame(data=imape_mean, columns=columns[start_effect: end_effect])
+                            mape_df = pd.DataFrame(data=mse_mean, columns=columns[start_effect: end_effect])
+                            mape_int_df = pd.DataFrame(data=imse_mean, columns=columns[start_effect: end_effect])
 
                             # Create a single plot
                             fig = plt.figure()
