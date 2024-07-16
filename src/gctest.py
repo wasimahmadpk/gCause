@@ -253,7 +253,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                                 # Generate multiple version Knockoffs
                                 data_actual = np.array(odata[: , start_batch: start_batch + training_length + prediction_length]).transpose()
                                 obj = Knockoffs()
-                                knockoffs = obj.Generate_Knockoffs(n, params.get("dim"), data_actual)
+                                knockoffs = obj.Generate_Knockoffs(data_actual, params)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
                                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                                 intervene = knockoff_samples
