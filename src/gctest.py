@@ -263,7 +263,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                           
                             imse_batches.append(multi_var_point_imse)
                             imape_batches.append(multi_var_point_imse)
-                            # np.random.shuffle(intervene)
+                            np.random.shuffle(intervene)
                             start_batch = start_batch + 3
                         
                         imse_realization.append(np.array(imse_batches))
@@ -311,10 +311,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                         
                         # Calculate Spearman correlation coefficient and its p-value
                         corr, pv_corr = spearmanr(mse_interventions[m][:, j-start_effect], imse_interventions[m][:, j-start_effect])
-
                         print("Intervention: " + heuristic_itn_types[m])
-                        # adtest = anderson_ksamp([np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect])])
-                        # t, p = adtest.statistic, adtest.significance_level
                         # t, p = ttest_ind(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
                         t, p = ks_2samp(np.array(mse_interventions[m][:, j-start_effect]), np.array(imse_interventions[m][:, j-start_effect]))
                         pvals.append(1-p)

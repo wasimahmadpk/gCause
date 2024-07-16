@@ -81,22 +81,22 @@ def get_syn_params():
     # Parameters for synthetic data
     params = {
 
-        'group_num': 4,    
-        'groups': {'g1': [0, 2], 'g2': [2, 4], 'g3': [4, 6], 'g4': [6, 8]}, 
-        'groups_size': {'g1':[2], 'g2':[2], 'g3':[2], 'g4':[2]},   
+        'group_num': 3,    
+        'groups': {'g1': [0, 2], 'g2': [2, 4], 'g3': [4, 6]}, # , 'g4': [6, 8] 
+        'groups_size': {'g1':[2], 'g2':[2], 'g3':[2]}, # , 'g4':[2]    
          
-        'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4]}, 
-        'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1]},   
+        'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3]}, # , 'g4': [3, 4] 
+        'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1]}, # , 'g4':[1]   
         
-        'epochs': 75,
-        'pred_len': 15,
+        'epochs': 50,
+        'pred_len': 12,
         'train_len': 500,
         'num_layers': 4,
         'num_cells': 40,
         'num_samples': 10,
         'dropout_rate': 0.1,
         'win_size': 1,
-        'num_sliding_win': 15,
+        'num_sliding_win': 11,
         'step_size': 3,
         'dim': 6,
         'dim_cc': 3,
@@ -239,7 +239,7 @@ def get_geo_params_gc():
         'num_samples': 10,
         'dropout_rate': 0.1,
         'win_size': 1,
-        'slidingwin_size': 100,
+        'slidingwin_size': 15,
         'step_size': 10,
         'dim': 6,
         'batch_size': 32,
