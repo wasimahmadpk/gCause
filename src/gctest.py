@@ -313,7 +313,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                         corr, pv_corr = spearmanr(mse_interventions[m][:, j-start_effect], imse_interventions[m][:, j-start_effect])
                         print("Intervention: " + heuristic_itn_types[m])
                         # t, p = ttest_ind(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
-                        t, p = ks_2samp(np.array(mse_interventions[m][:, j-start_effect]), np.array(imse_interventions[m][:, j-start_effect]))
+                        t, p = ks_2samp(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
                         pvals.append(1-p)
                         
                         print(f'Test statistic: {round(t, 2)}, p-value: {round(p, 2)}')
