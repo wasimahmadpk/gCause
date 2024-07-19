@@ -181,9 +181,9 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
         for h in range(group_num):
             cause_list = []
          
-            if g==h:
-                causal_links.append(1)
-            if g!=h:
+            # if g==h:
+                # causal_links.append(1)
+            if g > -1: #g!=h:
                 
                 start_effect = groups.get(f'g{h+1}')[0]
                 end_effect = groups.get(f'g{h+1}')[1]
