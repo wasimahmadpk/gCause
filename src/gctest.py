@@ -58,7 +58,6 @@ def evaluate(actual, predicted):
     
     # Calculate confusion matrix
     cm = confusion_matrix(y_true_flat, y_pred_flat)
-    
     # Extract TP, TN, FP, FN from confusion matrix
     tn, fp, fn, tp = cm.ravel()
     
@@ -104,6 +103,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
     true_conf_mat = params["true_graph"]
     group_num = params['group_num']
     columns = params.get('col')
+    step = params.get('step_size')
     
     if not canonical:
         groups = params['groups']
@@ -137,7 +137,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
     mse_realization, mape_realization = [], []
     causal_matrix = []
     data_range = list(range(len(odata)))
-    for r in range(2):  # realizations
+    for r in range(2):  # number of time series realizations
                         
         start_batch = 10
         mse_batches, mape_batches = [], []
@@ -154,7 +154,6 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                 freq=frequency,
                 one_dim_target=False
             )
-
             multi_var_point_mse, muti_var_point_mape = modelTest(model, test_ds, num_samples, test_data, data_range,
                                         prediction_length, iter, False, 0)
                 # # now restore stdout function
@@ -162,7 +161,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
 
             mse_batches.append(multi_var_point_mse)
             mape_batches.append(multi_var_point_mse)
-            start_batch = start_batch + 3
+            start_batch = start_batch + step
         
         mse_realization.append(np.array(mse_batches))
         mape_realization.append(np.array(mape_batches))
@@ -264,14 +263,13 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                             imse_batches.append(multi_var_point_imse)
                             imape_batches.append(multi_var_point_imse)
                             np.random.shuffle(intervene)
-                            start_batch = start_batch + 3
+                            start_batch = start_batch + step
                         
                         imse_realization.append(np.array(imse_batches))
                         imape_realization.append(np.array(imape_batches))
                     
                     # print('Forecast Multivariate_Point')
                     # print(np.array(multi_var_point_mse).shape)
-
                     # print('Forecast Multivariate Realization')
                     # print(np.array(mape_realization).shape)
                     # print(np.stack(mape_realization))    
@@ -310,13 +308,13 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                         # ------------- Invariance testing (distribution and correlation) --------------
                         
                         # Calculate Spearman correlation coefficient and its p-value
-                        corr, pv_corr = spearmanr(mse_interventions[m][:, j-start_effect], imse_interventions[m][:, j-start_effect])
+                        corr, pv_corr = spearmanr(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
                         print("Intervention: " + heuristic_itn_types[m])
                         # t, p = ttest_ind(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
                         t, p = ks_2samp(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
                         pvals.append(1-p)
                         
-                        print(f'Test statistic: {round(t, 2)}, p-value: {round(p, 2)}')
+                        print(f'Test statistic: {round(t, 2)}, pv-dist: {round(p, 2)}, pv-corr: {round(pv_corr, 2)}')
                         if p < 0.10:
                             print("\033[92mNull hypothesis is rejected\033[0m")
                             causal_decision.append(1)
