@@ -96,7 +96,7 @@ def get_syn_params():
         'num_samples': 5,
         'dropout_rate': 0.10,
         'win_size': 1,
-        'num_sliding_win': 25,
+        'num_sliding_win': 15,
         'step_size': 5,
         'dim': 8,
         'dim_cc': 4,

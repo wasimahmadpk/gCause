@@ -10,6 +10,7 @@ import numpy as np
 import mxnet as mx
 import pandas as pd
 import seaborn as sns
+from scipy import stats
 import preprocessing as prep
 from inference import modelTest
 import matplotlib.pyplot as plt
@@ -89,6 +90,25 @@ def evaluate(actual, predicted):
     
     return metrics
 
+# Diebold-Mariano test function
+def dm_test(err1, err2, h=1, crit="MSE"):
+    
+    # Compute the loss differentials (MSE differences)
+    d_mse = err1 - err2
+
+    # Compute the mean and variance of the loss differentials
+    mean_d = np.mean(d_mse)
+    var_d = np.var(d_mse, ddof=1)
+
+    # Number of forecasts
+    T = len(d_mse)
+
+    # Compute the DM test statistic
+    dm_stat = mean_d / np.sqrt((var_d / T) * (1 + 2 * np.sum([1 - i / T for i in range(1, T)])))
+
+    # Compute the p-value
+    p_value = 2 * (1 - stats.norm.cdf(np.abs(dm_stat)))
+    return dm_stat, p_value
 
 def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
 
@@ -196,7 +216,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                 pvi, pvu = [], []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
+                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                 interventionlist = [knockoff_samples]
                 heuristic_itn_types = ['In-dist']
 
@@ -254,7 +274,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                                 obj = Knockoffs()
                                 knockoffs = obj.Generate_Knockoffs(data_actual, params)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                                # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
+                                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                                 intervene = knockoff_samples
 
                                 # # now restore stdout function
@@ -262,7 +282,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                           
                             imse_batches.append(multi_var_point_imse)
                             imape_batches.append(multi_var_point_imse)
-                            np.random.shuffle(intervene)
+                            # np.random.shuffle(intervene)
                             start_batch = start_batch + step
                         
                         imse_realization.append(np.array(imse_batches))
@@ -306,9 +326,16 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                         pvals = []
                         
                         # ------------- Invariance testing (distribution and correlation) --------------
+
+
+                        # -----------------------------------------------------------
+                        # Perform the DM test
+                        t, pv_corr = dm_test(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
+                        # print(f"DM Statistic: {t}, p-value: {p}")
+                        # -----------------------------------------------------------
                         
                         # Calculate Spearman correlation coefficient and its p-value
-                        corr, pv_corr = spearmanr(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
+                        # corr, pv_corr = spearmanr(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
                         print("Intervention: " + heuristic_itn_types[m])
                         # t, p = ttest_ind(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
                         t, p = ks_2samp(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
@@ -320,7 +347,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                             causal_decision.append(1)
                             print("-------------------------------------------------------")
                         else:
-                            if pv_corr > 0.10:
+                            if pv_corr < 0.50:
                                 print("\033[92mNull hypothesis is rejected\033[0m")
                                 causal_decision.append(1)
                                 print("-------------------------------------------------------")
