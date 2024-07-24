@@ -215,8 +215,9 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                 # p-values
                 pvi, pvu = [], []
                 
-                knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
+                knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
+                knockoff_samples = knockoff_samples + np.random.normal(0, 0.25, knockoff_samples.shape)
+                # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape) + np.random.normal(0, 0.25, knockoff_samples.shape)
                 interventionlist = [knockoff_samples]
                 heuristic_itn_types = ['In-dist']
 
@@ -270,11 +271,12 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                                 # text_trap = io.StringIO()
                                 # sys.stdout = text_trap
                                 # Generate multiple version Knockoffs
-                                data_actual = np.array(odata[: , start_batch: start_batch + training_length + prediction_length]).transpose()
+                                data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
                                 obj = Knockoffs()
                                 knockoffs = obj.Generate_Knockoffs(data_actual, params)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
+                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.25, knockoff_samples.shape)
+                                # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape) + np.random.normal(0, 0.25, knockoff_samples.shape)
                                 intervene = knockoff_samples
 
                                 # # now restore stdout function
@@ -342,12 +344,12 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                         pvals.append(1-p)
                         
                         print(f'Test statistic: {round(t, 2)}, pv-dist: {round(p, 2)}, pv-corr: {round(pv_corr, 2)}')
-                        if p < 0.10:
+                        if p < 0.05:
                             print("\033[92mNull hypothesis is rejected\033[0m")
                             causal_decision.append(1)
                             print("-------------------------------------------------------")
                         else:
-                            if pv_corr < 0.50:
+                            if pv_corr < 0.05:
                                 print("\033[92mNull hypothesis is rejected\033[0m")
                                 causal_decision.append(1)
                                 print("-------------------------------------------------------")
