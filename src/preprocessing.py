@@ -58,6 +58,37 @@ def get_shuffled_ts(SAMPLE_RATE, DURATION, root):
     return new_ts
 
 
+def get_ground_truth(matrix, group_sizes):
+    # Convert the input matrix to a numpy array
+    matrix = np.array(matrix)
+    
+    # Determine the number of groups
+    num_groups = len(group_sizes)
+    
+    # Initialize the reduced matrix with zeros
+    reduced_matrix = np.zeros((num_groups, num_groups), dtype=int)
+    
+    # Determine the indices that belong to each group
+    groups = []
+    start_idx = 0
+    for size in group_sizes:
+        groups.append(list(range(start_idx, start_idx + size)))
+        start_idx += size
+    
+    # Fill in the reduced matrix
+    for i, group_i in enumerate(groups):
+        for j, group_j in enumerate(groups):
+            for var_i in group_i:
+                for var_j in group_j:
+                    if matrix[var_j, var_i] != 0:  # Check if var_j causes var_i
+                        reduced_matrix[j, i] = 1  # Since rows are causes, update [j, i]
+                        break  # No need to check further if one causal relationship is found
+    
+    # Ensure all groups have self-connection
+    np.fill_diagonal(reduced_matrix, 1)
+    return reduced_matrix
+
+
 def deseasonalize(var, interval):
     deseasonalize_data = []
     for i in range(interval, len(var)):
@@ -400,13 +431,15 @@ def load_netsim_data():
     df = df.apply(normalize)
     return df
 
-def load_sims_data():
+def load_sims_data(groups):
     # Load .mat file
     mat_file_path = r'../datasets/sims/sim4.mat'
     mat_data = sci.io.loadmat(mat_file_path)
-    dim = 25
-    cols = [f'Var$_{i}$' for i in range(1, dim+1)]
-    df = pd.DataFrame(data= mat_data['ts'][: 600, :dim], columns=cols)
+    dim = groups*5
+    cols = [f'Z{i}' for i in range(1, dim+1)]
+    df = pd.DataFrame(data= mat_data['ts'][: 200, :dim], columns=cols)
     df = df.apply(normalize)
 
-    return df
+    cgraphs = mat_data['net'][0, :dim, :dim].T
+
+    return df, cgraphs

@@ -327,17 +327,19 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                         
                         pvals = []
                         
-                        # ------------- Invariance testing (distribution and correlation) --------------
+                        # ----------------------------------------------------------- 
+                        #      Invariance testing (distribution and correlation) 
+                        # -----------------------------------------------------------
 
 
                         # -----------------------------------------------------------
                         # Perform the DM test
-                        t, pv_corr = dm_test(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
+                        # t, pv_corr = dm_test(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
                         # print(f"DM Statistic: {t}, p-value: {p}")
                         # -----------------------------------------------------------
                         
                         # Calculate Spearman correlation coefficient and its p-value
-                        # corr, pv_corr = spearmanr(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
+                        corr, pv_corr = spearmanr(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
                         print("Intervention: " + heuristic_itn_types[m])
                         # t, p = ttest_ind(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
                         t, p = ks_2samp(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
@@ -349,13 +351,13 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                             causal_decision.append(1)
                             print("-------------------------------------------------------")
                         else:
-                            if pv_corr < 0.05:
-                                print("\033[92mNull hypothesis is rejected\033[0m")
-                                causal_decision.append(1)
-                                print("-------------------------------------------------------")
-                            else:
+                            if pv_corr < 0.25:
                                 print("\033[94mFail to reject null hypothesis\033[0m")
                                 causal_decision.append(0)
+                                print("-------------------------------------------------------")
+                            else:
+                                print("\033[92mNull hypothesis is rejected\033[0m")
+                                causal_decision.append(1)
                                 print("-------------------------------------------------------")
                         
                         pvi.append(pvals[0])

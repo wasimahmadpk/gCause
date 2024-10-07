@@ -151,14 +151,18 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
     def nonlinear_transform(value):
         return np.sin(value)  # Example nonlinear function
 
-    # Initialize time series data with small Gaussian noise
-    data = np.random.normal(size=(timesteps, n)) * 0.5
+   # Initialize two time series with random Gaussian noise
+    data = np.random.normal(size=(timesteps, n)) * 0.75
+    # Add seasonality with cycles repeating every 24 samples
+    seasonality = 0.25 * np.sin(np.linspace(0, 2 * np.pi * timesteps / 24, timesteps))[:, None]
+    # Add the seasonality to both time series
+    data += seasonality
 
     # Update time series data based on DAG relationships, including autoregression on itself
     for t in range(1, timesteps):
         for i in range(n):
-            # Start with the own past value
-            data[t, i] = 0.33 * data[t-1, i]
+            # # Start with the own past value
+            # data[t, i] = 0.99 * data[t-1, i]
 
             # Add contributions from the parents
             parents = list(G.predecessors(f'G{i+1}'))
@@ -172,7 +176,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
                         data[t, i] += data[t-1, parent_index]
 
             # Add Gaussian noise
-            data[t, i] += np.random.normal(scale=0.33)
+            data[t, i] += np.random.normal(scale=0.25)
 
     # Convert to DataFrame
     df = pd.DataFrame(data, columns=[f'Z{i}' for i in range(n)])

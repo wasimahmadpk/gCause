@@ -88,7 +88,7 @@ def get_syn_params():
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4]}, #  
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1]}, #    
         
-        'epochs': 500,
+        'epochs': 75,
         'pred_len': 10,
         'train_len': 500,
         'num_layers': 5,
@@ -96,7 +96,7 @@ def get_syn_params():
         'num_samples': 5,
         'dropout_rate': 0.10,
         'win_size': 1,
-        'num_sliding_win': 30,
+        'num_sliding_win': 25,
         'step_size': 5,
         'dim': 8,
         'dim_cc': 4,
@@ -326,22 +326,28 @@ def get_netsim_params():
 
 def get_sims_params():
 
+    # Parameters for synthetic data
     params = {
 
-        'group_num': 5,    
-        'groups': {'g1': [0, 5], 'g2': [5, 10], 'g3': [10, 15], 'g4': [15, 20], 'g5': [20, 25]},    # 'g1': [0, 33], 'g2': [33, 69]
-        'groups_size': {'g1':[5], 'g2':[5], 'g3':[5], 'g4':[5], 'g5':[5]},
-        'epochs': 75,
-        'pred_len': 15,
-        'train_len': 333,
-        'num_layers': 7,
-        'num_cells': 60,
-        'num_samples': 10,
-        'dropout_rate': 0.1,
+        'group_num': 4,    
+        'groups': {'g1': [0, 2], 'g2': [2, 4], 'g3': [4, 6], 'g4': [6, 8]}, #  
+        'groups_size': {'g1':[2], 'g2':[2], 'g3':[2], 'g4':[2]}, # 
+         
+        'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4]}, #  
+        'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1]}, #    
+        
+        'epochs': 50,
+        'pred_len': 10,
+        'train_len': 120,
+        'num_layers': 5,
+        'num_cells': 50,
+        'num_samples': 5,
+        'dropout_rate': 0.10,
         'win_size': 1,
-        'slidingwin_size': 100,
-        'step_size': 10,
-        'dim': 25,
+        'num_sliding_win': 25,
+        'step_size': 2,
+        'dim': 8,
+        'dim_cc': 4,
         'batch_size': 32,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],
@@ -354,7 +360,10 @@ def get_sims_params():
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
         'freq': '30min',
-        'plot_path': "/home/ahmad/Projects/gCause/plots/"
+        'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs/",
+        'model_path': "/home/ahmad/Projects/gCause/models/gc/",
+        'model_name': 'trained_netsim',
+        'model_name_cc': 'trained_netsim_cc'
     }
-    return params
 
+    return params
