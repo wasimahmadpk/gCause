@@ -26,7 +26,7 @@ from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_
 np.random.seed(1)
 mx.random.seed(2)
 
-params = parameters.get_syn_params()
+params = parameters.get_sims_params()
 num_samples = params["num_samples"]
 step = params["step_size"]
 training_length = params["train_len"]
