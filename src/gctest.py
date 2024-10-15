@@ -26,7 +26,7 @@ from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_
 np.random.seed(1)
 mx.random.seed(2)
 
-params = parameters.get_sims_params()
+params = parameters.get_syn_params()
 num_samples = params["num_samples"]
 step = params["step_size"]
 training_length = params["train_len"]
@@ -216,7 +216,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                 pvi, pvu = [], []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(0, 0.25, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(0, 0.99, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape) + np.random.normal(0, 0.25, knockoff_samples.shape)
                 interventionlist = [knockoff_samples]
                 heuristic_itn_types = ['In-dist']
@@ -275,7 +275,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                                 obj = Knockoffs()
                                 knockoffs = obj.Generate_Knockoffs(data_actual, params)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.25, knockoff_samples.shape)
+                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.99, knockoff_samples.shape)
                                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape) + np.random.normal(0, 0.25, knockoff_samples.shape)
                                 intervene = knockoff_samples
 
@@ -346,7 +346,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                         pvals.append(1-p)
                         
                         print(f'Test statistic: {round(t, 2)}, pv-dist: {round(p, 2)}, pv-corr: {round(pv_corr, 2)}')
-                        if p < 0.05:
+                        if p < 0.1:
                             print("\033[92mNull hypothesis is rejected\033[0m")
                             causal_decision.append(1)
                             print("-------------------------------------------------------")
