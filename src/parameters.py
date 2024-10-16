@@ -103,6 +103,7 @@ def get_syn_params():
         'num_sliding_win': 15,
         'step_size': 5,
         'dim': 8,
+        'dim_fs': 8,
         'dim_cc': 4,
         'batch_size': 32,
         'prior_graph': np.array([[1, 1, 1, 0, 1],

@@ -184,7 +184,9 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
 
     red_matrix = reduce_causal_matrix(adjacency_matrix.astype(int), g, s)
     np.fill_diagonal(red_matrix, 1)
+    full_matrix = adjacency_matrix.astype(int)
+    np.fill_diagonal(full_matrix, 1) 
 
     plot_graph(g, red_matrix)
 
-    return df, red_matrix  # adjacency_matrix.astype(int),
+    return df, red_matrix, full_matrix

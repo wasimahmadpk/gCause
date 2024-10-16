@@ -110,7 +110,7 @@ def dm_test(err1, err2, h=1, crit="MSE"):
     p_value = 2 * (1 - stats.norm.cdf(np.abs(dm_stat)))
     return dm_stat, p_value
 
-def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
+def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
 
     num_samples = params['num_samples']
     step = params['step_size']
@@ -125,8 +125,11 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
     columns = params.get('col')
     step = params.get('step_size')
     
-    if not canonical:
+    if method=='Group':
         groups = params['groups']
+    elif method=='Full':
+        groups = params['groups_fs']
+        group_num = params['group_num_fs']
     else:
         groups = params['groups_cc']
 
@@ -216,7 +219,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                 pvi, pvu = [], []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(0, 0.99, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(0, 0.10, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape) + np.random.normal(0, 0.25, knockoff_samples.shape)
                 interventionlist = [knockoff_samples]
                 heuristic_itn_types = ['In-dist']
@@ -275,7 +278,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                                 obj = Knockoffs()
                                 knockoffs = obj.Generate_Knockoffs(data_actual, params)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.99, knockoff_samples.shape)
+                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.10, knockoff_samples.shape)
                                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape) + np.random.normal(0, 0.25, knockoff_samples.shape)
                                 intervene = knockoff_samples
 
@@ -458,7 +461,10 @@ def groupCause(odata, knockoffs, model, params, ground_truth, canonical):
                             plt.savefig(filename)
                             # plt.show()
                 
-                causal_links.append(1 if 1 in cause_list else 0)
+                if method=='Full':
+                    causal_links.append(cause_list[0])
+                else: 
+                    causal_links.append(1 if 1 in cause_list else 0)
 
         causal_matrix.append(causal_links)
     
