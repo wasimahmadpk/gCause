@@ -93,10 +93,10 @@ def get_syn_params():
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1]}, #    
         
         'epochs': 50,
-        'pred_len': 10,
+        'pred_len': 5,
         'train_len': 500,
-        'num_layers': 8,
-        'num_cells': 55,
+        'num_layers': 5,
+        'num_cells': 50,
         'num_samples': 5,
         'dropout_rate': 0.10,
         'win_size': 1,

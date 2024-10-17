@@ -200,7 +200,7 @@ def groupCause(odata, knockoffs, model, params):
                                 mselistint_batch.append(mseint)
                                 mapelistint_batch.append(mapeint)
 
-                            start_batch = start_batch + 9                         # Step size for sliding window # 15
+                            start_batch = start_batch + 9                           # Step size for sliding window # 15
                             mselist.append(np.mean(mselist_batch))                  # mselist = mselist_batch
                             mapelist.append(np.mean(mapelist_batch))                # mapelist = mapelist_batch
                             mselistint.append(np.mean(mselistint_batch))            # mselistint = mselistint_batch

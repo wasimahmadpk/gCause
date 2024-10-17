@@ -151,7 +151,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
     def nonlinear_transform(value):
         return np.sin(value)  # Example nonlinear function
 
-   # Initialize two time series with random Gaussian noise
+   # Initialize the time series with random Gaussian noise
     data = np.random.normal(size=(timesteps, n)) * 0.75
     # Add seasonality with cycles repeating every 24 samples
     seasonality = 0.25 * np.sin(np.linspace(0, 2 * np.pi * timesteps / 24, timesteps))[:, None]

@@ -259,7 +259,6 @@ def load_nino_data():
     xdata = xr.open_dataset('/home/ahmad/Projects/gCause/datasets/nino/AirTempData.nc')
     crit_list = []
 
-
     for i in range(2,5): # grid coarsening parameter for NINO longitude
         for k in range(1,4): # grid coarsening parameter NINO latitude, smaller range because NINo 3.4 has limited latitudinal grid-boxes 
             for j in range(2,5): # grid coarsening parameter for BCT latitude
@@ -306,7 +305,7 @@ def load_nino_data():
                         reshaped_Xregion = np.reshape(num_ond_Xregion, newshape = (num_ond_Xregion.shape[0],num_ond_Xregion.shape[1]*num_ond_Xregion.shape[2]))
 
                         # BCT for jan-feb-mar
-                        #-------------------
+                        #------------------------------------------------------------------------
 
                         jfm_Yregion = anomalies_Yregion.sel(time=is_jfm(xdata['time.month']))
                         jfm_Yregion_by_year = jfm_Yregion.groupby("time.year").mean()
@@ -318,14 +317,14 @@ def load_nino_data():
                         if abs(reshaped_Xregion.shape[1]-reshaped_Yregion.shape[1])<12:
 
                             #GAUSSIAN KERNEL SMOOTHING
-                            #-------------------------
+                            #-----------------------------------------------
                             for var in range(reshaped_Xregion.shape[1]):
                                 reshaped_Xregion[:, var] = pp.smooth(reshaped_Xregion[:, var], smooth_width=12*10, kernel='gaussian', mask=None,
                                                             residuals=True)
                             for var in range(reshaped_Yregion.shape[1]):
                                 reshaped_Yregion[:, var] = pp.smooth(reshaped_Yregion[:, var], smooth_width=12*10, kernel='gaussian', mask=None,
                                                             residuals=True)
-                            ##################################
+                            # ----------------------------------------------
                             def shift_by_one(array1, array2, t):
                                 if t == 0:
                                     return array1, array2

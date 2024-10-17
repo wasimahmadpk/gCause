@@ -219,7 +219,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                 pvi, pvu = [], []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(0, 0.10, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(0, 0.99, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape) + np.random.normal(0, 0.25, knockoff_samples.shape)
                 interventionlist = [knockoff_samples]
                 heuristic_itn_types = ['In-dist']
@@ -278,7 +278,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                                 obj = Knockoffs()
                                 knockoffs = obj.Generate_Knockoffs(data_actual, params)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.10, knockoff_samples.shape)
+                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.99, knockoff_samples.shape)
                                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape) + np.random.normal(0, 0.25, knockoff_samples.shape)
                                 intervene = knockoff_samples
 
@@ -349,7 +349,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                         pvals.append(1-p)
                         
                         print(f'Test statistic: {round(t, 2)}, pv-dist: {round(p, 2)}, pv-corr: {round(pv_corr, 2)}')
-                        if p < 0.1:
+                        if p < 0.10:
                             print("\033[92mNull hypothesis is rejected\033[0m")
                             causal_decision.append(1)
                             print("-------------------------------------------------------")
@@ -413,7 +413,6 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                         plt.savefig(filename)
                         plt.show()
                         # plt.close()
-                        
                         #-------------------------------------------------------------------------------------
                         cause_list.append(causal_decision[0])
                         indist_cause.append(causal_decision[0])
