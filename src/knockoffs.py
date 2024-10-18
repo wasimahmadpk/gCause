@@ -221,7 +221,7 @@ if __name__ == '__main__':
     reco = normalize(down_sample(syndata['Reco'], win_size))
 
 
-    obj = knockoffs()
+    obj = Knockoffs()
     datax = np.array([rg, temp, gpp, reco]).transpose()
     n = len(rg)
     dim = 4

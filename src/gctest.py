@@ -41,6 +41,33 @@ groups = params['groups']
 num_sliding_win = params['num_sliding_win']
 
 
+def calculate_shd(ground_truth, predicted):
+    """
+    Calculates the Structural Hamming Distance (SHD) between two DAG adjacency matrices.
+    SHD is the number of differing edges between the ground truth and predicted matrices.
+    
+    :param ground_truth: np.ndarray - Ground truth adjacency matrix (n x n).
+    :param predicted: np.ndarray - Predicted adjacency matrix (n x n).
+    :return: int - The SHD between the two matrices.
+    """
+    if ground_truth.shape != predicted.shape:
+        raise ValueError("Both matrices must have the same shape")
+    
+    # Element-wise comparison (1 where they differ, 0 where they are the same)
+    differences = ground_truth != predicted
+    
+    # Sum the number of differing edges (the number of 1s in the differences matrix)
+    shd = np.sum(differences)
+    
+    # Calculate the maximum possible number of edges (n * (n - 1) for an n x n adjacency matrix without self-loops)
+    n = ground_truth.shape[0]
+    max_edges = n * (n - 1)
+    
+    # Calculate normalized SHD
+    normalized_shd = shd / max_edges
+    
+    return normalized_shd
+
 def convert_variable_name(variable_name):
     # Use regular expression to find and replace digits with subscript format
     return re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', variable_name)
@@ -73,6 +100,7 @@ def evaluate(actual, predicted):
     f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) != 0 else 0
     
     # Create a dictionary to store metrics
+    shd = calculate_shd(np.array(actual), np.array(predicted))
     metrics = {
         # 'TP': tp,
         # 'TN': tn,
@@ -85,7 +113,8 @@ def evaluate(actual, predicted):
         'Accuracy': accuracy,
         'Precision': precision,
         'Recall': recall,
-        'Fscore': f1_score
+        'Fscore': f1_score,
+        'SHD': shd
     }
     
     return metrics
