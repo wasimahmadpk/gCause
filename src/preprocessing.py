@@ -212,6 +212,11 @@ def load_geo_data():
     #    'snow_load', 'humidity', 'glob_radiaton', 'strain_ew_uncorrected',
     #    'strain_ns_uncorrected', 'strain_ew_corrected', 'strain_ns_corrected',
     #    'tides_ew', 'tides_ns']
+
+    # groundwater group: ['gw_mb', 'gw_sg', , 'gw_sr', 'gw_west', 'gw_knee', 'gw_south']
+    # climate group: ['temperature_outside', 'pressure_outside', 'wind_x', 'wind_y', 'humidity', 'glob_raditon']
+    # strain group: ['strain_ew_corrected', 'strain_ns_corrected'] 
+    
     vars = ['DateTime', 'gw_mb', 'gw_sg', 'gw_knee', 'gw_south', 'strain_ew_corrected', 'strain_ns_corrected']
     # vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'wind_x', 'snow_load', 'strain_ew_corrected', 'strain_ns_corrected']
     data = pd.read_csv(path, usecols=vars)
@@ -238,16 +243,6 @@ def load_hackathon_data():
     st, sv = simple_load_csv("/home/ahmad/Projects/gCause/datasets/hackathon_data/step-amount_interpolated_3600_iv_ct_15.csv")
     it, iv = simple_load_csv("/home/ahmad/Projects/gCause/datasets/hackathon_data/in-bed_interpolated_3600_iv_sp_19.csv")
     at, av = simple_load_csv("/home/ahmad/Projects/gCause/datasets/hackathon_data/awake_interpolated_3600_iv_sp_18.csv")
-
-        # plt.plot(bov)
-        # plt.plot(wv)
-        # plt.plot(hrv)
-        # plt.show()
-
-        # v15 = np.nan_to_num(aggregate_avg(ts_15, v_15, 60 * 60))
-        # v3 = np.nan_to_num(aggregate_avg(ts_3, v_3, 60 * 60))
-        # v2 = np.nan_to_num(aggregate_avg(ts_2, v_2, 60 * 60))
-        # v1 = np.nan_to_num(aggregate_avg(ts_1, v_1, 60 * 60))
 
     data = {'BO': bov[7500:10000], 'WV': wv[7500:10000], 'HR': hrv[7500:10000], 'Step': sv[7500:10000], 'IB': iv[7500:10000], 'Awake': av[7500:10000]}
     df = pd.DataFrame(data, columns=['BO', 'WV', 'HR', 'Step', 'IB', 'Awake'])
