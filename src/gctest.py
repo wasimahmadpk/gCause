@@ -171,17 +171,10 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
     pvalues, pval_indist, pval_uniform = [], [], []
     causal_decision, causal_decision_1tier, indist_cause, uni_cause, group_cause = [], [], [], [], []
 
-    # # create a text trap and redirect stdout
-    # text_trap = io.StringIO()
-    # sys.stdout = text_trap
-
     # Generate Knockoffs
     data_actual = np.array(odata[: , 0: training_length + prediction_length]).transpose()
     obj = Knockoffs()
     knockoffs = obj.Generate_Knockoffs(data_actual, params)
-
-    # now restore stdout function
-    # sys.stdout = sys.__stdout__
     
     # ------------------------------------------------------------------------------
     #         Inference for joint distribution of the multivarite system 
@@ -208,8 +201,6 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
             )
             multi_var_point_mse, muti_var_point_mape = modelTest(model, test_ds, num_samples, test_data, data_range,
                                         prediction_length, iter, False, 0)
-                # # now restore stdout function
-                # sys.stdout = sys.__stdout__
 
             mse_batches.append(multi_var_point_mse)
             mape_batches.append(multi_var_point_mse)
@@ -250,8 +241,8 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                 pvi, pvu = [], []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
-                # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape) + np.random.normal(0, 0.25, knockoff_samples.shape)
+                # knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
+                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                 interventionlist = [knockoff_samples]
                 heuristic_itn_types = ['In-dist']
 
@@ -301,20 +292,14 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                                                         range_effect_group, prediction_length, iter, True, m)
 
                             if m == 0:
-                                #  # create a text trap and redirect stdout
-                                # text_trap = io.StringIO()
-                                # sys.stdout = text_trap
-                                # Generate multiple version Knockoffs
+                            
                                 data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
                                 obj = Knockoffs()
                                 knockoffs = obj.Generate_Knockoffs(data_actual, params)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
-                                # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape) + np.random.normal(0, 0.25, knockoff_samples.shape)
+                                # knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
+                                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                                 intervene = knockoff_samples
-
-                                # # now restore stdout function
-                                # sys.stdout = sys.__stdout__
                           
                             imse_batches.append(multi_var_point_imse)
                             imape_batches.append(multi_var_point_imse)
