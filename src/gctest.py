@@ -521,14 +521,14 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
      
     # Calculate metrics
     metrics = evaluate(ground_truth, causal_matrix)
-    metrics_1tier = evaluate(ground_truth, causal_matrix)
+    metrics_1tier = evaluate(ground_truth, causal_matrix_1tier)
     # Print metrics
     for metric, value in metrics.items():
         print(f"{metric}: {value:.2f}")
 
     # Print metrics
     for metric, value in metrics_1tier.items():
-        print('Tier 1 \n')
+        print('---******--- Tier 1 test ---******--- \n')
         print(f"{metric}: {value:.2f}")
 
     return metrics, conf_mat, metrics_1tier
