@@ -169,7 +169,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
 
     conf_mat, conf_mat_indist, conf_mat_uniform, causal_direction = [], [], [], []
     pvalues, pval_indist, pval_uniform = [], [], []
-    causal_decision, indist_cause, uni_cause, group_cause = [], [], [], []
+    causal_decision, causal_decision_1tier, indist_cause, uni_cause, group_cause = [], [], [], [], []
 
     # # create a text trap and redirect stdout
     # text_trap = io.StringIO()
@@ -187,7 +187,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
     #         Inference for joint distribution of the multivarite system 
     # ------------------------------------------------------------------------------
     mse_realization, mape_realization = [], []
-    causal_matrix = []
+    causal_matrix, causal_matrix_1tier = [], []
     data_range = list(range(len(odata)))
     for r in range(2):  # number of time series realizations
                         
@@ -230,8 +230,10 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
     # ------------------------------------------------------------------------------------
     for g in range(group_num):
         causal_links = []
+        causal_links_1tier = []
         for h in range(group_num):
             cause_list = []
+            cause_list_1tier = []
          
             # if g==h:
                 # causal_links.append(1)
@@ -248,7 +250,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                 pvi, pvu = [], []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(0, 0.99, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape) + np.random.normal(0, 0.25, knockoff_samples.shape)
                 interventionlist = [knockoff_samples]
                 heuristic_itn_types = ['In-dist']
@@ -307,7 +309,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                                 obj = Knockoffs()
                                 knockoffs = obj.Generate_Knockoffs(data_actual, params)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.99, knockoff_samples.shape)
+                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
                                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape) + np.random.normal(0, 0.25, knockoff_samples.shape)
                                 intervene = knockoff_samples
 
@@ -381,8 +383,10 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                         if p < 0.01:
                             print("\033[92mNull hypothesis is rejected\033[0m")
                             causal_decision.append(1)
+                            causal_decision_1tier.append(1)
                             print("-------------------------------------------------------")
                         else:
+                            causal_decision_1tier.append(0)
                             if pv_corr < 0.25:
                                 print("\033[94mFail to reject null hypothesis\033[0m")
                                 causal_decision.append(0)
@@ -444,6 +448,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                         # plt.close()
                         #-------------------------------------------------------------------------------------
                         cause_list.append(causal_decision[0])
+                        cause_list_1tier.append(causal_decision_1tier[0])
                         indist_cause.append(causal_decision[0])
         
                         causal_decision = []
@@ -491,10 +496,13 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                 
                 if method=='Full':
                     causal_links.append(cause_list[0])
+                    causal_links_1tier.append(cause_list_1tier[0])
                 else: 
                     causal_links.append(1 if 1 in cause_list else 0)
+                    causal_links_1tier.append(1 if 1 in cause_list_1tier else 0)
 
         causal_matrix.append(causal_links)
+        causal_matrix_1tier.append(causal_links_1tier)
     
     pval_indist.append(pvi)
 
@@ -513,11 +521,17 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
      
     # Calculate metrics
     metrics = evaluate(ground_truth, causal_matrix)
+    metrics_1tier = evaluate(ground_truth, causal_matrix)
     # Print metrics
     for metric, value in metrics.items():
         print(f"{metric}: {value:.2f}")
 
-    return metrics, conf_mat
+    # Print metrics
+    for metric, value in metrics_1tier.items():
+        print('Tier 1 \n')
+        print(f"{metric}: {value:.2f}")
+
+    return metrics, conf_mat, metrics_1tier
 
 
 
