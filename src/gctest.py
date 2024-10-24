@@ -26,6 +26,7 @@ from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_
 np.random.seed(1)
 mx.random.seed(2)
 
+data_type = 'synthetic'
 params = parameters.get_syn_params()
 num_samples = params["num_samples"]
 step = params["step_size"]
@@ -241,8 +242,8 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                 pvi, pvu = [], []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                # knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
-                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
+                # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                 interventionlist = [knockoff_samples]
                 heuristic_itn_types = ['In-dist']
 
@@ -253,7 +254,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                 for m in range(len(interventionlist)):  # apply all types of intervention methods
 
                     intervene = interventionlist[m]
-                    # np.random.shuffle(intervene)
+                    np.random.shuffle(intervene)
                     imse_realization, imape_realization = [], []
                     
                     for r in range(2):  # realizations
@@ -267,7 +268,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                             test_ds = ListDataset(
                                 [
                                     {'start': "01/04/2001 00:00:00",
-                                        'target': test_data
+                                     'target': test_data
                                     }
                                 ],
                                 freq=frequency,
@@ -280,7 +281,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                             test_dsint = ListDataset(
                                 [
                                     {'start': "01/04/2001 00:00:00",
-                                    'target': int_data
+                                     'target': int_data
                                     }
                                 ],
                                 freq=frequency,
@@ -297,13 +298,13 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                                 obj = Knockoffs()
                                 knockoffs = obj.Generate_Knockoffs(data_actual, params)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                                # knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
-                                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
+                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
+                                # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                                 intervene = knockoff_samples
                           
                             imse_batches.append(multi_var_point_imse)
                             imape_batches.append(multi_var_point_imse)
-                            # np.random.shuffle(intervene)
+                            np.random.shuffle(intervene)
                             start_batch = start_batch + step
                         
                         imse_realization.append(np.array(imse_batches))
@@ -512,9 +513,9 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
         print(f"{metric}: {value:.2f}")
 
     # Print metrics
+    print("----------*****--------T1-test--------*****------------")
     for metric, value in metrics_1tier.items():
-        print('---******--- Tier 1 test ---******--- \n')
-        print(f"{metric}: {value:.2f}")
+       print(f"{metric}: {value:.2f}")
 
     return metrics, conf_mat, metrics_1tier
 
