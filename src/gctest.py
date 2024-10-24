@@ -242,7 +242,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                 pvi, pvu = [], []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(0, 0.99, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                 interventionlist = [knockoff_samples]
                 heuristic_itn_types = ['In-dist']
@@ -254,7 +254,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                 for m in range(len(interventionlist)):  # apply all types of intervention methods
 
                     intervene = interventionlist[m]
-                    np.random.shuffle(intervene)
+                    # np.random.shuffle(intervene)
                     imse_realization, imape_realization = [], []
                     
                     for r in range(2):  # realizations
@@ -298,13 +298,13 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                                 obj = Knockoffs()
                                 knockoffs = obj.Generate_Knockoffs(data_actual, params)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
+                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.99, knockoff_samples.shape)
                                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                                 intervene = knockoff_samples
                           
                             imse_batches.append(multi_var_point_imse)
                             imape_batches.append(multi_var_point_imse)
-                            np.random.shuffle(intervene)
+                            # np.random.shuffle(intervene)
                             start_batch = start_batch + step
                         
                         imse_realization.append(np.array(imse_batches))
@@ -366,7 +366,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                         pvals.append(1-p)
                         
                         print(f'Test statistic: {round(t, 2)}, pv-dist: {round(p, 2)}, pv-corr: {round(pv_corr, 2)}')
-                        if p < 0.01:
+                        if p < 0.10:
                             print("\033[92mNull hypothesis is rejected\033[0m")
                             causal_decision.append(1)
                             causal_decision_1tier.append(1)

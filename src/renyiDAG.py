@@ -171,7 +171,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
                 for parent_index in parent_indices:
                     if nonlinear_links[(parent_index, i)]:
                         # print(f'Var: {i} is nonlinear parents: {parent_index}')
-                        data[t, i] += nonlinear_transform(data[t-1, parent_index])
+                        data[t, i] += nonlinear_transform(data[t-5, parent_index])
                     else:
                         data[t, i] += data[t-1, parent_index]
 
