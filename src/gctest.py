@@ -373,7 +373,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                             print("-------------------------------------------------------")
                         else:
                             causal_decision_1tier.append(0)
-                            if pv_corr < 0.25:
+                            if pv_corr < 0.10:
                                 print("\033[94mFail to reject null hypothesis\033[0m")
                                 causal_decision.append(0)
                                 print("-------------------------------------------------------")

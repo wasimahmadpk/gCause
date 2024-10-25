@@ -123,7 +123,7 @@ class Knockoffs:
         # print("Size of the deep knockoff dataset: %d x %d." % (Xk_train_m.shape))
 
         # Generate second-order knockoffs
-        Xk_train_g = second_order.generate(X_train)
+        # Xk_train_g = second_order.generate(X_train)
         # print("Size of the second-order knockoff dataset: %d x %d." % (Xk_train_g.shape))
 
         # # Plot diagnostics for deep knockoffs
@@ -141,12 +141,12 @@ class Knockoffs:
         # print("Deep Knockoffs: \n", Xk_test_m)
 
         # Generate second-order knockoffs
-        Xk_test_g = second_order.generate(X_test)
+        # Xk_test_g = second_order.generate(X_test)
         # print("Size of the second-order knockoff test dataset: %d x %d." % (Xk_test_g.shape))
 
-        # # Generate oracle knockoffs
-        # oracle = GaussianKnockoffs(DataSampler.Sigma, method="sdp", mu=DataSampler.mu)
-        # Xk_test_o = oracle.generate(X_test)
+        # Generate oracle knockoffs
+        oracle = GaussianKnockoffs(DataSampler.Sigma, method="sdp", mu=DataSampler.mu)
+        Xk_test_o = oracle.generate(X_test)
         # print("Size of the oracle knockoff test dataset: %d x %d." % (Xk_test_o.shape))
         #
         # Plot diagnostics for deep knockoffs
@@ -182,7 +182,7 @@ class Knockoffs:
         # sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
         # plt.title("K-Nearest Neighbors goodness-of-fit")
         # plt.show()
-        return Xk_test_g
+        return Xk_test_o
 
 
 if __name__ == '__main__':
