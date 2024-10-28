@@ -29,6 +29,54 @@ win_size = pars.get("win_size")
 training_length = pars.get("train_len")
 prediction_length = pars.get("pred_len")
 
+
+def generate_causal_graph(n):
+    # Create an n x n array with random 0s and 1s
+    array = np.random.randint(0, 2, size=(n, n))
+    
+    # Set the diagonal elements to 1
+    np.fill_diagonal(array, 1)
+
+    # Remove upper triangle (set to 0)
+    for i in range(n):
+        for j in range(i + 1, n):
+            array[i][j] = 0
+            
+    return array
+
+
+def get_ground_truth(matrix, group_sizes):
+    # Convert the input matrix to a numpy array
+    matrix = np.array(matrix)
+    print(f'Test matrix: {matrix}')
+    # Determine the number of groups
+    num_groups = len(group_sizes)
+    
+    # Initialize the reduced matrix with zeros
+    reduced_matrix = np.zeros((num_groups, num_groups), dtype=int)
+    
+    # Determine the indices that belong to each group
+    groups = []
+    start_idx = 0
+    print(f'Group sizes: {group_sizes}')
+    for size in group_sizes:
+        groups.append(list(range(start_idx, start_idx + size)))
+        start_idx += size
+    print(f'Test groups: {groups}')
+    # Fill in the reduced matrix
+    for i, group_i in enumerate(groups):
+        for j, group_j in enumerate(groups):
+            for var_i in group_i:
+                for var_j in group_j:
+                    if matrix[var_j, var_i] != 0:  # Check if var_j causes var_i
+                        reduced_matrix[j, i] = 1  # Since rows are causes, update [j, i]
+                        break  # No need to check further if one causal relationship is found
+    
+    # Ensure all groups have self-connection
+    np.fill_diagonal(reduced_matrix, 1)
+    return reduced_matrix
+
+
 # Function to convert timestamp to formatted date
 def convert_timestamp(timestamp):
     # Assuming the timestamp format is 'YYMMDD'
@@ -206,7 +254,7 @@ def load_climate_data():
 
 def load_geo_data():
     # Load river discharges data
-    path = '/home/ahmad/Projects/gCause/datasets/geo_dataset/moxa_data_D.csv'
+    path = '/home/ahmad/Projects/gCause/datasets/geo_dataset/moxa_data_H.csv'
     # vars = ['DateTime', 'rain', 'temperature_outside', 'pressure_outside', 'gw_mb',
     #    'gw_sr', 'gw_sg', 'gw_west', 'gw_knee', 'gw_south', 'wind_x', 'winx_y',
     #    'snow_load', 'humidity', 'glob_radiaton', 'strain_ew_uncorrected',
@@ -217,13 +265,13 @@ def load_geo_data():
     # climate group: ['temperature_outside', 'pressure_outside', 'wind_x', 'wind_y', 'humidity', 'glob_raditon']
     # strain group: ['strain_ew_corrected', 'strain_ns_corrected'] 
     
-    vars = ['DateTime', 'gw_mb', 'gw_sg', 'gw_knee', 'gw_south', 'strain_ew_corrected', 'strain_ns_corrected']
+    vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'wind_x', 'wind_y', 'humidity', 'glob_raditon', 'strain_ew_corrected', 'strain_ns_corrected']
     # vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'wind_x', 'snow_load', 'strain_ew_corrected', 'strain_ns_corrected']
     data = pd.read_csv(path, usecols=vars)
     
     # Read spring and summer season geo-climatic data
-    start_date = '2016-05-15'
-    end_date = '2017-05-15'
+    start_date = '2014-11-15'
+    end_date = '2015-06-15'
     # mask = (data['DateTime'] > '2014-11-01') & (data['DateTime'] <= '2015-05-28')  # '2015-06-30') Regime 1
     # mask = (data['DateTime'] > '2015-05-01') & (data['DateTime'] <= '2015-10-30')  # Regime 2
     # data = data.loc[mask]
@@ -232,7 +280,7 @@ def load_geo_data():
     # data = data[start_date: ]
     data = data.apply(normalize)
 
-    return data
+    return data, get_ground_truth(generate_causal_graph(len(vars)), [6, 2]), generate_causal_graph(len(vars))
 
 
 def load_hackathon_data():

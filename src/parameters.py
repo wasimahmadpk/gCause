@@ -100,7 +100,7 @@ def get_syn_params():
         'num_samples': 5,
         'dropout_rate': 0.10,
         'win_size': 1,
-        'num_sliding_win': 18, #21, 25
+        'num_sliding_win': 21, #21, 25
         'step_size': 5,
         'dim': 8,
         'dim_fs': 8,
@@ -233,33 +233,46 @@ def get_geo_params_gc():
 
     params = {
         
-        'group_num': 3,    
-        'groups': {'g1': [0, 2], 'g2': [2, 4], 'g3': [4, 6]},    # 'g1': [0, 33], 'g2': [33, 69]
-        'groups_size': {'g1':[2], 'g2':[2], 'g3':[2]},
-        'epochs': 150,
-        'pred_len': 15,
-        'train_len': 666,
+        'group_num': 2,    
+        'groups': {'g1': [0, 6], 'g2': [6, 8]}, #  
+        'groups_size': {'g1':[6], 'g2':[2]}, # 
+
+        'group_num_fs': 8,    
+        'groups_fs': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5], 'g6': [5, 6], 'g7': [6, 7], 'g8': [7, 8]}, #  
+        'groups_size_fs': {'g1': [1], 'g2': [1], 'g3': [1], 'g4': [1], 'g5': [1], 'g6': [1], 'g7': [1], 'g8': [1]}, # 
+         
+        'groups_cc': {'g1': [0, 1], 'g2': [1, 2]}, #  
+        'groups_size_cc': {'g1':[1], 'g2':[1]}, #    
+
+        'epochs': 50,
+        'pred_len': 12,
+        'train_len': 777,
         'num_layers': 5,
-        'num_cells': 50,
-        'num_samples': 10,
-        'dropout_rate': 0.1,
+        'num_cells': 40,
+        'num_samples': 5,
+        'dropout_rate': 0.10,
         'win_size': 1,
-        'slidingwin_size': 15,
-        'step_size': 10,
-        'dim': 6,
+        'num_sliding_win': 21, #21, 25
+        'step_size': 2,
+        'dim': 8,
+        'dim_fs': 8,
+        'dim_cc': 4,
         'batch_size': 32,
-        'prior_graph': np.array([[1, 0, 0, 0, 1],
-                                 [0, 1, 0, 0, 1],
-                                 [0, 0, 1, 0, 1],
+        'prior_graph': np.array([[1, 1, 1, 0, 1],
+                                 [0, 1, 0, 0, 0],
+                                 [0, 0, 1, 1, 0],
                                  [0, 0, 0, 1, 1],
                                  [0, 0, 0, 0, 1]]),
-        'true_graph': [1, 0, 0, 0, 1,
-                       0, 1, 0, 0, 1,
-                       0, 0, 1, 0, 1,
+        'true_graph': [1, 1, 1, 0, 1,
+                       0, 1, 0, 0, 0,
+                       0, 0, 1, 1, 0,
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
         'freq': 'H',
-        'plot_path': "/home/ahmad/Projects/gCause/plots/"
+        'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs/",
+        'model_path': "/home/ahmad/Projects/gCause/models/gc/",
+        'model_name': 'trained_strain',
+        'model_name_cc': 'trained_strain_cc'
     }
     return params
 
