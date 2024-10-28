@@ -262,10 +262,10 @@ def load_geo_data():
     #    'tides_ew', 'tides_ns']
 
     # groundwater group: ['gw_mb', 'gw_sg', , 'gw_sr', 'gw_west', 'gw_knee', 'gw_south']
-    # climate group: ['temperature_outside', 'pressure_outside', 'wind_x', 'wind_y', 'humidity', 'glob_raditon']
+    # climate group: ['temperature_outside', 'pressure_outside', 'wind_x', 'winx_y', 'humidity', 'glob_radiaton']
     # strain group: ['strain_ew_corrected', 'strain_ns_corrected'] 
     
-    vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'wind_x', 'wind_y', 'humidity', 'glob_raditon', 'strain_ew_corrected', 'strain_ns_corrected']
+    vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'wind_x', 'winx_y', 'humidity', 'glob_radiaton', 'strain_ew_corrected', 'strain_ns_corrected']
     # vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'wind_x', 'snow_load', 'strain_ew_corrected', 'strain_ns_corrected']
     data = pd.read_csv(path, usecols=vars)
     
