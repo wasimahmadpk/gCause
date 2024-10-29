@@ -265,13 +265,13 @@ def load_geo_data():
     # climate group: ['temperature_outside', 'pressure_outside', 'wind_x', 'winx_y', 'humidity', 'glob_radiaton']
     # strain group: ['strain_ew_corrected', 'strain_ns_corrected'] 
     
-    vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'wind_x', 'winx_y', 'humidity', 'glob_radiaton', 'strain_ew_corrected', 'strain_ns_corrected']
+    vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'humidity', 'glob_radiaton', 'strain_ew_corrected', 'strain_ns_corrected']
     # vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'wind_x', 'snow_load', 'strain_ew_corrected', 'strain_ns_corrected']
     data = pd.read_csv(path, usecols=vars)
     
     # Read spring and summer season geo-climatic data
     start_date = '2014-11-15'
-    end_date = '2015-06-15'
+    end_date = '2015-07-15'
     # mask = (data['DateTime'] > '2014-11-01') & (data['DateTime'] <= '2015-05-28')  # '2015-06-30') Regime 1
     # mask = (data['DateTime'] > '2015-05-01') & (data['DateTime'] <= '2015-10-30')  # Regime 2
     # data = data.loc[mask]
@@ -280,7 +280,7 @@ def load_geo_data():
     # data = data[start_date: ]
     data = data.apply(normalize)
 
-    return data, get_ground_truth(generate_causal_graph(len(vars)), [6, 2]), generate_causal_graph(len(vars))
+    return data, get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2]), generate_causal_graph(len(vars)-1)
 
 
 def load_hackathon_data():

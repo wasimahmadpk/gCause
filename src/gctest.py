@@ -5,6 +5,7 @@ import time
 import math
 import pickle
 import pathlib
+import random
 import parameters
 import numpy as np
 import mxnet as mx
@@ -164,9 +165,11 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
         groups = params['groups_cc']
 
      # Extract variable name and number using regular expressions
-    formatted_names = [re.match(r'([A-Za-z]+)(\d+)', name).groups() for name in columns]
+    # formatted_names = [re.match(r'([A-Za-z]+)(\d+)', name).groups() for name in columns]
     # Create formatted variable names
-    formatted_columns = [f'${name}_{{{number}}}$' for name, number in formatted_names]
+    # formatted_columns = [f'${name}_{{{number}}}$' for name, number in formatted_names]
+
+    formatted_columns = columns
 
     conf_mat, conf_mat_indist, conf_mat_uniform, causal_direction = [], [], [], []
     pvalues, pval_indist, pval_uniform = [], [], []
@@ -242,7 +245,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                 pvi, pvu = [], []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(0, 0.99, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                 interventionlist = [knockoff_samples]
                 heuristic_itn_types = ['In-dist']
@@ -298,7 +301,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                                 obj = Knockoffs()
                                 knockoffs = obj.Generate_Knockoffs(data_actual, params)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.99, knockoff_samples.shape)
+                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
                                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                                 intervene = knockoff_samples
                           
@@ -426,9 +429,10 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                             # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
                             ax1.set_ylabel(f"{cause_group} ---> Z_{j + 1}")
 
+                        rnd = random.randint(1, 9999)
                         plt.gcf()
                         ax1.legend()
-                        filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[j]}.pdf")
+                        filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[j]}_{rnd}.pdf")
                         plt.savefig(filename)
                         plt.show()
                         # plt.close()
@@ -476,7 +480,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                             Patch(facecolor=plt.cm.Oranges(100), alpha=0.85, edgecolor='r', label='Counterfactual')
                             ]
                             ax2.legend(handles=legend_elements)
-                            filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d.pdf")
+                            filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d_{rnd}.pdf")
                             plt.savefig(filename)
                             # plt.show()
                 
