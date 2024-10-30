@@ -17,6 +17,7 @@ from inference import modelTest
 import matplotlib.pyplot as plt
 from knockoffs import Knockoffs
 from matplotlib.patches import Patch
+from scipy.stats import gaussian_kde
 from gluonts.dataset.common import ListDataset
 from gluonts.model.deepar._network import DeepARTrainingNetwork
 from gluonts.evaluation.backtest import make_evaluation_predictions
@@ -43,6 +44,42 @@ groups = params['groups']
 num_sliding_win = params['num_sliding_win']
 
 
+def calculate_kld(residuals1, residuals2):
+    """
+    Calculate the Kullback-Leibler Divergence (KLD) between two lists of residuals.
+    
+    Parameters:
+    - residuals1: List of residuals for the first distribution.
+    - residuals2: List of residuals for the second distribution.
+    
+    Returns:
+    - KLD: Kullback-Leibler Divergence between the two distributions.
+    """
+    
+    # Estimate probability distributions using KDE
+    kde1 = gaussian_kde(residuals1)
+    kde2 = gaussian_kde(residuals2)
+
+    # Create a range of points to evaluate the distributions
+    x = np.linspace(min(residuals1 + residuals2), max(residuals1 + residuals2), 1000)
+
+    # Evaluate the densities
+    p = kde1(x)
+    q = kde2(x)
+
+    # Clip to avoid log(0) and division by zero
+    p = np.clip(p, 1e-10, None)  # Clip p to avoid log(0)
+    q = np.clip(q, 1e-10, None)  # Clip q to avoid division by zero
+
+    # Calculate KLD
+    kld = np.sum(p * np.log(p / q))
+
+    # Set KLD to 0 if it is NaN or infinity
+    if np.isinf(kld) or np.isnan(kld):
+        return 0.0
+    kld = round(kld, 2)
+    return kld
+
 def calculate_shd(ground_truth, predicted):
     """
     Calculates the Structural Hamming Distance (SHD) between two DAG adjacency matrices.
@@ -68,7 +105,7 @@ def calculate_shd(ground_truth, predicted):
     # Calculate normalized SHD
     normalized_shd = shd / max_edges
     
-    return normalized_shd
+    return shd
 
 def convert_variable_name(variable_name):
     # Use regular expression to find and replace digits with subscript format
@@ -185,6 +222,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
     # ------------------------------------------------------------------------------
     mse_realization, mape_realization = [], []
     causal_matrix, causal_matrix_1tier = [], []
+    kld_matrix = []
     data_range = list(range(len(odata)))
     for r in range(2):  # number of time series realizations
                         
@@ -224,10 +262,12 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
     # print(np.array(mape_realization))
     # ------------------------------------------------------------------------------------
     for g in range(group_num):
+        kld_links = []
         causal_links = []
         causal_links_1tier = []
         for h in range(group_num):
             cause_list = []
+            kld_list = []
             cause_list_1tier = []
          
             # if g==h:
@@ -360,6 +400,11 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                         # t, pv_corr = dm_test(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
                         # print(f"DM Statistic: {t}, p-value: {p}")
                         # -----------------------------------------------------------
+
+                        # -----------------------------------------------------------
+                        #         Calculate CausalImpatc in terms of KLD
+                        # -----------------------------------------------------------
+                        kld_val = calculate_kld(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
                         
                         # Calculate Spearman correlation coefficient and its p-value
                         corr, pv_corr = spearmanr(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
@@ -440,6 +485,8 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                         cause_list.append(causal_decision[0])
                         cause_list_1tier.append(causal_decision_1tier[0])
                         indist_cause.append(causal_decision[0])
+
+                        kld_list.append(kld_val)
         
                         causal_decision = []
                 
@@ -484,6 +531,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                             plt.savefig(filename)
                             # plt.show()
                 
+                kld_links.append(kld_list[0])
                 if method=='Full':
                     causal_links.append(cause_list[0])
                     causal_links_1tier.append(cause_list_1tier[0])
@@ -491,6 +539,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                     causal_links.append(1 if 1 in cause_list else 0)
                     causal_links_1tier.append(1 if 1 in cause_list_1tier else 0)
 
+        kld_matrix.append(kld_links)
         causal_matrix.append(causal_links)
         causal_matrix_1tier.append(causal_links_1tier)
     
@@ -507,7 +556,8 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
     # print("Pair-wise Graph: ", conf_mat)
     print(f'Actual Causal Graph: \n {ground_truth}')
     print(f'Discovered Causal Graph: \n {np.array(causal_matrix)}')
-    print("----------*****-----------------------*****------------")
+    print(f'Causal Impact Graph: \n {np.array(kld_matrix)}')
+    print("----------*****-----------------------*****-------------")
      
     # Calculate metrics
     metrics = evaluate(ground_truth, causal_matrix)
