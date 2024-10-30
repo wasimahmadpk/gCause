@@ -252,7 +252,7 @@ def load_climate_data():
     return df
 
 
-def load_geo_data():
+def load_geo_data(start, end):
     # Load river discharges data
     path = '/home/ahmad/Projects/gCause/datasets/geo_dataset/moxa_data_H.csv'
     # vars = ['DateTime', 'rain', 'temperature_outside', 'pressure_outside', 'gw_mb',
@@ -265,22 +265,23 @@ def load_geo_data():
     # climate group: ['temperature_outside', 'pressure_outside', 'wind_x', 'winx_y', 'humidity', 'glob_radiaton']
     # strain group: ['strain_ew_corrected', 'strain_ns_corrected'] 
     
-    vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'humidity', 'glob_radiaton', 'strain_ew_corrected', 'strain_ns_corrected']
+    vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'wind_x', 'glob_radiaton', 'strain_ew_corrected', 'strain_ns_corrected']
     # vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'wind_x', 'snow_load', 'strain_ew_corrected', 'strain_ns_corrected']
     data = pd.read_csv(path, usecols=vars)
     
-    # Read spring and summer season geo-climatic data
-    start_date = '2014-11-15'
-    end_date = '2015-07-15'
-    # mask = (data['DateTime'] > '2014-11-01') & (data['DateTime'] <= '2015-05-28')  # '2015-06-30') Regime 1
-    # mask = (data['DateTime'] > '2015-05-01') & (data['DateTime'] <= '2015-10-30')  # Regime 2
+    # # Read spring and summer season geo-climatic data
+    # start_date = '2014-11-01'
+    # end_date = '2015-05-28'
+    # mask = (data['DateTime'] > start_date) & (data['DateTime'] <= end_date)  # '2015-06-30') Regime 1
+    # # mask = (data['DateTime'] > '2015-05-01') & (data['DateTime'] <= '2015-10-30')  # Regime 2
     # data = data.loc[mask]
     data = data.fillna(method='pad')
     data = data.set_index('DateTime')
-    # data = data[start_date: ]
+    data = data.iloc[start: end]
     data = data.apply(normalize)
+    print(data.describe())
 
-    return data, get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2]), generate_causal_graph(len(vars)-1)
+    return data, np.array([[1, 1], [0, 1]]), generate_causal_graph(len(vars)-1) # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
 
 
 def load_hackathon_data():

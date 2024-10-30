@@ -44,41 +44,29 @@ groups = params['groups']
 num_sliding_win = params['num_sliding_win']
 
 
-def calculate_kld(residuals1, residuals2):
+def kld(P, Q, epsilon=1e-10):
     """
-    Calculate the Kullback-Leibler Divergence (KLD) between two lists of residuals.
-    
+    Calculate the Kullback-Leibler divergence between two probability distributions.
+
     Parameters:
-    - residuals1: List of residuals for the first distribution.
-    - residuals2: List of residuals for the second distribution.
-    
+    - P: np.ndarray, the first distribution
+    - Q: np.ndarray, the second distribution
+    - epsilon: float, small value added for numerical stability
+
     Returns:
-    - KLD: Kullback-Leibler Divergence between the two distributions.
+    - kl_div: float, the Kullback-Leibler divergence from P to Q
     """
-    
-    # Estimate probability distributions using KDE
-    kde1 = gaussian_kde(residuals1)
-    kde2 = gaussian_kde(residuals2)
+    # Step 1: Normalize the distributions
+    P = P / np.sum(P) if np.sum(P) > 0 else P
+    Q = Q / np.sum(Q) if np.sum(Q) > 0 else Q
 
-    # Create a range of points to evaluate the distributions
-    x = np.linspace(min(residuals1 + residuals2), max(residuals1 + residuals2), 1000)
+    # Step 2: Add a small value to avoid log(0)
+    P = P + epsilon
+    Q = Q + epsilon
 
-    # Evaluate the densities
-    p = kde1(x)
-    q = kde2(x)
-
-    # Clip to avoid log(0) and division by zero
-    p = np.clip(p, 1e-10, None)  # Clip p to avoid log(0)
-    q = np.clip(q, 1e-10, None)  # Clip q to avoid division by zero
-
-    # Calculate KLD
-    kld = np.sum(p * np.log(p / q))
-
-    # Set KLD to 0 if it is NaN or infinity
-    if np.isinf(kld) or np.isnan(kld):
-        return 0.0
-    kld = round(kld, 2)
-    return kld
+    # Step 3: Calculate KL Divergence
+    kl_div = np.sum(P * np.log(P / Q))
+    return round(kl_div, 3)
 
 def calculate_shd(ground_truth, predicted):
     """
@@ -404,7 +392,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                         # -----------------------------------------------------------
                         #         Calculate CausalImpatc in terms of KLD
                         # -----------------------------------------------------------
-                        kld_val = calculate_kld(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
+                        kld_val = kld(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
                         
                         # Calculate Spearman correlation coefficient and its p-value
                         corr, pv_corr = spearmanr(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
@@ -413,7 +401,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                         t, p = ks_2samp(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
                         pvals.append(1-p)
                         
-                        print(f'Test statistic: {round(t, 2)}, pv-dist: {round(p, 2)}, pv-corr: {round(pv_corr, 2)}')
+                        print(f'Test statistic: {round(t, 2)}, pv-dist: {round(p, 2)}, pv-corr: {round(pv_corr, 2)}, kld: {kld_val}')
                         if p < 0.05:
                             print("\033[92mNull hypothesis is rejected\033[0m")
                             causal_decision.append(1)
@@ -449,7 +437,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                         else:
                             # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
                             ax.set_ylabel(f'{cause_group} ---> Z_{j + 1}')
-
+                        
                         plt.gcf()
                         ax.legend()
                         filename = pathlib.Path(plot_path + f'res_{cause_group} ---> {columns[j]}.pdf')
@@ -475,9 +463,10 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                             ax1.set_ylabel(f"{cause_group} ---> Z_{j + 1}")
 
                         rnd = random.randint(1, 9999)
+                        
                         plt.gcf()
                         ax1.legend()
-                        filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[j]}_{rnd}.pdf")
+                        filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[j]}_{method}_{rnd}.pdf")
                         plt.savefig(filename)
                         plt.show()
                         # plt.close()
@@ -527,7 +516,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                             Patch(facecolor=plt.cm.Oranges(100), alpha=0.85, edgecolor='r', label='Counterfactual')
                             ]
                             ax2.legend(handles=legend_elements)
-                            filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d_{rnd}.pdf")
+                            filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d_{method}_{rnd}.pdf")
                             plt.savefig(filename)
                             # plt.show()
                 
