@@ -402,32 +402,59 @@ def load_nino_data():
                             return df
 
 
-def load_flux_data():
+def load_flux_data(start, end):
+
+
+    # ------------ Climate Ecosystem Variables -------------------------
+    # Index(['TIMESTAMP_START', 'TIMESTAMP_END', 'TA_F', 'TA_F_QC', 'SW_IN_POT',
+    #    'SW_IN_F', 'SW_IN_F_QC', 'LW_IN_F', 'LW_IN_F_QC', 'VPD_F', 'VPD_F_QC',
+    #    'PA_F', 'PA_F_QC', 'P_F', 'P_F_QC', 'WS_F', 'WS_F_QC', 'WD', 'USTAR',
+    #    'RH', 'NETRAD', 'PPFD_IN', 'PPFD_DIF', 'SW_OUT', 'LW_OUT', 'CO2_F_MDS',
+    #    'CO2_F_MDS_QC', 'TS_F_MDS_1', 'TS_F_MDS_1_QC', 'G_F_MDS', 'G_F_MDS_QC',
+    #    'LE_F_MDS', 'LE_F_MDS_QC', 'LE_CORR', 'LE_CORR_25', 'LE_CORR_75',
+    #    'LE_RANDUNC', 'H_F_MDS', 'H_F_MDS_QC', 'H_CORR', 'H_CORR_25',
+    #    'H_CORR_75', 'H_RANDUNC', 'NIGHT', 'NEE_VUT_REF', 'NEE_VUT_REF_QC',
+    #    'NEE_VUT_REF_RANDUNC', 'NEE_VUT_25', 'NEE_VUT_50', 'NEE_VUT_75',
+    #    'NEE_VUT_25_QC', 'NEE_VUT_50_QC', 'NEE_VUT_75_QC', 'RECO_NT_VUT_REF',
+    #    'RECO_NT_VUT_25', 'RECO_NT_VUT_50', 'RECO_NT_VUT_75', 'GPP_NT_VUT_REF',
+    #    'GPP_NT_VUT_25', 'GPP_NT_VUT_50', 'GPP_NT_VUT_75', 'RECO_DT_VUT_REF',
+    #    'RECO_DT_VUT_25', 'RECO_DT_VUT_50', 'RECO_DT_VUT_75', 'GPP_DT_VUT_REF',
+    #    'GPP_DT_VUT_25', 'GPP_DT_VUT_50', 'GPP_DT_VUT_75', 'RECO_SR',
+    #    'RECO_SR_N'],
+    #   dtype='object')
+    # ------------------------------------------------------------------
 
     # "Load fluxnet 2015 data for various sites"
     USTon = 'FLX_US-Ton_FLUXNET2015_SUBSET_2001-2014_1-4/FLX_US-Ton_FLUXNET2015_SUBSET_HH_2001-2014_1-4.csv'
     FRPue = 'FLX_FR-Pue_FLUXNET2015_SUBSET_2000-2014_2-4/FLX_FR-Pue_FLUXNET2015_SUBSET_HH_2000-2014_2-4.csv'
     DEHai = 'FLX_DE-Hai_FLUXNET2015_SUBSET_2000-2012_1-4/FLX_DE-Hai_FLUXNET2015_SUBSET_HH_2000-2012_1-4.csv'
     ITMBo = 'FLX_IT-MBo_FLUXNET2015_SUBSET_2003-2013_1-4/FLX_IT-MBo_FLUXNET2015_SUBSET_HH_2003-2013_1-4.csv'
+
+    # Calculate the number of rows to read
+    num_rows = end - start + 1
     
-    fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/" + FRPue)
-    # print(fluxnet.head())
-    # ----------------------------------------------
     start_date = '15-Jun-2003 00:00'
     end_date ='15-Aug-2003 23:30'
+    # col_list = ['TIMESTAMP_START', 'SW_IN_POT', 'SW_IN_F', 'TA_F', 'TA_F_QC']
     col_list = ['TIMESTAMP_START', 'SW_IN_F', 'TA_F', 'GPP_NT_VUT_50', 'RECO_NT_VUT_50']
     # Convert the 'date' column to datetime objects
+    
+    fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/" + FRPue, usecols=col_list, skiprows=start, nrows=num_rows)
+    print(fluxnet.columns)
+    # ----------------------------------------------
+   
     fluxnet['TIMESTAMP_START'] = fluxnet['TIMESTAMP_START'].apply(convert_timestamp)
 
     fluxnet['TIMESTAMP_START'] = pd.to_datetime(fluxnet['TIMESTAMP_START'])
-    fluxnet = fluxnet[(fluxnet['TIMESTAMP_START'] >= start_date) & (fluxnet['TIMESTAMP_START'] <= end_date)][col_list]
-    fluxnet.set_index('TIMESTAMP_START', inplace=True)
 
+    # fluxnet = fluxnet[(fluxnet['TIMESTAMP_START'] >= start_date) & (fluxnet['TIMESTAMP_START'] <= end_date)][col_list]
+    fluxnet.set_index('TIMESTAMP_START', inplace=True)
+    # fluxnet = fluxnet.iloc[start: end]
     # ----------------------------------------------
     # data = {'Rg': rg[start: end], 'T': temp[start: end], 'GPP': gpp[start: end], 'Reco': reco[start: end]}
     # df = pd.DataFrame(data, columns=['Rg', 'T', 'GPP', 'Reco'])
-    df = fluxnet.apply(normalize)
-    return df
+    fluxnet = fluxnet.apply(normalize)
+    return fluxnet
 
 # Load synthetically generated time series
 def load_syn_data():
