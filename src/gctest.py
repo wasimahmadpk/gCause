@@ -402,7 +402,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                         pvals.append(1-p)
                         
                         print(f'Test statistic: {round(t, 2)}, pv-dist: {round(p, 2)}, pv-corr: {round(pv_corr, 2)}, kld: {kld_val}')
-                        if p < 0.05:
+                        if p < 0.01:
                             print("\033[92mNull hypothesis is rejected\033[0m")
                             causal_decision.append(1)
                             causal_decision_1tier.append(1)
