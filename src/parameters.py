@@ -233,27 +233,27 @@ def get_geo_params_gc():
 
     params = {
         
-        'group_num': 2,    
-        'groups': {'g1': [0, 4], 'g2': [4, 6]}, #  
-        'groups_size': {'g1':[4], 'g2':[2]}, # 
+        'group_num': 3,    
+        'groups': {'g1': [0, 4], 'g2': [4, 6], 'g3': [6, 8]}, #  
+        'groups_size': {'g1':[4], 'g2':[2], 'g3':[2]}, # 
 
-        'group_num_fs': 6,    
-        'groups_fs': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5], 'g6': [5, 6]}, #  
-        'groups_size_fs': {'g1': [1], 'g2': [1], 'g3': [1], 'g4': [1], 'g5': [1], 'g6': [1]}, # 
+        'group_num_fs': 8,    
+        'groups_fs': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5], 'g6': [5, 6], 'g7': [6, 7], 'g8': [7, 8]}, #  
+        'groups_size_fs': {'g1': [1], 'g2': [1], 'g3': [1], 'g4': [1], 'g5': [1], 'g6': [1], 'g7': [1], 'g8': [1]}, # 
          
-        'groups_cc': {'g1': [0, 1], 'g2': [1, 2]}, #  
-        'groups_size_cc': {'g1':[1], 'g2':[1]}, #    
+        'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3]}, #  
+        'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1]}, #    
 
         'epochs': 50,
         'pred_len': 12,
-        'train_len': 555,
-        'num_layers': 4,
+        'train_len': 1000,
+        'num_layers': 5,
         'num_cells': 40,
         'num_samples': 5,
         'dropout_rate': 0.10,
         'win_size': 1,
-        'num_sliding_win': 15, #21, 25
-        'step_size': 2,
+        'num_sliding_win': 21, #21, 25
+        'step_size': 12,
         'dim': 8,
         'dim_fs': 8,
         'dim_cc': 4,

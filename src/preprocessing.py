@@ -264,8 +264,8 @@ def load_geo_data(start, end):
     # groundwater group: ['gw_mb', 'gw_sg', , 'gw_sr', 'gw_west', 'gw_knee', 'gw_south']
     # climate group: ['temperature_outside', 'pressure_outside', 'wind_x', 'winx_y', 'humidity', 'glob_radiaton']
     # strain group: ['strain_ew_corrected', 'strain_ns_corrected'] 
-    
-    vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'wind_x', 'glob_radiaton', 'strain_ew_corrected', 'strain_ns_corrected']
+    vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'wind_x', 'glob_radiaton', 'gw_mb', 'gw_west', 'strain_ew_corrected', 'strain_ns_corrected']
+    # vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'wind_x', 'glob_radiaton', 'strain_ew_corrected', 'strain_ns_corrected']
     # vars = ['DateTime', 'temperature_outside', 'pressure_outside', 'wind_x', 'snow_load', 'strain_ew_corrected', 'strain_ns_corrected']
     data = pd.read_csv(path, usecols=vars)
     
@@ -281,7 +281,7 @@ def load_geo_data(start, end):
     data = data.apply(normalize)
     print(data.describe())
 
-    return data, np.array([[1, 1], [0, 1]]), generate_causal_graph(len(vars)-1) # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
+    return data, np.array([[1, 1, 1], [0, 1, 1], [0, 0, 1]]), generate_causal_graph(len(vars)-1) # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
 
 
 def load_hackathon_data():
@@ -432,14 +432,16 @@ def load_flux_data(start, end):
 
     # Calculate the number of rows to read
     num_rows = end - start + 1
+    # Define the rows to skip, excluding the header row
+    rows_to_skip = list(range(1, start)) if start != 0 else start
     
     start_date = '15-Jun-2003 00:00'
     end_date ='15-Aug-2003 23:30'
     # col_list = ['TIMESTAMP_START', 'SW_IN_POT', 'SW_IN_F', 'TA_F', 'TA_F_QC']
-    col_list = ['TIMESTAMP_START', 'SW_IN_F', 'TA_F', 'GPP_NT_VUT_50', 'RECO_NT_VUT_50']
+    col_list = ['TIMESTAMP_START', 'SW_IN_F', 'TA_F', 'GPP_NT_VUT_50', 'RECO_NT_VUT_50', 'NEE_VUT_50']
     # Convert the 'date' column to datetime objects
     
-    fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/" + FRPue, usecols=col_list, skiprows=start, nrows=num_rows)
+    fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/" + FRPue, usecols=col_list, skiprows=rows_to_skip, nrows=num_rows)
     print(fluxnet.columns)
     # ----------------------------------------------
    
