@@ -265,40 +265,35 @@ def read_ground_truth(file_path):
     - np.ndarray: A 2D numpy array containing the binary data.
     """
     # Read the CSV file, starting from the third row, and use the first column as the index
-    df = pd.read_csv(file_path, header=2, index_col=0)
-
+    df = pd.read_csv(file_path, header=1, index_col=0)
+    
     # Drop the first column to get only the binary data
     binary_data_df = df.iloc[:, 1:]
 
     # Convert the DataFrame to a numpy array of integers
     binary_data = binary_data_df.to_numpy().astype(int)
     
-    return binary_data
+    return binary_data.T
 
 
 
 def load_rivernet():
+    
     # Load river discharges data
     path_data = '/home/ahmad/Projects/gCause/datasets/rivernet/0_data.csv'
     path_ground_truth = '/home/ahmad/Projects/gCause/datasets/rivernet/0_label.csv'
 
     data = pd.read_csv(path_data)
-    print(data.head())
     ground_truth = read_ground_truth(path_ground_truth)
+    print(f'Ground truth: {ground_truth}')
     data = data.set_index('datetime')
 
     check_trailing_nans = np.where(data.isnull().values.any(axis=1) == 0)[0]
-
-    # If no rows are found without NaNs, it could mean all rows have NaNs.
-    if len(check_trailing_nans) == 0:
-        raise ValueError("All rows contain NaNs, cannot proceed with slicing.")
     data = data[check_trailing_nans.min() : check_trailing_nans.max()+1]
+    # assert data.isnull().sum().max() == 0, "Check nans!"
+    data.interpolate(inplace=True)
+    #data.fillna(method='pad')
 
-    print("Data after slicing:\n", data)
-    print("Rows with NaNs after slicing:\n", data[data.isnull().any(axis=1)])
-
-    assert data.isnull().sum().max() == 0, "Check nans!"
-    
     # # Read spring and summer season geo-climatic data
     # start_date = '2014-11-01'
     # end_date = '2015-05-28'
@@ -309,7 +304,8 @@ def load_rivernet():
     
     # data = data.iloc[start: end]
     data = data.apply(normalize)
-    print(data.describe())
+    print(data.head())
+    # print(data.describe())
 
     return data, ground_truth, ground_truth # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
 
