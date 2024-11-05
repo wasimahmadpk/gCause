@@ -252,6 +252,68 @@ def load_climate_data():
     return df
 
 
+def read_ground_truth(file_path):
+    """
+    Reads a CSV file containing binary data with extra headers and index columns,
+    discarding the first two rows and the first two columns, and returns a numpy array
+    of the binary data.
+    
+    Parameters:
+    - file_path (str): The path to the CSV file.
+    
+    Returns:
+    - np.ndarray: A 2D numpy array containing the binary data.
+    """
+    # Read the CSV file, starting from the third row, and use the first column as the index
+    df = pd.read_csv(file_path, header=2, index_col=0)
+
+    # Drop the first column to get only the binary data
+    binary_data_df = df.iloc[:, 1:]
+
+    # Convert the DataFrame to a numpy array of integers
+    binary_data = binary_data_df.to_numpy().astype(int)
+    
+    return binary_data
+
+
+
+def load_rivernet():
+    # Load river discharges data
+    path_data = '/home/ahmad/Projects/gCause/datasets/rivernet/0_data.csv'
+    path_ground_truth = '/home/ahmad/Projects/gCause/datasets/rivernet/0_label.csv'
+
+    data = pd.read_csv(path_data)
+    print(data.head())
+    ground_truth = read_ground_truth(path_ground_truth)
+    data = data.set_index('datetime')
+
+    check_trailing_nans = np.where(data.isnull().values.any(axis=1) == 0)[0]
+
+    # If no rows are found without NaNs, it could mean all rows have NaNs.
+    if len(check_trailing_nans) == 0:
+        raise ValueError("All rows contain NaNs, cannot proceed with slicing.")
+    data = data[check_trailing_nans.min() : check_trailing_nans.max()+1]
+
+    print("Data after slicing:\n", data)
+    print("Rows with NaNs after slicing:\n", data[data.isnull().any(axis=1)])
+
+    assert data.isnull().sum().max() == 0, "Check nans!"
+    
+    # # Read spring and summer season geo-climatic data
+    # start_date = '2014-11-01'
+    # end_date = '2015-05-28'
+    # mask = (data['DateTime'] > start_date) & (data['DateTime'] <= end_date)  # '2015-06-30') Regime 1
+    # # mask = (data['DateTime'] > '2015-05-01') & (data['DateTime'] <= '2015-10-30')  # Regime 2
+    # data = data.loc[mask]
+    # data = data.fillna(method='pad')
+    
+    # data = data.iloc[start: end]
+    data = data.apply(normalize)
+    print(data.describe())
+
+    return data, ground_truth, ground_truth # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
+
+
 def load_geo_data(start, end):
     # Load river discharges data
     path = '/home/ahmad/Projects/gCause/datasets/geo_dataset/moxa_data_H.csv'
