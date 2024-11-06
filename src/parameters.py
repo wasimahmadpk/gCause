@@ -285,7 +285,7 @@ def get_rivernet_params_gc():
         'groups': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 5]}, #  
         'groups_size': {'g1':[1], 'g2':[1], 'g3':[3]}, # 
 
-        'group_num_fs': 8,    
+        'group_num_fs': 5,    
         'groups_fs': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5]}, #  
         'groups_size_fs': {'g1': [1], 'g2': [1], 'g3': [1], 'g4': [1], 'g5': [1]}, # 
          
@@ -300,8 +300,8 @@ def get_rivernet_params_gc():
         'num_samples': 2,
         'dropout_rate': 0.10,
         'win_size': 1,
-        'num_sliding_win': 21, #21, 25
-        'step_size': 12,
+        'num_sliding_win': 50, #21, 25
+        'step_size': 5,
         'dim': 8,
         'dim_fs': 8,
         'dim_cc': 4,

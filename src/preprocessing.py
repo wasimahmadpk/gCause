@@ -285,6 +285,7 @@ def load_rivernet():
 
     data = pd.read_csv(path_data)
     ground_truth = read_ground_truth(path_ground_truth)
+    np.fill_diagonal(ground_truth, 1)
     print(f'Ground truth: {ground_truth}')
     data = data.set_index('datetime')
 
@@ -292,7 +293,6 @@ def load_rivernet():
     data = data[check_trailing_nans.min() : check_trailing_nans.max()+1]
     # assert data.isnull().sum().max() == 0, "Check nans!"
     data.interpolate(inplace=True)
-    #data.fillna(method='pad')
 
     # # Read spring and summer season geo-climatic data
     # start_date = '2014-11-01'
@@ -303,7 +303,7 @@ def load_rivernet():
     # data = data.fillna(method='pad')
     
     # data = data.iloc[start: end]
-    data = data.apply(normalize)
+    # data = data.apply(normalize)
     print(data.head())
     # print(data.describe())
 
@@ -500,7 +500,6 @@ def load_flux_data(start, end):
     # Convert the 'date' column to datetime objects
     
     fluxnet = pd.read_csv("/home/ahmad/Projects/gCause/datasets/fluxnet2015/" + FRPue, usecols=col_list, skiprows=rows_to_skip, nrows=num_rows)
-    print(fluxnet.columns)
     # ----------------------------------------------
    
     fluxnet['TIMESTAMP_START'] = fluxnet['TIMESTAMP_START'].apply(convert_timestamp)
