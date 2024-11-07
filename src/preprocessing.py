@@ -366,7 +366,7 @@ def load_rivernet():
 
     data = pd.read_csv(path_data)
     ground_truth = read_ground_truth(path_ground_truth)
-    np.fill_diagonal(ground_truth, 1)
+    # np.fill_diagonal(ground_truth, 1)
     print(f'Ground truth: {ground_truth}')
     data = data.set_index('datetime')
 
