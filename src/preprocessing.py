@@ -13,6 +13,7 @@ from datetime import datetime
 from scipy.special import stdtr
 import matplotlib.pyplot as plt
 from sklearn.feature_selection import f_regression, mutual_info_regression
+from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, accuracy_score
 # El Nino imports
 import matplotlib
 import netCDF4
@@ -43,6 +44,86 @@ def generate_causal_graph(n):
             array[i][j] = 0
             
     return array
+
+def calculate_shd(ground_truth, predicted):
+    """
+    Calculates the Structural Hamming Distance (SHD) between two DAG adjacency matrices.
+    SHD is the number of differing edges between the ground truth and predicted matrices.
+    
+    :param ground_truth: np.ndarray - Ground truth adjacency matrix (n x n).
+    :param predicted: np.ndarray - Predicted adjacency matrix (n x n).
+    :return: int - The SHD between the two matrices.
+    """
+    if ground_truth.shape != predicted.shape:
+        raise ValueError("Both matrices must have the same shape")
+    
+    # Element-wise comparison (1 where they differ, 0 where they are the same)
+    differences = ground_truth != predicted
+    
+    # Sum the number of differing edges (the number of 1s in the differences matrix)
+    shd = np.sum(differences)
+    
+    # Calculate the maximum possible number of edges (n * (n - 1) for an n x n adjacency matrix without self-loops)
+    n = ground_truth.shape[0]
+    max_edges = n * (n - 1)
+    
+    # Calculate normalized SHD
+    normalized_shd = shd / max_edges
+    
+    return shd
+
+# Function to compute metrics for each predicted graph and find the best one
+def evaluate_best_predicted_graph(actual, predicted_list):
+    best_metrics = None
+    best_f1_score = -1  # Initialize with a low F1 score
+    best_tpr = -1       # Initialize TPR for tiebreakers
+    best_fpr = float('inf')  # Initialize FPR with high value for tiebreakers
+    
+    # Flatten actual graph once, since it's common for all predictions
+    y_true_flat = [item for sublist in actual for item in sublist]
+    
+    for predicted in predicted_list:
+        # Flatten predicted graph
+        y_pred_flat = [item for sublist in predicted for item in sublist]
+
+        # Calculate confusion matrix
+        cm = confusion_matrix(y_true_flat, y_pred_flat, labels=[0, 1])
+        tn, fp, fn, tp = cm.ravel()
+
+        # Calculate metrics
+        tpr = tp / (tp + fn) if (tp + fn) != 0 else 0  # True Positive Rate
+        tnr = tn / (tn + fp) if (tn + fp) != 0 else 0  # True Negative Rate
+        fpr = fp / (fp + tn) if (fp + tn) != 0 else 0  # False Positive Rate
+        fnr = fn / (fn + tp) if (fn + tp) != 0 else 0  # False Negative Rate
+        accuracy = (tp + tn) / (tp + tn + fp + fn) if (tp + tn + fp + fn) != 0 else 0
+        precision = tp / (tp + fp) if (tp + fp) != 0 else 0
+        recall = tp / (tp + fn) if (tp + fn) != 0 else 0
+        f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) != 0 else 0
+        shd = calculate_shd(np.array(actual), np.array(predicted))
+
+        # Check if this prediction has the highest F1 score, or if tied, check TPR and FPR
+        if (f1_score > best_f1_score or
+            (f1_score == best_f1_score and tpr > best_tpr) or
+            (f1_score == best_f1_score and tpr == best_tpr and fpr < best_fpr)):
+            
+            # Update the best metrics
+            best_f1_score = f1_score
+            best_tpr = tpr
+            best_fpr = fpr
+            
+            best_metrics = {
+                'TPR': tpr,
+                'TNR': tnr,
+                'FPR': fpr,
+                'FNR': fnr,
+                'Accuracy': accuracy,
+                'Precision': precision,
+                'Recall': recall,
+                'Fscore': f1_score,
+                'SHD': shd
+            }
+    
+    return best_metrics
 
 
 def get_ground_truth(matrix, group_sizes):
