@@ -358,11 +358,11 @@ def read_ground_truth(file_path):
 
 
 
-def load_rivernet():
+def load_rivernet(river):
     
     # Load river discharges data
-    path_data = '/home/ahmad/Projects/gCause/datasets/rivernet/0_data.csv'
-    path_ground_truth = '/home/ahmad/Projects/gCause/datasets/rivernet/0_label.csv'
+    path_data = f'/home/ahmad/Projects/gCause/datasets/rivernet/{river}_data.csv'
+    path_ground_truth = f'/home/ahmad/Projects/gCause/datasets/rivernet/{river}_label.csv'
 
     data = pd.read_csv(path_data)
     ground_truth = read_ground_truth(path_ground_truth)
