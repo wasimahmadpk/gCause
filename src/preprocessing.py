@@ -441,23 +441,24 @@ def load_rivernet(river):
     # Drop NaN values caused by shifting (from the first 365 days)
     df_diff.dropna(inplace=True)
 
-    # Plot the original and differenced data for each column
-    plt.figure(figsize=(12, 8))
+    # # Plot the original and differenced data for each column
+    # plt.figure(figsize=(12, 8))
 
-    for i, column in enumerate(data.columns, 1):
-        plt.subplot(len(data.columns), 1, i)
-        plt.plot(data[column], label=f'Original {column}', color='blue', alpha=0.7)
-        plt.plot(df_diff[column], label=f'Differenced {column}', color='orange', linestyle='--')
-        plt.legend()
-        plt.title(f"Seasonal Differencing for Column {column}")
+    # for i, column in enumerate(data.columns, 1):
+    #     plt.subplot(len(data.columns), 1, i)
+    #     plt.plot(data[column], label=f'Original {column}', color='blue', alpha=0.7)
+    #     plt.plot(df_diff[column], label=f'Differenced {column}', color='orange', linestyle='--')
+    #     plt.legend()
+    #     plt.title(f"Seasonal Differencing for Column {column}")
 
-    plt.tight_layout()
-    plt.show()
+    # plt.tight_layout()
+    # plt.show()
 
     # Display the differenced data (to check results)
-    print(df_diff)
+    df = df_diff.apply(normalize)
+    print(df)
 
-    return df_diff, ground_truth, ground_truth # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
+    return df, ground_truth, ground_truth # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
 
 
 def load_geo_data(start, end):
