@@ -1,4 +1,5 @@
 import math
+import os
 import h5py
 import pickle
 import random
@@ -29,6 +30,58 @@ pars = parameters.get_flux_params()
 win_size = pars.get("win_size")
 training_length = pars.get("train_len")
 prediction_length = pars.get("pred_len")
+
+
+def plot_boxplots(methods_metrics_dict, plot_path, csv_filename="method_metrics.csv"):
+
+    """
+    This function takes a dictionary of methods with their metrics from multiple experiments, 
+    creates boxplots for each metric, saves them as PDFs, and saves the dictionary as a CSV.
+
+    Parameters:
+        methods_metrics_dict (dict): Dictionary where each key is a method name, and value is 
+                                        another dictionary of experiment metrics.
+        plot_path (str): Directory where the PDF files will be saved.
+        csv_filename (str): Name of the CSV file to save the data.
+    """
+    # Ensure the plot path exists
+    os.makedirs(plot_path, exist_ok=True)
+
+    # Flatten the data for conversion to a DataFrame
+    flattened_data = []
+
+    for method, experiments in methods_metrics_dict.items():
+        for experiment, metrics in experiments.items():
+            for metric, value in metrics.items():
+                flattened_data.append({"Method": method, "Experiment": experiment, "Metric": metric, "Value": value})
+
+    # Convert the list of dictionaries to a DataFrame
+    df = pd.DataFrame(flattened_data)
+
+    # Step 2: Save DataFrame to CSV in the original form
+    csv_full_path = os.path.join(plot_path, csv_filename)
+    df.to_csv(csv_full_path, index=False)
+    print(f"CSV file saved as '{csv_full_path}'")
+
+    # Step 3: Plot and save boxplots as PDF files for each metric
+    metrics = df["Metric"].unique()
+    for metric in metrics:
+        plt.figure(figsize=(10, 6))
+        # Filter DataFrame for current metric
+        metric_data = df[df["Metric"] == metric]
+        # Create a boxplot with Method on the x-axis and Value on the y-axis
+        metric_data.boxplot(column="Value", by="Method", grid=False)
+        plt.title(f"Boxplot for {metric}")
+        plt.suptitle("")  # Remove the automatic 'by' title
+        plt.xlabel("Method")
+        plt.ylabel(metric)
+
+        # Construct full PDF path and save the plot
+        pdf_filename = f"boxplot_{metric}.pdf"
+        pdf_full_path = os.path.join(plot_path, pdf_filename)
+        plt.savefig(pdf_full_path, format="pdf")
+        print(f"Boxplot for {metric} saved as '{pdf_full_path}'")
+        plt.close()
 
 
 def generate_causal_graph(n):
@@ -312,13 +365,9 @@ def load_river_data():
         else:
             average_discharges = average_discharges.merge(new_frame, on="Date")
     
-    dillingen = average_discharges.iloc[:, 1].tolist()
-    kempton = average_discharges.iloc[:, 2].tolist()
-    lenggries = average_discharges.iloc[:, 3].tolist()
-
-    data = {'Kt': kempton, 'Dt': dillingen, 'Lt': lenggries}
-    df = pd.DataFrame(data, columns=['Kt', 'Dt', 'Lt'])
-    df = df.apply(normalize)
+    average_discharges['Date'] = pd.to_datetime(average_discharges['Date'])
+    average_discharges.set_index('Date', inplace=True)
+    df = average_discharges.apply(normalize)
 
     return df
 
@@ -365,34 +414,54 @@ def load_rivernet(river):
     path_ground_truth = f'/home/ahmad/Projects/gCause/datasets/rivernet/{river}_label.csv'
 
     data = pd.read_csv(path_data)
+
+    data['datetime'] = pd.to_datetime(data['datetime'])
+    # Set datetime as the index
+    data.set_index('datetime', inplace=True)
+    # Resample the data to daily (24-hour) resolution, using the mean to aggregate values
+    data = data.resample('D').mean()
+    
     ground_truth = read_ground_truth(path_ground_truth)
     # np.fill_diagonal(ground_truth, 1)
-    print(f'Ground truth: {ground_truth}')
-    data = data.set_index('datetime')
+    print(f'Ground truth: \n {ground_truth}')
+    # data = data.set_index('datetime')
 
     check_trailing_nans = np.where(data.isnull().values.any(axis=1) == 0)[0]
     data = data[check_trailing_nans.min() : check_trailing_nans.max()+1]
     # assert data.isnull().sum().max() == 0, "Check nans!"
     data.interpolate(inplace=True)
 
-    # # Read spring and summer season geo-climatic data
-    # start_date = '2014-11-01'
-    # end_date = '2015-05-28'
-    # mask = (data['DateTime'] > start_date) & (data['DateTime'] <= end_date)  # '2015-06-30') Regime 1
-    # # mask = (data['DateTime'] > '2015-05-01') & (data['DateTime'] <= '2015-10-30')  # Regime 2
-    # data = data.loc[mask]
-    # data = data.fillna(method='pad')
-    
-    # data = data.iloc[start: end]
-    # data = data.apply(normalize)
-    print(data.head())
-    # print(data.describe())
+    # Apply seasonal differencing (lag = 365) to all columns
+    df_diff = data.copy()  # Copy original DataFrame to preserve it
 
-    return data, ground_truth, ground_truth # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
+    for column in data.columns:
+        # Apply seasonal differencing to each column
+        df_diff[column] = data[column] - data[column].shift(365)
+
+    # Drop NaN values caused by shifting (from the first 365 days)
+    df_diff.dropna(inplace=True)
+
+    # Plot the original and differenced data for each column
+    plt.figure(figsize=(12, 8))
+
+    for i, column in enumerate(data.columns, 1):
+        plt.subplot(len(data.columns), 1, i)
+        plt.plot(data[column], label=f'Original {column}', color='blue', alpha=0.7)
+        plt.plot(df_diff[column], label=f'Differenced {column}', color='orange', linestyle='--')
+        plt.legend()
+        plt.title(f"Seasonal Differencing for Column {column}")
+
+    plt.tight_layout()
+    plt.show()
+
+    # Display the differenced data (to check results)
+    print(df_diff)
+
+    return df_diff, ground_truth, ground_truth # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
 
 
 def load_geo_data(start, end):
-    # Load river discharges data
+    # Load goeclimate data
     path = '/home/ahmad/Projects/gCause/datasets/geo_dataset/moxa_data_H.csv'
     # vars = ['DateTime', 'rain', 'temperature_outside', 'pressure_outside', 'gw_mb',
     #    'gw_sr', 'gw_sg', 'gw_west', 'gw_knee', 'gw_south', 'wind_x', 'winx_y',
