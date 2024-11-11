@@ -455,10 +455,10 @@ def load_rivernet(river):
     # plt.show()
 
     # Display the differenced data (to check results)
-    df = df_diff.apply(normalize)
-    print(df)
+    # df = df_diff.apply(normalize)
+    print(df_diff)
 
-    return df, ground_truth, ground_truth # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
+    return df_diff, ground_truth, ground_truth # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
 
 
 def load_geo_data(start, end):

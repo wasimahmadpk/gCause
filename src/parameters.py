@@ -293,14 +293,14 @@ def get_rivernet_params_gc():
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1]}, #    
 
         'epochs': 100,
-        'pred_len': 5,
+        'pred_len': 7,
         'train_len': 555,
-        'num_layers': 4,
+        'num_layers': 5,
         'num_cells': 40,
         'num_samples': 2,
         'dropout_rate': 0.10,
         'win_size': 1,
-        'num_sliding_win': 30, #21, 25
+        'num_sliding_win': 21, #21, 25
         'step_size': 10,
         'dim': 8,
         'dim_fs': 8,
