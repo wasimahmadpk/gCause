@@ -294,7 +294,7 @@ def get_rivernet_params_gc():
 
         'epochs': 33,
         'pred_len': 3,
-        'train_len': 1000,
+        'train_len': 765,
         'num_layers': 4,
         'num_cells': 40,
         'num_samples': 2,

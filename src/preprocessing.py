@@ -422,7 +422,7 @@ def load_rivernet(river):
     data = data.resample('D').mean()
     
     ground_truth = read_ground_truth(path_ground_truth)
-    # np.fill_diagonal(ground_truth, 1)
+    np.fill_diagonal(ground_truth, 1)
     print(f'Ground truth: \n {ground_truth}')
     # data = data.set_index('datetime')
 
