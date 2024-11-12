@@ -419,10 +419,11 @@ def load_rivernet(river):
     # Set datetime as the index
     data.set_index('datetime', inplace=True)
     # Resample the data to daily (24-hour) resolution, using the mean to aggregate values
-    data = data.resample('D').mean()
+    # data = data.resample('D').mean()
+    data = data.resample('16H').mean()
     
     ground_truth = read_ground_truth(path_ground_truth)
-    np.fill_diagonal(ground_truth, 1)
+    # np.fill_diagonal(ground_truth, 1)
     print(f'Ground truth: \n {ground_truth}')
     # data = data.set_index('datetime')
 
@@ -436,7 +437,7 @@ def load_rivernet(river):
 
     for column in data.columns:
         # Apply seasonal differencing to each column
-        df_diff[column] = data[column] - data[column].shift(365)
+        df_diff[column] = data[column] - data[column].shift(548)
 
     # Drop NaN values caused by shifting (from the first 365 days)
     df_diff.dropna(inplace=True)
