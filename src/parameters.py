@@ -292,8 +292,8 @@ def get_rivernet_params_gc():
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3]}, #  
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1]}, #    
 
-        'epochs': 50,
-        'pred_len': 30,
+        'epochs': 500,
+        'pred_len': 5,
         'train_len': 555,
         'num_layers': 4,
         'num_cells': 40,
