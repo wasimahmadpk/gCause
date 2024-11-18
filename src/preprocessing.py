@@ -373,7 +373,7 @@ def load_river_data():
 
 
 def load_climate_data():
-    # Load river discharges data
+    # Load climate discharges data
     
     df = pd.read_csv('/home/ahmad/Projects/gCause/datasets/environment_dataset/light.txt', sep=" ", header=None)
     df.columns = ["NEP", "PPFD"]
