@@ -435,7 +435,7 @@ def load_rivernet(river):
 
     for column in data.columns:
         # Apply seasonal differencing to each column
-        df_diff[column] = data[column] - data[column].shift(48)
+        df_diff[column] = data[column] - data[column].shift(52)
 
     # Drop NaN values caused by shifting (from the first 365 days)
     df_diff.dropna(inplace=True)
