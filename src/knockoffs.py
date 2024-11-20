@@ -57,7 +57,9 @@ class Knockoffs:
         # print("Generated a training dataset of size: {} x {}.".format(X_train.shape, X_train.shape))
 
         # Compute the empirical covariance matrix of the training data
+        jitter = 0.25
         SigmaHat = np.cov(X_train, rowvar=False)
+        SigmaHat = SigmaHat + jitter * np.eye(SigmaHat.shape[0])
 
         # # Check if the matrix is positive definite
         # if self.is_positive_definite(SigmaHat):
@@ -74,6 +76,7 @@ class Knockoffs:
 
         # Measure pairwise second-order knockoff correlations
         corr_g = (np.diag(SigmaHat) - np.diag(second_order.Ds)) / np.diag(SigmaHat)
+        corr_g = corr_g + jitter * np.eye(corr_g.shape[0])
 
         # print('Average absolute pairwise correlation: %.3f.' % (np.mean(np.abs(corr_g))))
 

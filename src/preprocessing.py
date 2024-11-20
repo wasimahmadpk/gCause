@@ -71,7 +71,7 @@ def plot_boxplots(methods_metrics_dict, plot_path, csv_filename="method_metrics.
         metric_data = df[df["Metric"] == metric]
         # Create a boxplot with Method on the x-axis and Value on the y-axis
         metric_data.boxplot(column="Value", by="Method", grid=False)
-        plt.title(f"Boxplot for {metric}")
+        # plt.title(f"Boxplot for {metric}")
         plt.suptitle("")  # Remove the automatic 'by' title
         plt.xlabel("Method")
         plt.ylabel(metric)
@@ -405,6 +405,20 @@ def read_ground_truth(file_path):
     
     return binary_data.T
 
+
+def load_fnirs(file):
+
+    # Load fNIRS data
+    # file = f'/home/ahmad/Projects/gCause/datasets/fnirs/M1/1_M1_1_23'
+    # Read the file without headers
+    df = pd.read_csv(file, delimiter=',', header=None)
+
+    # Assign column names dynamically (C1, C2, ..., CN)
+    df.columns = [f'C{i+1}' for i in range(df.shape[1])]
+
+    print(df.head())
+    ground_truth = np.array([[1, 0], [1, 1]])
+    return df, ground_truth, ground_truth
 
 
 def load_rivernet(river):
