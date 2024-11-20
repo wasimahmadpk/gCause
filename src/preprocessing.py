@@ -125,19 +125,71 @@ def calculate_shd(ground_truth, predicted):
     
     return shd
 
+
+def evaluate(actual, predicted):
+
+    y_true_flat = [item for sublist in actual for item in sublist]
+    y_pred_flat = [item for sublist in predicted for item in sublist]
+    
+    # Calculate confusion matrix
+    cm = confusion_matrix(y_true_flat, y_pred_flat)
+    # Extract TP, TN, FP, FN from confusion matrix
+    tn, fp, fn, tp = cm.ravel()
+    
+    # Calculate rates
+    tpr = tp / (tp + fn) if (tp + fn) != 0 else 0  # True Positive Rate (Sensitivity)
+    tnr = tn / (tn + fp) if (tn + fp) != 0 else 0  # True Negative Rate (Specificity)
+    fpr = fp / (fp + tn) if (fp + tn) != 0 else 0  # False Positive Rate
+    fnr = fn / (fn + tp) if (fn + tp) != 0 else 0  # False Negative Rate
+    accuracy = (tp + tn) / (tp + tn + fp + fn) if (tp + tn + fp + fn) != 0 else 0
+    precision = tp / (tp + fp) if (tp + fp) != 0 else 0
+    recall = tp / (tp + fn) if (tp + fn) != 0 else 0
+    f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) != 0 else 0
+    
+    # Create a dictionary to store metrics
+    shd = calculate_shd(np.array(actual), np.array(predicted))
+    metrics = {
+        # 'TP': tp,
+        # 'TN': tn,
+        # 'FP': fp,
+        # 'FN': fn,
+        'TPR': tpr,
+        'TNR': tnr,
+        'FPR': fpr,
+        'FNR': fnr,
+        'Accuracy': accuracy,
+        'Precision': precision,
+        'Recall': recall,
+        'Fscore': f1_score,
+        'SHD': shd
+    }
+    
+    return metrics
+
+
 # Function to compute metrics for each predicted graph and find the best one
 def evaluate_best_predicted_graph(actual, predicted_list):
+
+    # Create a mask for off-diagonal elements (diagonal elements are set to 0)
+    n = actual.shape[0]
+    mask = np.ones((n, n), dtype=bool)
+    np.fill_diagonal(mask, 0)  # Set diagonal to 0 to ignore
+
     best_metrics = None
     best_f1_score = -1  # Initialize with a low F1 score
     best_tpr = -1       # Initialize TPR for tiebreakers
     best_fpr = float('inf')  # Initialize FPR with high value for tiebreakers
     
     # Flatten actual graph once, since it's common for all predictions
-    y_true_flat = [item for sublist in actual for item in sublist]
+    y_true_flat = actual[mask].tolist()
+    print(y_true_flat)
+    # y_true_flat = [item for sublist in actual for item in sublist]
     
     for predicted in predicted_list:
-        # Flatten predicted graph
-        y_pred_flat = [item for sublist in predicted for item in sublist]
+         # Flatten predicted graph
+        y_pred_flat = predicted[mask].tolist()
+        print(y_pred_flat)
+        # y_pred_flat = [item for sublist in predicted for item in sublist]
 
         # Calculate confusion matrix
         cm = confusion_matrix(y_true_flat, y_pred_flat, labels=[0, 1])
