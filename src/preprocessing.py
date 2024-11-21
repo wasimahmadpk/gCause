@@ -1,5 +1,6 @@
 import math
 import os
+import json
 import h5py
 import pickle
 import random
@@ -32,7 +33,20 @@ training_length = pars.get("train_len")
 prediction_length = pars.get("pred_len")
 
 
-def plot_boxplots(methods_metrics_dict, plot_path, csv_filename="method_metrics.csv"):
+# Function to recursively convert numpy types to native Python types
+def convert_numpy_types(obj):
+    if isinstance(obj, dict):
+        return {key: convert_numpy_types(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy_types(item) for item in obj]
+    elif isinstance(obj, np.int64):
+        return int(obj)  # Convert numpy int64 to regular Python int
+    else:
+        return obj
+    
+
+
+def plot_boxplots(methods_metrics_dict, plot_path, filename="method_metrics.json"):
 
     """
     This function takes a dictionary of methods with their metrics from multiple experiments, 
@@ -58,10 +72,18 @@ def plot_boxplots(methods_metrics_dict, plot_path, csv_filename="method_metrics.
     # Convert the list of dictionaries to a DataFrame
     df = pd.DataFrame(flattened_data)
 
-    # Step 2: Save DataFrame to CSV in the original form
-    csv_full_path = os.path.join(plot_path, csv_filename)
-    df.to_csv(csv_full_path, index=False)
-    print(f"CSV file saved as '{csv_full_path}'")
+    # Ensure the output directory exists
+    os.makedirs(plot_path, exist_ok=True)
+
+    # Convert methods_metrics_dict to ensure all numpy types are converted
+    methods_metrics_dict = convert_numpy_types(methods_metrics_dict)
+
+    # Save to JSON (preserve exact structure)
+    json_full_path = os.path.join(plot_path, filename)
+    with open(json_full_path, "w") as json_file:
+        json.dump(methods_metrics_dict, json_file, indent=4)
+    print(f"Metrics saved to JSON: {json_full_path}")
+    # df.to_csv(csv_full_path, index=False)
 
     # Step 3: Plot and save boxplots as PDF files for each metric
     metrics = df["Metric"].unique()
@@ -469,7 +491,7 @@ def load_fnirs(file):
     df.columns = [f'C{i+1}' for i in range(df.shape[1])]
 
     print(df.head())
-    ground_truth = np.array([[1, 0], [1, 1]])
+    ground_truth = np.array([[1, 1], [0, 1]])
     return df, ground_truth, ground_truth
 
 

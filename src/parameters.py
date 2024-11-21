@@ -349,7 +349,7 @@ def get_dyadic_params_gc():
         'num_samples': 2,
         'dropout_rate': 0.25,
         'win_size': 1,
-        'num_sliding_win': 21, #21, 25
+        'num_sliding_win': 50, #21, 25
         'step_size': 1,
         'dim': 6,
         'dim_fs': 6,
