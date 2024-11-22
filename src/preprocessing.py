@@ -102,7 +102,6 @@ def plot_boxplots(methods_metrics_dict, plot_path, filename="method_metrics.json
         pdf_filename = f"boxplot_{metric}.pdf"
         pdf_full_path = os.path.join(plot_path, pdf_filename)
         plt.savefig(pdf_full_path, format="pdf")
-        print(f"Boxplot for {metric} saved as '{pdf_full_path}'")
         plt.close()
 
 
@@ -203,15 +202,13 @@ def evaluate_best_predicted_graph(actual, predicted_list):
     best_fpr = float('inf')  # Initialize FPR with high value for tiebreakers
     
     # Flatten actual graph once, since it's common for all predictions
-    # y_true_flat = actual[mask].tolist()
-    # print(y_true_flat)
-    y_true_flat = [item for sublist in actual for item in sublist]
+    y_true_flat = actual[mask].tolist()
+    # y_true_flat = [item for sublist in actual for item in sublist]
     
     for predicted in predicted_list:
          # Flatten predicted graph
-        # y_pred_flat = predicted[mask].tolist()
-        # print(y_pred_flat)
-        y_pred_flat = [item for sublist in predicted for item in sublist]
+        y_pred_flat = predicted[mask].tolist()
+        # y_pred_flat = [item for sublist in predicted for item in sublist]
 
         # Calculate confusion matrix
         cm = confusion_matrix(y_true_flat, y_pred_flat, labels=[0, 1])
@@ -239,6 +236,10 @@ def evaluate_best_predicted_graph(actual, predicted_list):
             best_fpr = fpr
             
             best_metrics = {
+                'TP': tp,
+                'TN': tn,
+                'FP': fp,
+                'FN': fn,
                 'TPR': tpr,
                 'TNR': tnr,
                 'FPR': fpr,
@@ -251,6 +252,61 @@ def evaluate_best_predicted_graph(actual, predicted_list):
             }
     
     return best_metrics
+
+
+def count_metrics(input_data):
+    """
+    Calculate TP, TN, FP, FN metrics for each method from the input data.
+
+    Args:
+        input_data (str or dict): Path to a JSON file or a dictionary containing metrics.
+
+    Returns:
+        dict: A dictionary containing aggregated TP, TN, FP, FN, and total experiments for each method.
+    """
+    # Check if the input is a file path or a dictionary
+    if isinstance(input_data, str) and os.path.isfile(input_data):
+        # Load the JSON data from the file
+        with open(input_data, "r") as file:
+            results = json.load(file)
+    elif isinstance(input_data, dict):
+        # Use the input as a dictionary directly
+        results = input_data
+    else:
+        raise ValueError("Input must be a valid JSON file path or a dictionary.")
+
+    # Initialize an empty dictionary to store the metrics for each method
+    metrics_counts = {}
+
+    # Iterate through the methods (e.g., "gCDMI", "var")
+    for method, experiments in results.items():
+        # Initialize counters for TP, TN, FP, FN
+        tp_count = 0
+        tn_count = 0
+        fp_count = 0
+        fn_count = 0
+
+        # Iterate through each experiment and update the counters
+        for exp in experiments.values():
+            tp_count += exp.get("TP", 0)
+            tn_count += exp.get("TN", 0)
+            fp_count += exp.get("FP", 0)
+            fn_count += exp.get("FN", 0)
+
+        # Total number of experiments for the method
+        total_experiments = len(experiments)
+
+        # Store the metrics in a dictionary for the current method
+        metrics_counts[method] = {
+            "TP": tp_count,
+            "TN": tn_count,
+            "FP": fp_count,
+            "FN": fn_count,
+            "Total_Experiments": total_experiments
+        }
+
+    return metrics_counts
+
 
 
 def get_ground_truth(matrix, group_sizes):
@@ -490,7 +546,7 @@ def load_fnirs(file):
     # Assign column names dynamically (C1, C2, ..., CN)
     df.columns = [f'C{i+1}' for i in range(df.shape[1])]
 
-    print(df.head())
+    # print(df.head())
     ground_truth = np.array([[1, 1], [0, 1]])
     return df, ground_truth, ground_truth
 

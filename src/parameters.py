@@ -366,7 +366,7 @@ def get_dyadic_params_gc():
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
         'freq': 'H',
-        'data_path': '/home/ahmad/Projects/gCause/datasets/fnirs/M1/1_*',
+        'data_path': '/home/ahmad/Projects/gCause/datasets/fnirs/M1',
         'plot_path': '/home/ahmad/Projects/gCause/plots/multigraphs/',
         'model_path': '/home/ahmad/Projects/gCause/models/gc/',
         'model_name': 'trained_fnirs',
