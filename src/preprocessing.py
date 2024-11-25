@@ -551,44 +551,136 @@ def load_fnirs(file):
     return df, ground_truth, ground_truth
 
 
+# def plot_movements_metrics(data, save_path="plots"):
+#     """
+#     Generate a single line plot combining TP, TN, FP, FN metrics for all methods, and save the plot.
+
+#     Parameters:
+#     - data (dict): Dictionary containing metrics for movements and methods.
+#     - save_path (str): Directory path where the plot will be saved.
+#     """
+#     # Ensure save_path directory exists
+#     os.makedirs(save_path, exist_ok=True)
+    
+#     plt.figure(figsize=(12, 8))
+    
+#     # Metrics to include in the plot
+#     metrics = ["TP", "TN", "FP", "FN"]
+#     markers = {'MC-PCMCI':'o', 'MC-VGC':'v'}
+#     # Iterate over methods
+#     for method in data["Tap"]:  # Use "Tap" (or any movement) to get method names
+#         for metric in metrics:
+#             # Extract values for the current metric across movements
+#             values = [data[movement][method][metric] for movement in data]
+#             # Plot the values with a unique label for each method-metric pair
+#             plt.plot(data.keys(), values, marker=markers[method], label=f"{method}-{metric}")
+    
+#     # Add plot details
+#     # plt.title("Metrics across Movements")
+#     plt.xlabel("Movements")
+#     plt.ylabel("Metric Value")
+#     plt.legend(loc='upper right', fontsize=8)
+#     plt.grid(True)
+    
+#     # Save the plot
+#     save_file = os.path.join(save_path, "all_metrics_plot.pdf")
+#     plt.savefig(save_file, format='pdf')
+#     print(f"Saved combined metrics plot at: {save_file}")
+    
+#     # Show the plot
+#     plt.show()
+
+import os
+import matplotlib.pyplot as plt
+
 def plot_movements_metrics(data, save_path="plots"):
     """
-    Generate a single line plot combining TP, TN, FP, FN metrics for all methods, and save the plot.
-
+    Generate two plots:
+    1. A single line plot combining TP, TN, FP, FN metrics for all methods.
+    2. A separate plot comparing Fscore values for all methods.
+    
     Parameters:
     - data (dict): Dictionary containing metrics for movements and methods.
-    - save_path (str): Directory path where the plot will be saved.
+    - save_path (str): Directory path where the plots will be saved.
     """
     # Ensure save_path directory exists
     os.makedirs(save_path, exist_ok=True)
     
+    # Plot 1: Combined plot for all metrics
     plt.figure(figsize=(12, 8))
     
     # Metrics to include in the plot
     metrics = ["TP", "TN", "FP", "FN"]
-    markers = {'MC-PCMCI':'o', 'MC-VGC':'-'}
+    markers = {'MC-PCMCI': 'o', 'MC-VGC': 'v', 'gCDMI': 's', 'MC-CDMI': '^'}
+    
     # Iterate over methods
-    for method in data["Tap"]:  # Use "Tap" (or any movement) to get method names
+    for method in data["Hand"]:  # Use "Tap" (or any movement) to get method names
         for metric in metrics:
             # Extract values for the current metric across movements
             values = [data[movement][method][metric] for movement in data]
             # Plot the values with a unique label for each method-metric pair
-            plt.plot(data.keys(), values, marker=markers[method], label=f"{method}-{metric}")
+            plt.plot(data.keys(), values, marker=markers.get(method, 'x'), label=f"{method}-{metric}")
     
     # Add plot details
-    # plt.title("Metrics across Movements")
     plt.xlabel("Movements")
     plt.ylabel("Metric Value")
     plt.legend(loc='upper right', fontsize=8)
     plt.grid(True)
     
     # Save the plot
-    save_file = os.path.join(save_path, "all_metrics_plot.pdf")
-    plt.savefig(save_file, format='pdf')
-    print(f"Saved combined metrics plot at: {save_file}")
+    all_metrics_file = os.path.join(save_path, "all_metrics_plot.pdf")
+    plt.savefig(all_metrics_file, format='pdf')
+    print(f"Saved combined metrics plot at: {all_metrics_file}")
     
     # Show the plot
     plt.show()
+    
+    # Plot 2: Fscore comparison plot
+    plt.figure(figsize=(12, 8))
+    
+    # Extract and plot Fscore values for each method
+    for method in data["Hand"]:
+        # Extract Fscore values across movements
+        fscores = [data[movement][method].get("Fscore", 0) for movement in data]
+        plt.plot(data.keys(), fscores, marker=markers.get(method, 'x'), label=f"{method} Fscore")
+    
+    # Add plot details
+    plt.xlabel("Movements")
+    plt.ylabel("Fscore")
+    plt.legend(loc='upper right', fontsize=8)
+    plt.grid(True)
+    
+    # Save the Fscore plot
+    fscore_file = os.path.join(save_path, "fscore_plot.pdf")
+    plt.savefig(fscore_file, format='pdf')
+    print(f"Saved Fscore plot at: {fscore_file}")
+    
+    # Show the Fscore plot
+    plt.show()
+
+     # Plot 2: Fscore comparison plot
+    plt.figure(figsize=(12, 8))
+    
+    # Extract and plot Fscore values for each method
+    for method in data["Hand"]:
+        # Extract Fscore values across movements
+        fscores = [data[movement][method].get("Accuracy", 0) for movement in data]
+        plt.plot(data.keys(), fscores, marker=markers.get(method, 'x'), label=f"{method} Fscore")
+    
+    # Add plot details
+    plt.xlabel("Movements")
+    plt.ylabel("Acc")
+    plt.legend(loc='upper right', fontsize=8)
+    plt.grid(True)
+    
+    # Save the Fscore plot
+    fscore_file = os.path.join(save_path, "acc_plot.pdf")
+    plt.savefig(fscore_file, format='pdf')
+    print(f"Saved Accuracy plot at: {fscore_file}")
+    
+    # Show the Fscore plot
+    plt.show()
+
 
 
 def load_rivernet(river):
