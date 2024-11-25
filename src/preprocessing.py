@@ -8,6 +8,7 @@ import pathlib
 import parameters
 import numpy as np
 import scipy as sci
+import seaborn as sns
 from os import path
 import pandas as pd
 from math import sqrt
@@ -308,6 +309,77 @@ def count_metrics(input_data):
     return metrics_counts
 
 
+def plot_motor_metrics(data, save_path=''):
+    """
+    Create bar plots for the mean Accuracy and Fscore metrics for multiple methods and movements.
+    Save the plots as PDF files.
+    """
+    # Save to JSON (preserve exact structure)
+    data = convert_numpy_types(data)
+    filename = 'motor_metrics.json'
+    json_full_path = os.path.join('', filename)
+    with open(json_full_path, "w") as json_file:
+        json.dump(data, json_file, indent=4)
+    print(f"Metrics saved to JSON: {json_full_path}")
+    
+    # Prepare the data for plotting mean metrics
+    rows = []
+    for movement, methods in data.items():
+        for method, experiments in methods.items():
+            for exp, metrics in experiments.items():
+                rows.append({
+                    "Movement": movement,
+                    "Method": method,
+                    "Accuracy": metrics["Accuracy"],
+                    "Fscore": metrics["Fscore"]
+                })
+    df = pd.DataFrame(rows)
+    
+    # Compute the mean of Accuracy and Fscore for each combination of Movement and Method
+    df_mean = df.groupby(['Movement', 'Method']).agg({'Accuracy': 'mean', 'Fscore': 'mean'}).reset_index()
+
+    # Dynamically generate colors for the methods
+    unique_methods = df['Method'].unique()
+    method_colors = sns.color_palette("Set2", len(unique_methods))  # Generate colors for all methods
+    method_colors = dict(zip(unique_methods, method_colors))  # Map methods to colors
+
+    # Plot the mean Accuracy for each movement and method
+    plt.figure(figsize=(12, 6))
+    sns.barplot(data=df_mean, x="Movement", y="Accuracy", hue="Method", palette=method_colors)
+    plt.xlabel("Movement", fontsize=12)
+    plt.ylabel("Accuracy", fontsize=12)
+    # plt.title("Mean Accuracy by Movement and Method", fontsize=14)
+    plt.xticks(rotation=45, ha='right', fontsize=10)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+    # Add custom legend based on methods
+    plt.legend(title="Method", loc='upper right')
+
+    # Save the plot as a PDF file
+    plt.tight_layout()
+    acc_pdf_path = os.path.join(save_path, "mean_acc_barplot.pdf")
+    plt.savefig(acc_pdf_path, format='pdf')
+    plt.show()
+
+    # Plot the mean Fscore for each movement and method
+    plt.figure(figsize=(12, 6))
+    sns.barplot(data=df_mean, x="Movement", y="Fscore", hue="Method", palette=method_colors)
+    plt.xlabel("Movement", fontsize=12)
+    plt.ylabel("Fscore", fontsize=12)
+    # plt.title("Mean Fscore by Movement and Method", fontsize=14)
+    plt.xticks(rotation=45, ha='right', fontsize=10)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+    # Add custom legend based on methods
+    plt.legend(title="Method", loc='upper right')
+
+    # Save the plot as a PDF file
+    plt.tight_layout()
+    fscore_pdf_path = os.path.join(save_path, "mean_fscore_barplot.pdf")
+    plt.savefig(fscore_pdf_path, format='pdf')
+    plt.show()
+
+
 
 def get_ground_truth(matrix, group_sizes):
     # Convert the input matrix to a numpy array
@@ -546,6 +618,18 @@ def load_fnirs(file):
     # Assign column names dynamically (C1, C2, ..., CN)
     df.columns = [f'C{i+1}' for i in range(df.shape[1])]
 
+    # Extract the first character of the file name (before the first underscore)
+    base_name = os.path.basename(file)
+    
+    # Check if the filename starts with '1' or '2'
+    if base_name.startswith(('1', '2')):  # This checks if the filename starts with '1' or '2'
+        ground_truth = np.array([[1, 1], [0, 1]]) 
+        print('File starts with 1 or 2')
+    else:
+        ground_truth = np.array([[1, 0], [1, 1]])
+        print('File does not start with 1 or 2')
+
+
     # print(df.head())
     ground_truth = np.array([[1, 1], [0, 1]])
     return df, ground_truth, ground_truth
@@ -593,7 +677,7 @@ def load_fnirs(file):
 import os
 import matplotlib.pyplot as plt
 
-def plot_movements_metrics(data, save_path="plots"):
+def plot_motor_count(data, save_path="plots"):
     """
     Generate two plots:
     1. A single line plot combining TP, TN, FP, FN metrics for all methods.
@@ -634,53 +718,6 @@ def plot_movements_metrics(data, save_path="plots"):
     
     # Show the plot
     plt.show()
-    
-    # Plot 2: Fscore comparison plot
-    plt.figure(figsize=(12, 8))
-    
-    # Extract and plot Fscore values for each method
-    for method in data["Hand"]:
-        # Extract Fscore values across movements
-        fscores = [data[movement][method].get("Fscore", 0) for movement in data]
-        plt.plot(data.keys(), fscores, marker=markers.get(method, 'x'), label=f"{method} Fscore")
-    
-    # Add plot details
-    plt.xlabel("Movements")
-    plt.ylabel("Fscore")
-    plt.legend(loc='upper right', fontsize=8)
-    plt.grid(True)
-    
-    # Save the Fscore plot
-    fscore_file = os.path.join(save_path, "fscore_plot.pdf")
-    plt.savefig(fscore_file, format='pdf')
-    print(f"Saved Fscore plot at: {fscore_file}")
-    
-    # Show the Fscore plot
-    plt.show()
-
-     # Plot 2: Fscore comparison plot
-    plt.figure(figsize=(12, 8))
-    
-    # Extract and plot Fscore values for each method
-    for method in data["Hand"]:
-        # Extract Fscore values across movements
-        fscores = [data[movement][method].get("Accuracy", 0) for movement in data]
-        plt.plot(data.keys(), fscores, marker=markers.get(method, 'x'), label=f"{method} Fscore")
-    
-    # Add plot details
-    plt.xlabel("Movements")
-    plt.ylabel("Acc")
-    plt.legend(loc='upper right', fontsize=8)
-    plt.grid(True)
-    
-    # Save the Fscore plot
-    fscore_file = os.path.join(save_path, "acc_plot.pdf")
-    plt.savefig(fscore_file, format='pdf')
-    print(f"Saved Accuracy plot at: {fscore_file}")
-    
-    # Show the Fscore plot
-    plt.show()
-
 
 
 def load_rivernet(river):

@@ -168,6 +168,8 @@ def dm_test(err1, err2, h=1, crit="MSE"):
 
 def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
 
+    p_val_list = np.arange(0.01, 0.101, 0.01)
+
     num_samples = params['num_samples']
     step = params['step_size']
     training_length = params['train_len']
