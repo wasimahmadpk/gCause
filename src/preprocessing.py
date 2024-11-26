@@ -348,12 +348,13 @@ def plot_motor_metrics(data, save_path=''):
     sns.barplot(data=df_mean, x="Movement", y="Accuracy", hue="Method", palette=method_colors)
     plt.xlabel("Movement", fontsize=12)
     plt.ylabel("Accuracy", fontsize=12)
+    plt.ylim(0, 1.1)
     # plt.title("Mean Accuracy by Movement and Method", fontsize=14)
-    plt.xticks(rotation=45, ha='right', fontsize=10)
+    plt.xticks(rotation=0, ha='right', fontsize=10)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     # Add custom legend based on methods
-    plt.legend(title="Method", loc='upper right')
+    plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
 
     # Save the plot as a PDF file
     plt.tight_layout()
@@ -366,12 +367,13 @@ def plot_motor_metrics(data, save_path=''):
     sns.barplot(data=df_mean, x="Movement", y="Fscore", hue="Method", palette=method_colors)
     plt.xlabel("Movement", fontsize=12)
     plt.ylabel("Fscore", fontsize=12)
+    plt.ylim(0, 1.1)
     # plt.title("Mean Fscore by Movement and Method", fontsize=14)
     plt.xticks(rotation=45, ha='right', fontsize=10)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     # Add custom legend based on methods
-    plt.legend(title="Method", loc='upper right')
+    plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
 
     # Save the plot as a PDF file
     plt.tight_layout()
@@ -625,13 +627,16 @@ def load_fnirs(file):
     if base_name.startswith(('1', '2')):  # This checks if the filename starts with '1' or '2'
         ground_truth = np.array([[1, 1], [0, 1]]) 
         print('File starts with 1 or 2')
-    else:
+    elif base_name.startswith(('3', '4')):
         ground_truth = np.array([[1, 0], [1, 1]])
-        print('File does not start with 1 or 2')
+        print('File starts with 3 or 4')
+    else:
+        ground_truth = np.array([[0, 0], [0, 0]])
+        print('File starts with 5 or 6')
 
 
     # print(df.head())
-    ground_truth = np.array([[1, 1], [0, 1]])
+    # ground_truth = np.array([[1, 1], [0, 1]])
     return df, ground_truth, ground_truth
 
 
@@ -674,15 +679,12 @@ def load_fnirs(file):
 #     # Show the plot
 #     plt.show()
 
-import os
-import matplotlib.pyplot as plt
 
 def plot_motor_count(data, save_path="plots"):
     """
-    Generate two plots:
-    1. A single line plot combining TP, TN, FP, FN metrics for all methods.
-    2. A separate plot comparing Fscore values for all methods.
-    
+    Generate separate line plots for each metric (TP, TN, FP, FN) for all methods.
+    Each plot is saved as a separate PDF file, dynamically assigning markers.
+
     Parameters:
     - data (dict): Dictionary containing metrics for movements and methods.
     - save_path (str): Directory path where the plots will be saved.
@@ -690,34 +692,54 @@ def plot_motor_count(data, save_path="plots"):
     # Ensure save_path directory exists
     os.makedirs(save_path, exist_ok=True)
     
-    # Plot 1: Combined plot for all metrics
-    plt.figure(figsize=(12, 8))
-    
-    # Metrics to include in the plot
+    # Metrics to include in separate plots
     metrics = ["TP", "TN", "FP", "FN"]
-    markers = {'MC-PCMCI': 'o', 'MC-VGC': 'v', 'gCDMI': 's', 'MC-CDMI': '^'}
     
-    # Iterate over methods
-    for method in data["Hand"]:  # Use "Tap" (or any movement) to get method names
-        for metric in metrics:
+    # List of markers for dynamic assignment
+    available_markers = ['o', 'v', 's', '^', 'D', 'P', '*', 'X', 'd', '<', '>']
+    
+    # Extract all unique methods dynamically
+    example_movement = next(iter(data.keys()))  # Get the first movement key
+    methods = list(data[example_movement].keys())  # Extract method names for that movement
+    
+    # Dynamically assign markers to methods
+    markers = {method: available_markers[i % len(available_markers)] for i, method in enumerate(methods)}
+    
+    # Iterate over each metric to create separate plots
+    for metric in metrics:
+        plt.figure(figsize=(12, 8))
+        
+        # Plot values for each method
+        for method in methods:
             # Extract values for the current metric across movements
             values = [data[movement][method][metric] for movement in data]
-            # Plot the values with a unique label for each method-metric pair
-            plt.plot(data.keys(), values, marker=markers.get(method, 'x'), label=f"{method}-{metric}")
-    
-    # Add plot details
-    plt.xlabel("Movements")
-    plt.ylabel("Metric Value")
-    plt.legend(loc='upper right', fontsize=8)
-    plt.grid(True)
-    
-    # Save the plot
-    all_metrics_file = os.path.join(save_path, "all_metrics_plot.pdf")
-    plt.savefig(all_metrics_file, format='pdf')
-    print(f"Saved combined metrics plot at: {all_metrics_file}")
-    
-    # Show the plot
-    plt.show()
+            # Plot the values with a unique label for each method
+            plt.plot(
+                data.keys(),
+                values,
+                marker=markers[method],  # Dynamically assigned marker
+                label=f"{method}",
+                linewidth=2
+            )
+        
+        # Add plot details
+        plt.title(f"{metric} Values Across Movements", fontsize=14)
+        plt.xlabel("Movements", fontsize=12)
+        plt.ylabel(f"{metric} Value", fontsize=12)
+        plt.xticks(rotation=45)
+        plt.ylim(bottom=0)  # Ensure the y-axis starts at 0
+        plt.legend(title="Method", loc='upper right', fontsize=10, ncol=2)  # Adjust columns if too many methods
+        plt.grid(True, linestyle='--', alpha=0.7)
+        
+        # Save the plot as a PDF file
+        metric_file = os.path.join(save_path, f"{metric}_plot.pdf")
+        plt.tight_layout()
+        plt.savefig(metric_file, format='pdf')
+        print(f"Saved {metric} plot at: {metric_file}")
+        
+        # Show the plot (optional, remove if not needed)
+        plt.show()
+
 
 
 def load_rivernet(river):
