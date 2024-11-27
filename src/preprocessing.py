@@ -309,18 +309,91 @@ def count_metrics(input_data):
     return metrics_counts
 
 
+# def plot_motor_metrics(data, save_path=''):
+#     """
+#     Create bar plots for the mean Accuracy and Fscore metrics for multiple methods and movements.
+#     Save the plots as PDF files.
+#     """
+#     # Save to JSON (preserve exact structure)
+#     data = convert_numpy_types(data)
+#     filename = 'motor_metrics.json'
+#     json_full_path = os.path.join('', filename)
+#     with open(json_full_path, "w") as json_file:
+#         json.dump(data, json_file, indent=4)
+#     print(f"Metrics saved to JSON: {json_full_path}")
+    
+#     # Prepare the data for plotting mean metrics
+#     rows = []
+#     for movement, methods in data.items():
+#         for method, experiments in methods.items():
+#             for exp, metrics in experiments.items():
+#                 rows.append({
+#                     "Movement": movement,
+#                     "Method": method,
+#                     "Accuracy": metrics["Accuracy"],
+#                     "Fscore": metrics["Fscore"]
+#                 })
+#     df = pd.DataFrame(rows)
+    
+#     # Compute the mean of Accuracy and Fscore for each combination of Movement and Method
+#     df_mean = df.groupby(['Movement', 'Method']).agg({'Accuracy': 'mean', 'Fscore': 'mean'}).reset_index()
+
+#     # Dynamically generate colors for the methods
+#     unique_methods = df['Method'].unique()
+#     method_colors = sns.color_palette("Set2", len(unique_methods))  # Generate colors for all methods
+#     method_colors = dict(zip(unique_methods, method_colors))  # Map methods to colors
+
+#     # Plot the mean Accuracy for each movement and method
+#     plt.figure(figsize=(12, 6))
+#     sns.barplot(data=df_mean, x="Movement", y="Accuracy", hue="Method", palette=method_colors)
+#     plt.xlabel("Movement", fontsize=12)
+#     plt.ylabel("Accuracy", fontsize=12)
+#     plt.ylim(0, 1.1)
+#     # plt.title("Mean Accuracy by Movement and Method", fontsize=14)
+#     plt.xticks(rotation=0, ha='right', fontsize=10)
+#     plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+#     # Add custom legend based on methods
+#     plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
+
+#     # Save the plot as a PDF file
+#     plt.tight_layout()
+#     acc_pdf_path = os.path.join(save_path, "mean_acc_barplot.pdf")
+#     plt.savefig(acc_pdf_path, format='pdf')
+#     plt.show()
+
+#     # Plot the mean Fscore for each movement and method
+#     plt.figure(figsize=(12, 6))
+#     sns.barplot(data=df_mean, x="Movement", y="Fscore", hue="Method", palette=method_colors)
+#     plt.xlabel("Movement", fontsize=12)
+#     plt.ylabel("Fscore", fontsize=12)
+#     plt.ylim(0, 1.1)
+#     # plt.title("Mean Fscore by Movement and Method", fontsize=14)
+#     plt.xticks(rotation=45, ha='right', fontsize=10)
+#     plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+#     # Add custom legend based on methods
+#     plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
+
+#     # Save the plot as a PDF file
+#     plt.tight_layout()
+#     fscore_pdf_path = os.path.join(save_path, "mean_fscore_barplot.pdf")
+#     plt.savefig(fscore_pdf_path, format='pdf')
+#     plt.show()
+
+
 def plot_motor_metrics(data, save_path=''):
     """
     Create bar plots for the mean Accuracy and Fscore metrics for multiple methods and movements.
-    Save the plots as PDF files.
+    Save the plots as PDF files and the mean metrics as a JSON file.
     """
-    # Save to JSON (preserve exact structure)
+    # Save the original data to JSON
     data = convert_numpy_types(data)
-    filename = 'motor_metrics.json'
-    json_full_path = os.path.join('', filename)
-    with open(json_full_path, "w") as json_file:
+    raw_filename = 'motor_metrics.json'
+    raw_json_full_path = os.path.join(save_path, raw_filename)
+    with open(raw_json_full_path, "w") as json_file:
         json.dump(data, json_file, indent=4)
-    print(f"Metrics saved to JSON: {json_full_path}")
+    print(f"Raw metrics saved to JSON: {raw_json_full_path}")
     
     # Prepare the data for plotting mean metrics
     rows = []
@@ -338,6 +411,29 @@ def plot_motor_metrics(data, save_path=''):
     # Compute the mean of Accuracy and Fscore for each combination of Movement and Method
     df_mean = df.groupby(['Movement', 'Method']).agg({'Accuracy': 'mean', 'Fscore': 'mean'}).reset_index()
 
+    # Transform the DataFrame to the desired JSON structure
+    mean_metrics_dict = {}
+    for _, row in df_mean.iterrows():
+        movement = row["Movement"]
+        method = row["Method"]
+        accuracy = row["Accuracy"]
+        fscore = row["Fscore"]
+        
+        # Create nested structure with Movement -> Method -> Metrics
+        if movement not in mean_metrics_dict:
+            mean_metrics_dict[movement] = {}
+        mean_metrics_dict[movement][method] = {
+            "Accuracy": accuracy,
+            "Fscore": fscore
+        }
+
+    # Save the transformed mean metrics as JSON
+    mean_filename = 'mean_motor_metrics.json'
+    mean_json_full_path = os.path.join(save_path, mean_filename)
+    with open(mean_json_full_path, "w") as mean_json_file:
+        json.dump(mean_metrics_dict, mean_json_file, indent=4)
+    print(f"Mean metrics saved to JSON: {mean_json_full_path}")
+
     # Dynamically generate colors for the methods
     unique_methods = df['Method'].unique()
     method_colors = sns.color_palette("Set2", len(unique_methods))  # Generate colors for all methods
@@ -349,7 +445,6 @@ def plot_motor_metrics(data, save_path=''):
     plt.xlabel("Movement", fontsize=12)
     plt.ylabel("Accuracy", fontsize=12)
     plt.ylim(0, 1.1)
-    # plt.title("Mean Accuracy by Movement and Method", fontsize=14)
     plt.xticks(rotation=0, ha='right', fontsize=10)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
@@ -361,6 +456,7 @@ def plot_motor_metrics(data, save_path=''):
     acc_pdf_path = os.path.join(save_path, "mean_acc_barplot.pdf")
     plt.savefig(acc_pdf_path, format='pdf')
     plt.show()
+    print(f"Accuracy plot saved to: {acc_pdf_path}")
 
     # Plot the mean Fscore for each movement and method
     plt.figure(figsize=(12, 6))
@@ -368,7 +464,6 @@ def plot_motor_metrics(data, save_path=''):
     plt.xlabel("Movement", fontsize=12)
     plt.ylabel("Fscore", fontsize=12)
     plt.ylim(0, 1.1)
-    # plt.title("Mean Fscore by Movement and Method", fontsize=14)
     plt.xticks(rotation=45, ha='right', fontsize=10)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
@@ -380,17 +475,28 @@ def plot_motor_metrics(data, save_path=''):
     fscore_pdf_path = os.path.join(save_path, "mean_fscore_barplot.pdf")
     plt.savefig(fscore_pdf_path, format='pdf')
     plt.show()
+    print(f"Fscore plot saved to: {fscore_pdf_path}")
+
+
+
 
 def convert_numpy_types(data):
     """
-    Convert numpy types in the data dictionary to Python native types for JSON serialization.
+    Recursively convert NumPy types in the data dictionary to native Python types for JSON serialization.
     """
     if isinstance(data, dict):
         return {key: convert_numpy_types(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [convert_numpy_types(item) for item in data]
     elif isinstance(data, np.ndarray):
         return data.tolist()
+    elif isinstance(data, (np.int64, np.int32, np.int16, np.int8)):
+        return int(data)
+    elif isinstance(data, (np.float64, np.float32, np.float16)):
+        return float(data)
     else:
         return data
+
 
 def average_repeated_movements(data):
     """
@@ -436,79 +542,6 @@ def average_repeated_movements(data):
             }
 
     return averaged_data
-
-# def plot_motor_metrics(data, save_path=''):
-#     """
-#     Create bar plots for the mean Accuracy and Fscore metrics for multiple methods and movements.
-#     Save the plots as PDF files.
-#     """
-#     # First, handle averaging duplicate movement keys and experiments
-#     data = average_repeated_movements(data)
-
-#     # Save the data to a JSON file (after processing)
-#     data = convert_numpy_types(data)
-#     filename = 'motor_metrics.json'
-#     json_full_path = os.path.join(save_path, filename)
-#     with open(json_full_path, "w") as json_file:
-#         json.dump(data, json_file, indent=4)
-#     print(f"Metrics saved to JSON: {json_full_path}")
-    
-#     # Prepare the data for plotting mean metrics
-#     rows = []
-#     for movement, methods in data.items():
-#         for method, metrics in methods.items():
-#             rows.append({
-#                 "Movement": movement,
-#                 "Method": method,
-#                 "Accuracy": metrics["Accuracy"],
-#                 "Fscore": metrics["Fscore"]
-#             })
-#     df = pd.DataFrame(rows)
-    
-#     # Compute the mean of Accuracy and Fscore for each combination of Movement and Method
-#     df_mean = df.groupby(['Movement', 'Method']).agg({'Accuracy': 'mean', 'Fscore': 'mean'}).reset_index()
-
-#     # Dynamically generate colors for the methods
-#     unique_methods = df['Method'].unique()
-#     method_colors = sns.color_palette("Set2", len(unique_methods))  # Generate colors for all methods
-#     method_colors = dict(zip(unique_methods, method_colors))  # Map methods to colors
-
-#     # Plot the mean Accuracy for each movement and method
-#     plt.figure(figsize=(12, 6))
-#     sns.barplot(data=df_mean, x="Movement", y="Accuracy", hue="Method", palette=method_colors)
-#     plt.xlabel("Movement", fontsize=12)
-#     plt.ylabel("Accuracy", fontsize=12)
-#     plt.ylim(0, 1.1)
-#     plt.xticks(rotation=0, ha='right', fontsize=10)
-#     plt.grid(axis='y', linestyle='--', alpha=0.7)
-
-#     # Add custom legend based on methods
-#     plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
-
-#     # Save the plot as a PDF file
-#     plt.tight_layout()
-#     acc_pdf_path = os.path.join(save_path, "mean_acc_barplot.pdf")
-#     plt.savefig(acc_pdf_path, format='pdf')
-#     plt.show()
-
-#     # Plot the mean Fscore for each movement and method
-#     plt.figure(figsize=(12, 6))
-#     sns.barplot(data=df_mean, x="Movement", y="Fscore", hue="Method", palette=method_colors)
-#     plt.xlabel("Movement", fontsize=12)
-#     plt.ylabel("Fscore", fontsize=12)
-#     plt.ylim(0, 1.1)
-#     plt.xticks(rotation=45, ha='right', fontsize=10)
-#     plt.grid(axis='y', linestyle='--', alpha=0.7)
-
-#     # Add custom legend based on methods
-#     plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
-
-#     # Save the plot as a PDF file
-#     plt.tight_layout()
-#     fscore_pdf_path = os.path.join(save_path, "mean_fscore_barplot.pdf")
-#     plt.savefig(fscore_pdf_path, format='pdf')
-#     plt.show()
-
 
 
 def get_ground_truth(matrix, group_sizes):
@@ -762,7 +795,6 @@ def load_fnirs(file):
         ground_truth = np.array([[0, 0], [0, 0]])
         print('File starts with 5 or 6')
 
-
     # print(df.head())
     # ground_truth = np.array([[1, 1], [0, 1]])
     return df, ground_truth, ground_truth
@@ -851,10 +883,10 @@ def plot_motor_count(data, save_path="plots"):
             )
         
         # Add plot details
-        plt.title(f"{metric} Values Across Movements", fontsize=14)
+        # plt.title(f"{metric} Values Across Movements", fontsize=14)
         plt.xlabel("Movements", fontsize=12)
         plt.ylabel(f"{metric} Value", fontsize=12)
-        plt.xticks(rotation=45)
+        plt.xticks(rotation=0)
         plt.ylim(bottom=0)  # Ensure the y-axis starts at 0
         plt.legend(title="Method", loc='upper right', fontsize=10, ncol=2)  # Adjust columns if too many methods
         plt.grid(True, linestyle='--', alpha=0.7)

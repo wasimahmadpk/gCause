@@ -331,8 +331,8 @@ def get_dyadic_params_gc():
     params = {
         
         'group_num': 2,    
-        'groups': {'g1': [0, 3], 'g2': [3, 6]}, #  
-        'groups_size': {'g1':[3], 'g2':[3]}, # 
+        'groups': {'g1': [0, 2], 'g2': [2, 4]}, #  
+        'groups_size': {'g1':[2], 'g2':[2]}, # 
 
         # 'group_num_fs': 5,    
         # 'groups_fs': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5]}, #  
@@ -351,8 +351,8 @@ def get_dyadic_params_gc():
         'win_size': 1,
         'num_sliding_win': 15, #21, 25
         'step_size': 1,
-        'dim': 6,
-        'dim_fs': 6,
+        'dim': 4,
+        'dim_fs': 4,
         'dim_cc': 2,
         'batch_size': 32,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
@@ -366,7 +366,7 @@ def get_dyadic_params_gc():
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
         'freq': 'H',
-        'data_path': '/home/ahmad/Projects/gCause/datasets/fnirs/M1',
+        'data_path': '/home/ahmad/Projects/gCause/datasets/fnirs/PMCM1',
         'plot_path': '/home/ahmad/Projects/gCause/plots/multigraphs/',
         'model_path': '/home/ahmad/Projects/gCause/models/gc/',
         'model_name': 'trained_fnirs',
