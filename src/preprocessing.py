@@ -1160,19 +1160,19 @@ def plot_motor_count(data, save_path="plots"):
         plt.legend(title="Method", loc='upper right', fontsize=10, ncol=2)  # Adjust columns if too many methods
         plt.grid(True, linestyle='--', alpha=0.7)
         
-        # Save the line plot as a PDF file
-        line_plot_file = os.path.join(save_path, f"{metric}_line_plot.pdf")
-        plt.tight_layout()
-        plt.savefig(line_plot_file, format='pdf')
-        print(f"Saved {metric} line plot at: {line_plot_file}")
-        plt.show()
+        # # Save the line plot as a PDF file
+        # line_plot_file = os.path.join(save_path, f"{metric}_line_plot.pdf")
+        # plt.tight_layout()
+        # plt.savefig(line_plot_file, format='pdf')
+        # print(f"Saved {metric} line plot at: {line_plot_file}")
+        # plt.show()
 
-        # Save line data as JSON
-        line_data_j = convert_numpy_types(line_data)
-        line_data_json = os.path.join(save_path, f"{metric}_line_data.json")
-        with open(line_data_json, 'w') as json_file:
-            json.dump(line_data_j, json_file, indent=4)
-        print(f"Saved {metric} line data as JSON at: {line_data_json}")
+        # # Save line data as JSON
+        # line_data_j = convert_numpy_types(line_data)
+        # line_data_json = os.path.join(save_path, f"{metric}_line_data.json")
+        # with open(line_data_json, 'w') as json_file:
+        #     json.dump(line_data_j, json_file, indent=4)
+        # print(f"Saved {metric} line data as JSON at: {line_data_json}")
         
         # Prepare data for bar plot
         bar_data = []
