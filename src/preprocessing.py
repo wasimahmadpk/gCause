@@ -479,7 +479,7 @@ def count_metrics(input_data):
 
 
 
-def plot_motor_metrics(data, save_path=''):
+def plot_motor_metrics(data, save_path='', json_path=''):
     """
     Create bar plots for the mean Accuracy, Fscore, TPR, FPR, TNR, and FNR metrics for multiple methods and movements.
     Save the plots as PDF files and the mean metrics as a JSON file.
@@ -545,7 +545,7 @@ def plot_motor_metrics(data, save_path=''):
 
     # Save the transformed mean metrics as JSON
     mean_filename = 'mean_motor_metrics.json'
-    mean_json_full_path = os.path.join(save_path, mean_filename)
+    mean_json_full_path = os.path.join(json_path, mean_filename)
     with open(mean_json_full_path, "w") as mean_json_file:
         json.dump(mean_metrics_dict, mean_json_file, indent=4)
     print(f"Mean metrics saved to JSON: {mean_json_full_path}")
@@ -1097,7 +1097,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-def plot_motor_count(data, save_path="plots"):
+def plot_motor_count(data, save_path="plots", json_path=''):
     """
     Generate separate line plots and bar plots for each metric (TP, TN, FP, FN) for all methods.
     Each plot is saved as a separate PDF file, dynamically assigning markers and colors.
@@ -1211,12 +1211,155 @@ def plot_motor_count(data, save_path="plots"):
 
         # Save bar data as JSON
         bar_data_j = convert_numpy_types(bar_data)
-        bar_data_json = os.path.join(save_path, f"{metric}_bar_data.json")
+        bar_data_json = os.path.join(json_path, f"{metric}_bar_data.json")
         with open(bar_data_json, 'w') as json_file:
             json.dump(bar_data_j, json_file, indent=4)
         print(f"Saved {metric} bar data as JSON at: {bar_data_json}")
 
 
+# Calculate average metrics
+def calculate_average_metrics(performance_dicts):
+    sums = {}
+    count = len(performance_dicts)
+    
+    for metrics in performance_dicts.values():
+        for key, value in metrics.items():
+            if key not in sums:
+                sums[key] = 0
+            sums[key] += value
+    
+    avg_metrics = {key: value / count for key, value in sums.items()}
+    return avg_metrics
+
+
+def calculate_group_means(df, params):
+    """
+    Calculate the mean of variables in each group and return a new DataFrame.
+
+    Parameters:
+    df (pd.DataFrame): The original DataFrame with variables.
+    params (dict): A dictionary containing group information.
+
+    Returns:
+    pd.DataFrame: A DataFrame with the mean of variables in each group.
+    """
+    # Create a new DataFrame to store the mean of each group
+    group_means = pd.DataFrame()
+
+    # Calculate the mean of each group and add it as a new column in group_means
+    for group, (start, end) in params['groups'].items():
+        group_means[group] = df.iloc[:, start:end].mean(axis=1)
+
+    return group_means
+
+
+
+# Plot metrics
+def plot_metrics(methods_performance_dict, metric_name):
+    fig, ax = plt.subplots()
+
+    for method, performance_dicts in methods_performance_dict.items():
+        x = sorted(performance_dicts.keys())
+        y = [performance_dicts[param][metric_name] for param in x]
+        
+        ax.plot(x, y, marker='.', linestyle='-', label=f'{method}')
+    
+    ax.set_xticks(x)
+    ax.set_ylim(-0.1, 1.1)
+    plt.xlabel('Experiments')
+    plt.xticks(rotation=90)
+    plt.ylabel(metric_name)
+    plt.grid(True)
+    plt.legend()
+    
+    rnd = random.randint(1, 9999)
+    filename = pathlib.Path(plot_path) / f'{metric_name}_exp_{rnd}.pdf'
+    plt.savefig(filename)  # Save the figure
+    # plt.show()
+
+
+def generate_group_dicts(num_nodes, num_groups):
+    
+    groups, groups_cc, groups_fs = {}, {}, {}
+    groups_size, groups_size_cc, groups_size_fs = {}, {}, {}
+    
+    base_group_size = num_nodes // num_groups
+    remainder = num_nodes % num_groups
+    
+    start_idx, start_idx_cc, start_idx_fs = 0, 0, 0
+    
+    for k in range(num_nodes):
+
+        group_key =  group_key = f"g{k+1}"
+        end_idx_fs = start_idx_fs + 1
+        groups_fs[group_key] = [start_idx_fs, end_idx_fs]
+     
+        groups_size_fs[group_key] = [1]
+        start_idx_fs = end_idx_fs
+
+    for i in range(num_groups):
+        group_key = f"g{i+1}"
+        
+        if i < remainder:
+            group_size = base_group_size + 1
+        else:
+            group_size = base_group_size
+        
+        end_idx = start_idx + group_size
+        end_idx_cc = start_idx_cc + 1
+
+        groups[group_key] = [start_idx, end_idx]
+        groups_cc[group_key] = [start_idx_cc, end_idx_cc]
+        groups_size[group_key] = [group_size]
+        groups_size_cc[group_key] = [1]
+        
+        start_idx = end_idx
+        start_idx_cc = end_idx_cc
+    
+    result = {
+        'group_num': num_groups,
+        'group_num_fs': num_nodes,
+        'groups': groups,
+        'groups_cc': groups_cc,
+        'groups_fs': groups_fs,
+        'groups_size': groups_size,
+        'groups_size_cc': groups_size_cc,
+        'groups_size_fs': groups_size_fs
+        }
+    
+    return result
+
+
+def calculate_multi_group_cc(df, group_sizes, regularization=1e-1):
+    #  # Filter out groups with less than 2 variables
+    group_sizes_filtered = [size for size in group_sizes if size > 1]
+    if len(group_sizes_filtered) < 2:
+        raise ValueError("MCCA requires at least two groups with more than one variable each.")
+
+    # Determine the indices that belong to each group
+    groups = []
+    start_idx = 0
+    for size in group_sizes:
+        groups.append(list(range(start_idx, start_idx + size)))
+        start_idx += size
+    
+    # Extract data for each group
+    group_data = [df.iloc[:, group].values for group in groups]
+    
+    # Perform Multiset Canonical Correlation Analysis (MCCA) with regularization
+    mcca = MCCA(regs=regularization)
+    mcca.fit(group_data)
+    canonical_vars = mcca.transform(group_data)
+    
+    # Create a DataFrame to store the canonical variables
+    canonical_df = pd.DataFrame()
+    
+    # Store the canonical variables for each group
+    for i, can_var in enumerate(canonical_vars):
+        canonical_var_df = pd.DataFrame(can_var, columns=[f'Group{i+1}_CC'])
+        canonical_df = pd.concat([canonical_df, canonical_var_df], axis=1)
+    
+    return canonical_df
 
 
 def load_rivernet(river):
