@@ -13,6 +13,7 @@ from os import path
 import pandas as pd
 from math import sqrt
 from datetime import datetime
+from mvlearn.embed import MCCA
 from scipy.special import stdtr
 import matplotlib.pyplot as plt
 from sklearn.feature_selection import f_regression, mutual_info_regression
@@ -27,7 +28,7 @@ from tigramite import data_processing as pp
 
 
 np.random.seed(1)
-pars = parameters.get_flux_params()
+pars = parameters.get_dyadic_params_gc()
 
 win_size = pars.get("win_size")
 training_length = pars.get("train_len")
@@ -1153,9 +1154,10 @@ def plot_motor_count(data, save_path="plots", json_path=''):
             )
         
         # Add plot details
-        plt.xlabel("Task", fontsize=12)
-        plt.ylabel(f"{metric} Value", fontsize=12)
-        plt.xticks(rotation=0)
+        plt.xlabel("Task", fontsize=14)
+        plt.ylabel(f"{metric} Value", fontsize=14)
+        plt.xticks(rotation=0, fontsize=16)
+        plt.yticks(fontsize=16)
         plt.ylim(bottom=0)  # Ensure the y-axis starts at 0
         plt.legend(title="Method", loc='upper right', fontsize=10, ncol=2)  # Adjust columns if too many methods
         plt.grid(True, linestyle='--', alpha=0.7)
@@ -1195,10 +1197,11 @@ def plot_motor_count(data, save_path="plots", json_path=''):
             palette=colors
         )
         
-        plt.xlabel("Task", fontsize=12)
-        plt.ylabel(f"{metric} Value", fontsize=12)
+        plt.xlabel("Task", fontsize=14)
+        plt.ylabel(f"{metric} Value", fontsize=14)
         plt.ylim(bottom=0)  # Ensure the y-axis starts at 0
-        plt.xticks(rotation=45, ha='right', fontsize=10)
+        plt.xticks(rotation=0, ha='right', fontsize=16)
+        plt.yticks(fontsize=16)
         plt.legend(title="Method", loc='upper right', fontsize=10, ncol=2)
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         

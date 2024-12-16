@@ -341,13 +341,13 @@ def get_dyadic_params_gc():
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2]}, #  
         'groups_size_cc': {'g1':[1], 'g2':[1]}, #    
 
-        'epochs': 50,
+        'epochs': 60,
         'pred_len': 5,
         'train_len': 150,
         'num_layers': 4,
         'num_cells': 40,
         'num_samples': 2,
-        'dropout_rate': 0.25,
+        'dropout_rate': 0.10,
         'win_size': 1,
         'num_sliding_win': 15, #21, 25
         'step_size': 1,
@@ -366,7 +366,7 @@ def get_dyadic_params_gc():
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
         'freq': 'H',
-        'data_path': '/home/ahmad/Projects/gCause/datasets/fnirs/PMCM1',
+        'data_path': '/home/ahmad/Projects/gCause/datasets/fnirs/M1',
         'plot_path': '/home/ahmad/Projects/gCause/plots/multigraphs/',
         'json_path': '/home/ahmad/Projects/gCause/src/json/',
         'model_path': '/home/ahmad/Projects/gCause/models/gc/',
