@@ -1378,7 +1378,7 @@ def load_rivernet(river):
     data.set_index('datetime', inplace=True)
     # Resample the data to desired sampling
 
-    data = data.resample('W').mean()
+    data = data.resample('1H').mean()
     ground_truth = read_ground_truth(path_ground_truth)
     # np.fill_diagonal(ground_truth, 1)
     print(f'Ground truth: \n {ground_truth}')
@@ -1391,9 +1391,9 @@ def load_rivernet(river):
     # Apply seasonal differencing (lag = 365) to all columns
     df_diff = data.copy()  # Copy original DataFrame to preserve it
 
-    for column in data.columns:
-        # Apply seasonal differencing to each column
-        df_diff[column] = data[column] - data[column].shift(52)
+    # for column in data.columns:
+    #     # Apply seasonal differencing to each column
+    #     df_diff[column] = data[column] - data[column].shift(52)
 
     # Drop NaN values caused by shifting (from the first 365 days)
     df_diff.dropna(inplace=True)
@@ -1412,7 +1412,7 @@ def load_rivernet(river):
     # plt.show()
 
     # Display the differenced data (to check results)
-    df = df_diff.apply(normalize)
+    # df = df_diff.apply(normalize)
     print(df)
 
     return df, ground_truth, ground_truth # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
