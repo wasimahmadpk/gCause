@@ -317,7 +317,7 @@ def get_rivernet_params_gc():
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
         'freq': 'H',
-        'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs/",
+        'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs_rivernet17Dec/",
         'model_path': "/home/ahmad/Projects/gCause/models/gc/",
         'model_name': 'trained_rivernet',
         'model_name_cc': 'trained_rivernet_cc'
@@ -366,7 +366,7 @@ def get_dyadic_params_gc():
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
         'freq': 'H',
-        'data_path': '/home/ahmad/Projects/gCause/datasets/fnirs/M1',
+        'data_path': '/home/ahmad/Projects/gCause/datasets/fnirs/PMC',
         'plot_path': '/home/ahmad/Projects/gCause/plots/multigraphs/',
         'json_path': '/home/ahmad/Projects/gCause/src/json/',
         'model_path': '/home/ahmad/Projects/gCause/models/gc/',

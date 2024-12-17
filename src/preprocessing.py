@@ -50,16 +50,6 @@ def convert_numpy_types(obj):
 
 def plot_boxplots(methods_metrics_dict, plot_path, filename="method_metrics.json"):
 
-    """
-    This function takes a dictionary of methods with their metrics from multiple experiments, 
-    creates boxplots for each metric, saves them as PDFs, and saves the dictionary as a CSV.
-
-    Parameters:
-        methods_metrics_dict (dict): Dictionary where each key is a method name, and value is 
-                                        another dictionary of experiment metrics.
-        plot_path (str): Directory where the PDF files will be saved.
-        csv_filename (str): Name of the CSV file to save the data.
-    """
     # Ensure the plot path exists
     os.makedirs(plot_path, exist_ok=True)
 
@@ -105,6 +95,7 @@ def plot_boxplots(methods_metrics_dict, plot_path, filename="method_metrics.json
         pdf_full_path = os.path.join(plot_path, pdf_filename)
         plt.savefig(pdf_full_path, format="pdf")
         plt.close()
+
 
 
 def generate_causal_graph(n):
@@ -672,7 +663,7 @@ def plot_motor_metrics(data, save_path='', json_path=''):
 
 
 
-def convert_numpy_types(data):
+def convert_numpy_types_old(data):
     """
     Recursively convert NumPy types in the data dictionary to native Python types for JSON serialization.
     """
@@ -686,6 +677,23 @@ def convert_numpy_types(data):
         return int(data)
     elif isinstance(data, (np.float64, np.float32, np.float16)):
         return float(data)
+    else:
+        return data
+    
+def convert_numpy_types(data):
+    """
+    Recursively convert numpy types to native Python types.
+    """
+    if isinstance(data, dict):
+        return {convert_numpy_types(key): convert_numpy_types(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [convert_numpy_types(item) for item in data]
+    elif isinstance(data, (np.integer, int)):
+        return int(data)
+    elif isinstance(data, (np.floating, float)):
+        return float(data)
+    elif isinstance(data, (np.ndarray,)):
+        return data.tolist()  # Convert numpy arrays to lists
     else:
         return data
 
@@ -1258,7 +1266,31 @@ def calculate_group_means(df, params):
 
 
 # Plot metrics
-def plot_metrics(methods_performance_dict, metric_name):
+def plot_river_metrics(methods_performance_dict, plot_path, metric_name):
+    fig, ax = plt.subplots()
+
+    for method, performance_dicts in methods_performance_dict.items():
+        x = sorted(performance_dicts.keys())
+        y = [performance_dicts[param][metric_name] for param in x]
+        
+        ax.plot(x, y, marker='.', linestyle='-', label=f'{method}')
+    
+    ax.set_xticks(x)
+    ax.set_ylim(-0.1, 1.1)
+    plt.xlabel('River Networks')
+    plt.ylabel(metric_name)
+    plt.grid(True)
+    plt.legend()
+    
+    rnd = random.randint(1, 9999)
+    filename = pathlib.Path(plot_path) / f'{metric_name}_regime_{rnd}.pdf'
+    plt.savefig(filename)  # Save the figure
+    # plt.show()
+
+
+
+# Plot metrics
+def plot_metrics(methods_performance_dict, plot_path, metric_name):
     fig, ax = plt.subplots()
 
     for method, performance_dicts in methods_performance_dict.items():
@@ -1413,9 +1445,9 @@ def load_rivernet(river):
 
     # Display the differenced data (to check results)
     # df = df_diff.apply(normalize)
-    print(df)
+    print(df_diff)
 
-    return df, ground_truth, ground_truth # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
+    return df_diff, ground_truth, ground_truth # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
 
 
 def load_geo_data(start, end):
