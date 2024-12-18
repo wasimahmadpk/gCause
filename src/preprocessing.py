@@ -87,8 +87,10 @@ def plot_boxplots(methods_metrics_dict, plot_path, filename="method_metrics.json
         metric_data.boxplot(column="Value", by="Method", grid=False)
         # plt.title(f"Boxplot for {metric}")
         plt.suptitle("")  # Remove the automatic 'by' title
-        plt.xlabel("Method")
-        plt.ylabel(metric)
+        plt.xlabel("Method", fontsize=14)
+        plt.xticks(fontsize=18)
+        plt.ylabel(metric, fontsize=14)
+        plt.yticks(fontsize=18)
 
         # Construct full PDF path and save the plot
         pdf_filename = f"boxplot_{metric}.pdf"
@@ -550,10 +552,11 @@ def plot_motor_metrics(data, save_path='', json_path=''):
     # Plot the mean Accuracy for each movement and method
     plt.figure(figsize=(12, 6))
     sns.barplot(data=df_mean, x="Movement", y="Accuracy", hue="Method", palette=method_colors)
-    plt.xlabel("Task", fontsize=12)
-    plt.ylabel("Accuracy", fontsize=12)
+    plt.xlabel("Task", fontsize=14)
+    plt.xticks(fontsize=18)
+    plt.ylabel("Accuracy", fontsize=14)
+    plt.yticks(fontsize=18)
     plt.ylim(0, 1.1)
-    plt.xticks(rotation=0, ha='right', fontsize=10)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     # Add custom legend based on methods
@@ -569,10 +572,13 @@ def plot_motor_metrics(data, save_path='', json_path=''):
     # Plot the mean Fscore for each movement and method
     plt.figure(figsize=(12, 6))
     sns.barplot(data=df_mean, x="Movement", y="Fscore", hue="Method", palette=method_colors)
-    plt.xlabel("Task", fontsize=12)
-    plt.ylabel("Fscore", fontsize=12)
+    plt.xlabel("Task", fontsize=14)
+    plt.ylabel("Fscore", fontsize=14)
+
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
+
     plt.ylim(0, 1.1)
-    plt.xticks(rotation=45, ha='right', fontsize=10)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     # Add custom legend based on methods
@@ -588,10 +594,12 @@ def plot_motor_metrics(data, save_path='', json_path=''):
     # Plot the mean TPR for each movement and method
     plt.figure(figsize=(12, 6))
     sns.barplot(data=df_mean, x="Movement", y="TPR", hue="Method", palette=method_colors)
-    plt.xlabel("Task", fontsize=12)
-    plt.ylabel("TPR", fontsize=12)
+    plt.xlabel("Task", fontsize=14)
+    plt.ylabel("TPR", fontsize=14)
+
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
     plt.ylim(0, 1.1)
-    plt.xticks(rotation=0, ha='right', fontsize=10)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     # Add custom legend based on methods
@@ -607,10 +615,11 @@ def plot_motor_metrics(data, save_path='', json_path=''):
     # Plot the mean FPR for each movement and method
     plt.figure(figsize=(12, 6))
     sns.barplot(data=df_mean, x="Movement", y="FPR", hue="Method", palette=method_colors)
-    plt.xlabel("Task", fontsize=12)
-    plt.ylabel("FPR", fontsize=12)
+    plt.xlabel("Task", fontsize=14)
+    plt.ylabel("FPR", fontsize=14)
     plt.ylim(0, 1.1)
-    plt.xticks(rotation=0, ha='right', fontsize=10)
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     # Add custom legend based on methods
@@ -626,10 +635,13 @@ def plot_motor_metrics(data, save_path='', json_path=''):
     # Plot the mean TNR for each movement and method
     plt.figure(figsize=(12, 6))
     sns.barplot(data=df_mean, x="Movement", y="TNR", hue="Method", palette=method_colors)
-    plt.xlabel("Task", fontsize=12)
-    plt.ylabel("TNR", fontsize=12)
+    plt.xlabel("Task", fontsize=14)
+    plt.ylabel("TNR", fontsize=14)
+
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
+
     plt.ylim(0, 1.1)
-    plt.xticks(rotation=0, ha='right', fontsize=10)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     # Add custom legend based on methods
@@ -645,10 +657,11 @@ def plot_motor_metrics(data, save_path='', json_path=''):
     # Plot the mean FNR for each movement and method
     plt.figure(figsize=(12, 6))
     sns.barplot(data=df_mean, x="Movement", y="FNR", hue="Method", palette=method_colors)
-    plt.xlabel("Movement", fontsize=12)
-    plt.ylabel("FNR", fontsize=12)
+    plt.xlabel("Movement", fontsize=14)
+    plt.ylabel("FNR", fontsize=14)
     plt.ylim(0, 1.1)
-    plt.xticks(rotation=0, ha='right', fontsize=10)
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     # Add custom legend based on methods
@@ -1164,8 +1177,8 @@ def plot_motor_count(data, save_path="plots", json_path=''):
         # Add plot details
         plt.xlabel("Task", fontsize=14)
         plt.ylabel(f"{metric} Value", fontsize=14)
-        plt.xticks(rotation=0, fontsize=16)
-        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=18)
+        plt.yticks(fontsize=18)
         plt.ylim(bottom=0)  # Ensure the y-axis starts at 0
         plt.legend(title="Method", loc='upper right', fontsize=10, ncol=2)  # Adjust columns if too many methods
         plt.grid(True, linestyle='--', alpha=0.7)
@@ -1208,8 +1221,8 @@ def plot_motor_count(data, save_path="plots", json_path=''):
         plt.xlabel("Task", fontsize=14)
         plt.ylabel(f"{metric} Value", fontsize=14)
         plt.ylim(bottom=0)  # Ensure the y-axis starts at 0
-        plt.xticks(rotation=0, ha='right', fontsize=16)
-        plt.yticks(fontsize=16)
+        plt.xticks(rotation=0, ha='right', fontsize=18)
+        plt.yticks(fontsize=18)
         plt.legend(title="Method", loc='upper right', fontsize=10, ncol=2)
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         
@@ -1277,8 +1290,10 @@ def plot_river_metrics(methods_performance_dict, plot_path, metric_name):
     
     ax.set_xticks(x)
     ax.set_ylim(-0.1, 1.1)
-    plt.xlabel('River Networks')
-    plt.ylabel(metric_name)
+    plt.xlabel('River Networks', fontsize=14)
+    plt.ylabel(metric_name, fontsize=14)
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
     plt.grid(True)
     plt.legend()
     
@@ -1301,9 +1316,10 @@ def plot_metrics(methods_performance_dict, plot_path, metric_name):
     
     ax.set_xticks(x)
     ax.set_ylim(-0.1, 1.1)
-    plt.xlabel('Experiments')
-    plt.xticks(rotation=90)
-    plt.ylabel(metric_name)
+    plt.xlabel('Experiments', fontsize=14)
+    plt.xticks(rotation=90, fontsize=18)
+    plt.ylabel(metric_name, fontsize=14)
+    plt.yticks(fontsize=18)
     plt.grid(True)
     plt.legend()
     

@@ -92,10 +92,10 @@ def get_syn_params():
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4]}, #  
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1]}, #    
         
-        'epochs': 50,
+        'epochs': 75,
         'pred_len': 12,
         'train_len': 500,
-        'num_layers': 6,
+        'num_layers': 5,
         'num_cells': 40,
         'num_samples': 5,
         'dropout_rate': 0.10,
@@ -117,8 +117,8 @@ def get_syn_params():
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
         'freq': '30min',
-        'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs/",
-        'model_path': "/home/ahmad/Projects/gCause/models/gc/",
+        'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs_syn/",
+        'model_path': "/home/ahmad/Projects/gCause/models/gc_syn/",
         'model_name': 'trained_synthetic',
         'model_name_cc': 'trained_synthetic_cc'
     }
