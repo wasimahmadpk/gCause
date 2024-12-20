@@ -551,11 +551,12 @@ def plot_motor_metrics(data, save_path='', json_path=''):
 
     # Plot the mean Accuracy for each movement and method
     plt.figure(figsize=(12, 6))
-    sns.barplot(data=df_mean, x="Movement", y="Accuracy", hue="Method", palette=method_colors)
+    ax = sns.barplot(data=df_mean, x="Movement", y="Accuracy", hue="Method", palette=method_colors)
     plt.xlabel("Task", fontsize=14)
     plt.xticks(fontsize=18)
     plt.ylabel("Accuracy", fontsize=14)
     plt.yticks(fontsize=18)
+    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
     plt.ylim(0, 1.1)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
@@ -571,12 +572,13 @@ def plot_motor_metrics(data, save_path='', json_path=''):
 
     # Plot the mean Fscore for each movement and method
     plt.figure(figsize=(12, 6))
-    sns.barplot(data=df_mean, x="Movement", y="Fscore", hue="Method", palette=method_colors)
+    ax = sns.barplot(data=df_mean, x="Movement", y="Fscore", hue="Method", palette=method_colors)
     plt.xlabel("Task", fontsize=14)
     plt.ylabel("Fscore", fontsize=14)
 
     plt.xticks(fontsize=18)
     plt.yticks(fontsize=18)
+    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
 
     plt.ylim(0, 1.1)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
@@ -593,13 +595,14 @@ def plot_motor_metrics(data, save_path='', json_path=''):
 
     # Plot the mean TPR for each movement and method
     plt.figure(figsize=(12, 6))
-    sns.barplot(data=df_mean, x="Movement", y="TPR", hue="Method", palette=method_colors)
+    ax = sns.barplot(data=df_mean, x="Movement", y="TPR", hue="Method", palette=method_colors)
     plt.xlabel("Task", fontsize=14)
     plt.ylabel("TPR", fontsize=14)
 
     plt.xticks(fontsize=18)
     plt.yticks(fontsize=18)
-    plt.ylim(0, 1.1)
+    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
+    plt.ylim(0, 1.10)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     # Add custom legend based on methods
@@ -614,10 +617,12 @@ def plot_motor_metrics(data, save_path='', json_path=''):
 
     # Plot the mean FPR for each movement and method
     plt.figure(figsize=(12, 6))
-    sns.barplot(data=df_mean, x="Movement", y="FPR", hue="Method", palette=method_colors)
+    ax = sns.barplot(data=df_mean, x="Movement", y="FPR", hue="Method", palette=method_colors)
     plt.xlabel("Task", fontsize=14)
     plt.ylabel("FPR", fontsize=14)
-    plt.ylim(0, 1.1)
+    plt.ylim(0, 1.10)
+    
+    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
     plt.xticks(fontsize=18)
     plt.yticks(fontsize=18)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
@@ -634,14 +639,15 @@ def plot_motor_metrics(data, save_path='', json_path=''):
 
     # Plot the mean TNR for each movement and method
     plt.figure(figsize=(12, 6))
-    sns.barplot(data=df_mean, x="Movement", y="TNR", hue="Method", palette=method_colors)
+    ax = sns.barplot(data=df_mean, x="Movement", y="TNR", hue="Method", palette=method_colors)
     plt.xlabel("Task", fontsize=14)
     plt.ylabel("TNR", fontsize=14)
 
     plt.xticks(fontsize=18)
     plt.yticks(fontsize=18)
 
-    plt.ylim(0, 1.1)
+    plt.ylim(0, 1.10)
+    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     # Add custom legend based on methods
@@ -656,10 +662,11 @@ def plot_motor_metrics(data, save_path='', json_path=''):
 
     # Plot the mean FNR for each movement and method
     plt.figure(figsize=(12, 6))
-    sns.barplot(data=df_mean, x="Movement", y="FNR", hue="Method", palette=method_colors)
+    ax = sns.barplot(data=df_mean, x="Movement", y="FNR", hue="Method", palette=method_colors)
     plt.xlabel("Movement", fontsize=14)
     plt.ylabel("FNR", fontsize=14)
-    plt.ylim(0, 1.1)
+    plt.ylim(0, 1.10)
+    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
     plt.xticks(fontsize=18)
     plt.yticks(fontsize=18)
     plt.grid(axis='y', linestyle='--', alpha=0.7)

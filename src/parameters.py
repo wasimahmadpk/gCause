@@ -100,8 +100,8 @@ def get_syn_params():
         'num_samples': 5,
         'dropout_rate': 0.10,
         'win_size': 1,
-        'num_sliding_win': 21, #21, 25
-        'step_size': 5,
+        'num_sliding_win': 15, #21, 25
+        'step_size': 10,
         'dim': 8,
         'dim_fs': 8,
         'dim_cc': 4,
@@ -334,9 +334,9 @@ def get_dyadic_params_gc():
         'groups': {'g1': [0, 2], 'g2': [2, 4]}, #  
         'groups_size': {'g1':[2], 'g2':[2]}, # 
 
-        # 'group_num_fs': 5,    
-        # 'groups_fs': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5]}, #  
-        # 'groups_size_fs': {'g1': [1], 'g2': [1], 'g3': [1], 'g4': [1], 'g5': [1]}, # 
+        'group_num_fs': 4,    
+        'groups_fs': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4]}, #  
+        'groups_size_fs': {'g1': [1], 'g2': [1], 'g3': [1], 'g4': [1]}, # 
          
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2]}, #  
         'groups_size_cc': {'g1':[1], 'g2':[1]}, #    
