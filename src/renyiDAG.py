@@ -115,7 +115,6 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
     """
     # Create an adjacency matrix for a random graph
     adjacency_matrix = np.random.rand(n, n) < p
-
     # Retain only the lower triangular part to ensure a DAG
     adjacency_matrix = np.tril(adjacency_matrix, -1)
 
@@ -125,7 +124,6 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
 
     # Generate group labels
     group_labels = [f'G{i+1}' for i in range(n)]
-
     # Create graph object
     G = nx.DiGraph()
 
@@ -152,9 +150,9 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
         return np.sin(value)  # Example nonlinear function
 
    # Initialize the time series with random Gaussian noise
-    data = np.random.normal(size=(timesteps, n)) * 0.75
+    data = np.random.normal(size=(timesteps, n))
     # Add seasonality with cycles repeating every 24 samples
-    seasonality = 0.25 * np.sin(np.linspace(0, 5 * np.pi * timesteps / 24, timesteps))[:, None]
+    seasonality = 0.20 * np.sin(np.linspace(0, 5 * np.pi * timesteps / 24, timesteps))[:, None]
     # Add the seasonality to both time series
     data += seasonality
 
@@ -162,7 +160,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
     for t in range(1, timesteps):
         for i in range(n):
             # # Start with the own past value
-            # data[t, i] = 0.99 * data[t-1, i]
+            data[t, i] = 0.66 * data[t-1, i]
 
             # Add contributions from the parents
             parents = list(G.predecessors(f'G{i+1}'))
@@ -171,12 +169,12 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
                 for parent_index in parent_indices:
                     if nonlinear_links[(parent_index, i)]:
                         # print(f'Var: {i} is nonlinear parents: {parent_index}')
-                        data[t, i] += nonlinear_transform(data[t-5, parent_index])
+                        data[t, i] += nonlinear_transform(data[t-1, parent_index])
                     else:
                         data[t, i] += data[t-1, parent_index]
 
             # Add Gaussian noise
-            data[t, i] += np.random.normal(scale=0.25)
+            data[t, i] += np.random.normal(scale=0.10)
 
     # Convert to DataFrame
     df = pd.DataFrame(data, columns=[f'Z{i}' for i in range(n)])
