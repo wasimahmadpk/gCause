@@ -152,15 +152,15 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
    # Initialize the time series with random Gaussian noise
     data = np.random.normal(size=(timesteps, n))
     # Add seasonality with cycles repeating every 24 samples
-    seasonality = 0.20 * np.sin(np.linspace(0, 5 * np.pi * timesteps / 24, timesteps))[:, None]
+    seasonality = np.sin(np.linspace(0, 2 * np.pi * timesteps / 12, timesteps))[:, None]
     # Add the seasonality to both time series
-    data += seasonality
+    data = 0.50*data + seasonality
 
     # Update time series data based on DAG relationships, including autoregression on itself
     for t in range(1, timesteps):
         for i in range(n):
             # # Start with the own past value
-            data[t, i] = 0.5 * data[t-1, i]
+            data[t, i] = 0.25 * data[t-1, i]
 
             # Add contributions from the parents
             parents = list(G.predecessors(f'G{i+1}'))
@@ -169,9 +169,9 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
                 for parent_index in parent_indices:
                     if nonlinear_links[(parent_index, i)]:
                         # print(f'Var: {i} is nonlinear parents: {parent_index}')
-                        data[t, i] += nonlinear_transform(data[t-2, parent_index])
+                        data[t, i] += nonlinear_transform(data[t-1, parent_index])
                     else:
-                        data[t, i] += data[t-3, parent_index]
+                        data[t, i] += data[t-1, parent_index]
 
             # Add Gaussian noise
             data[t, i] += np.random.normal(scale=0.10)
