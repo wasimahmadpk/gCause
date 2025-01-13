@@ -16,6 +16,7 @@ from datetime import datetime
 from mvlearn.embed import MCCA
 from scipy.special import stdtr
 import matplotlib.pyplot as plt
+from sklearn.metrics import precision_recall_curve
 from sklearn.feature_selection import f_regression, mutual_info_regression
 from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, accuracy_score
 # El Nino imports
@@ -48,6 +49,33 @@ def convert_numpy_types(obj):
     
 
 
+def calculate_mean_metrics(data):
+    """
+    Calculate the mean of each metric across all entries for each method.
+    
+    Parameters:
+        data (dict): Dictionary containing the data for methods (e.g., PCMCI, VAR-GC).
+    
+    Returns:
+        dict: A dictionary with mean values for each metric for each method.
+    """
+    mean_metrics = {}
+    
+    for method, metrics in data.items():
+        # Initialize a dictionary to accumulate sums
+        summed_metrics = {key: [] for key in metrics[next(iter(metrics))].keys()}
+        
+        # Collect values for each metric
+        for record in metrics.values():
+            for key, value in record.items():
+                summed_metrics[key].append(value)
+        
+        # Calculate mean for each metric
+        mean_metrics[method] = {key: np.mean(values) for key, values in summed_metrics.items()}
+    
+    return mean_metrics
+
+
 def plot_boxplots(methods_metrics_dict, plot_path, filename="method_metrics.json"):
 
     # Ensure the plot path exists
@@ -63,6 +91,7 @@ def plot_boxplots(methods_metrics_dict, plot_path, filename="method_metrics.json
 
     # Convert the list of dictionaries to a DataFrame
     df = pd.DataFrame(flattened_data)
+    # print(f'Mean val: {df.mean()}')
 
     # Ensure the output directory exists
     os.makedirs(plot_path, exist_ok=True)
@@ -76,11 +105,13 @@ def plot_boxplots(methods_metrics_dict, plot_path, filename="method_metrics.json
         json.dump(methods_metrics_dict, json_file, indent=4)
     print(f"Metrics saved to JSON: {json_full_path}")
     # df.to_csv(csv_full_path, index=False)
+    print(f'Mean metrics: {calculate_mean_metrics(methods_metrics_dict)}')
 
     # Step 3: Plot and save boxplots as PDF files for each metric
     metrics = df["Metric"].unique()
     for metric in metrics:
-        plt.figure(figsize=(10, 6))
+        # plt.figure(figsize=(12, 6))
+        fig, ax = plt.subplots(figsize=(12, 6))
         # Filter DataFrame for current metric
         metric_data = df[df["Metric"] == metric]
         # Create a boxplot with Method on the x-axis and Value on the y-axis
@@ -88,9 +119,11 @@ def plot_boxplots(methods_metrics_dict, plot_path, filename="method_metrics.json
         # plt.title(f"Boxplot for {metric}")
         plt.suptitle("")  # Remove the automatic 'by' title
         plt.xlabel("Method", fontsize=14)
-        plt.xticks(fontsize=18)
+        plt.xticks(fontsize=14)
         plt.ylabel(metric, fontsize=14)
-        plt.yticks(fontsize=18)
+        ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
+        ax.set_ylim(0, 1.09)
+        plt.yticks(fontsize=14)
 
         # Construct full PDF path and save the plot
         pdf_filename = f"boxplot_{metric}.pdf"
@@ -182,6 +215,38 @@ def evaluate(actual, predicted):
     
     return metrics
 
+
+def remove_diagonal_and_flatten(matrix):
+    """
+    Removes the diagonal elements of a 2D matrix and returns the remaining
+    elements as a flattened list.
+
+    Parameters:
+        matrix (np.ndarray): A 2D NumPy array.
+
+    Returns:
+        list: A list of elements excluding the diagonal.
+    """
+    # Ensure the input is a 2D NumPy array
+    if not isinstance(matrix, np.ndarray) or len(matrix.shape) != 2:
+        raise ValueError("Input must be a 2D NumPy array.")
+    if matrix.shape[0] != matrix.shape[1]:
+        raise ValueError("Input matrix must be square.")
+
+    # Mask the diagonal and flatten the result
+    mask = ~np.eye(matrix.shape[0], dtype=bool)
+    return matrix[mask].tolist()
+
+
+def f1_max(labs,preds):
+
+    # F1 MAX
+    print(f'lab: {labs}, pred:{preds}')
+    precision, recall, thresholds = precision_recall_curve(labs, preds)
+    f1_scores = 2 * recall * precision / (recall + precision)
+    f1_thresh = thresholds[np.argmax(f1_scores)]
+    f1_score = np.nanmax(f1_scores)
+    return f1_thresh,f1_score
 
 # Function to compute metrics for each predicted graph and find the best one
 def evaluate_best_predicted_graph(actual, predicted_list):
@@ -1431,9 +1496,18 @@ def load_rivernet(river):
     data['datetime'] = pd.to_datetime(data['datetime'])
     # Set datetime as the index
     data.set_index('datetime', inplace=True)
-    # Resample the data to desired sampling
 
-    data = data.resample('1H').mean()
+    print(f'Before Nans shape: {data.shape}')
+    print(f'Before Nas mean: {data.mean()}')
+
+    data["dt"] = pd.to_datetime(data.index).round('6H').values
+    # print(data.shape)
+    data = data.groupby("dt").mean()
+    data.interpolate(inplace=True)
+    print(f'Shape of river data: {data.shape}')
+    # Resample the data to desired sampling
+    # data = data.resample('6H').mean()
+
     ground_truth = read_ground_truth(path_ground_truth)
     # np.fill_diagonal(ground_truth, 1)
     print(f'Ground truth: \n {ground_truth}')
@@ -1441,8 +1515,7 @@ def load_rivernet(river):
     check_trailing_nans = np.where(data.isnull().values.any(axis=1) == 0)[0]
     data = data[check_trailing_nans.min() : check_trailing_nans.max()+1]
     # assert data.isnull().sum().max() == 0, "Check nans!"
-    data.interpolate(inplace=True)
-
+    
     # Apply seasonal differencing (lag = 365) to all columns
     df_diff = data.copy()  # Copy original DataFrame to preserve it
 
@@ -1452,6 +1525,8 @@ def load_rivernet(river):
 
     # Drop NaN values caused by shifting (from the first 365 days)
     df_diff.dropna(inplace=True)
+    print(f'Shape of river data: {df_diff.shape}')
+    print(f'Mean of the data: {df_diff.mean()}')
 
     # # Plot the original and differenced data for each column
     # plt.figure(figsize=(12, 8))
