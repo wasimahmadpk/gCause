@@ -100,7 +100,7 @@ def get_syn_params():
         'num_samples': 5,
         'dropout_rate': 0.10,
         'win_size': 1,
-        'num_sliding_win': 18,
+        'num_sliding_win': 50,
         'step_size': 3,
         'dim': 8,
         'dim_fs': 8,
@@ -317,8 +317,8 @@ def get_rivernet_params_gc():
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
         'freq': 'H',
-        'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs_rivernet17Dec/",
-        'model_path': "/home/ahmad/Projects/gCause/models/gc/",
+        'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs_rivernet/",
+        'model_path': "/home/ahmad/Projects/gCause/models/gc_rivernet/",
         'model_name': 'trained_rivernet',
         'model_name_cc': 'trained_rivernet_cc'
     }
