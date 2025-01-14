@@ -234,14 +234,15 @@ def remove_diagonal_and_flatten(matrix):
         raise ValueError("Input matrix must be square.")
 
     # Mask the diagonal and flatten the result
-    mask = ~np.eye(matrix.shape[0], dtype=bool)
+    mask = np.ones(matrix.shape, dtype=bool)
+    # mask = ~np.eye(matrix.shape[0], dtype=bool)
     return matrix[mask].tolist()
 
 
 def f1_max(labs,preds):
 
     # F1 MAX
-    print(f'lab: {labs}, pred:{preds}')
+    # print(f'lab: {labs}, pred:{preds}')
     precision, recall, thresholds = precision_recall_curve(labs, preds)
     f1_scores = 2 * recall * precision / (recall + precision)
     f1_thresh = thresholds[np.argmax(f1_scores)]

@@ -300,7 +300,7 @@ def get_rivernet_params_gc():
         'num_samples': 2,
         'dropout_rate': 0.25,
         'win_size': 1,
-        'num_sliding_win': 33, #21, 25
+        'num_sliding_win': 100, #21, 25
         'step_size': 1,
         'dim': 8,
         'dim_fs': 8,
