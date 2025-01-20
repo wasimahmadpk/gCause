@@ -154,13 +154,13 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
     # Add seasonality with cycles repeating every 24 samples
     seasonality = np.sin(np.linspace(0, 2 * np.pi * timesteps / 12, timesteps))[:, None]
     # Add the seasonality to both time series
-    data = data + seasonality
+    # data = data + seasonality
 
     # Update time series data based on DAG relationships, including autoregression on itself
     for t in range(1, timesteps):
         for i in range(n):
             # # Start with the own past value
-            data[t, i] = 0.66 * data[t-1, i]
+            data[t, i] = 0.75 * data[t-1, i]
 
             # Add contributions from the parents
             parents = list(G.predecessors(f'G{i+1}'))
