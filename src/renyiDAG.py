@@ -54,7 +54,7 @@ def plot_graph(g, red_matrix):
 def reduce_causal_matrix(causal_matrix, num_groups, group_size):
     """
     Reduces a causal matrix into a smaller matrix based on the specified number of groups and group size.
-
+ss
     Parameters:
     causal_matrix (np.ndarray): The original causal matrix.
     num_groups (int): The number of groups.
@@ -152,15 +152,25 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
    # Initialize the time series with random Gaussian noise
     data = np.random.normal(size=(timesteps, n))
     # Add seasonality with cycles repeating every 24 samples
-    seasonality = np.sin(np.linspace(0, 2 * np.pi * timesteps / 12, timesteps))[:, None]
+    seasonality = np.sin(np.linspace(0, 2 * np.pi * timesteps / 12, timesteps))[:, None] + np.cos(np.linspace(0, 3 * np.pi * timesteps / 16, timesteps))[:, None]
     # Add the seasonality to both time series
-    # data = data + seasonality
+    data = data + seasonality
+
+# ------------ Replace the source signal ----------
+    # # Create a sample signal
+    # # A sine wave with two frequencies (chirp-like signal)
+    # t = np.linspace(0, 1, 1000, endpoint=False)  # Time vector
+    # signal = np.sin(2 * np.pi * 50 * t) + np.sin(2 * np.pi * 120 * t)
+
+    # # Add some noise
+    # signal += 0.5 * np.random.normal(size=t.shape)
+# --------------------------------------------------
 
     # Update time series data based on DAG relationships, including autoregression on itself
     for t in range(1, timesteps):
         for i in range(n):
             # # Start with the own past value
-            data[t, i] = 0.75 * data[t-1, i]
+            data[t, i] = data[t, i] + 0.33 * data[t-1, i]
 
             # Add contributions from the parents
             parents = list(G.predecessors(f'G{i+1}'))
@@ -174,7 +184,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
                         data[t, i] += data[t-1, parent_index]
 
             # Add Gaussian noise
-            data[t, i] += np.random.normal(scale=0.10)
+            data[t, i] += np.random.normal(scale=0.01)
 
     # Convert to DataFrame
     df = pd.DataFrame(data, columns=[f'Z{i}' for i in range(n)])

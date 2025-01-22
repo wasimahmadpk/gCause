@@ -234,8 +234,8 @@ def remove_diagonal_and_flatten(matrix):
         raise ValueError("Input matrix must be square.")
 
     # Mask the diagonal and flatten the result
-    mask = np.ones(matrix.shape, dtype=bool)
-    # mask = ~np.eye(matrix.shape[0], dtype=bool)
+    # mask = np.ones(matrix.shape, dtype=bool)
+    mask = ~np.eye(matrix.shape[0], dtype=bool)
     return matrix[mask].tolist()
 
 

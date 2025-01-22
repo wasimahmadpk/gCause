@@ -93,15 +93,15 @@ def get_syn_params():
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4]},      #  
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1]},                 #    
         
-        'epochs': 25,
+        'epochs': 10,
         'pred_len': 10,
         'train_len': 666,
-        'num_layers': 6,
-        'num_cells': 66,
+        'num_layers': 10,
+        'num_cells': 100,
         'num_samples': 5,
         'dropout_rate': 0.10,
         'win_size': 1,
-        'num_sliding_win': 21,
+        'num_sliding_win': 15,
         'step_size': 3,
         'dim': 8,
         'dim_fs': 8,
@@ -301,7 +301,7 @@ def get_rivernet_params_gc():
         'num_samples': 2,
         'dropout_rate': 0.25,
         'win_size': 1,
-        'num_sliding_win': 100, #21, 25
+        'num_sliding_win': 30, #21, 25
         'step_size': 1,
         'dim': 8,
         'dim_fs': 8,
