@@ -108,7 +108,7 @@ def modelTest(model, test_ds, num_samples, data, effect_range, prediction_length
         mape_effect_variables.append(mape)
         # meanerror = np.mean(np.mean(y_pred, axis=0))
 
-        counter = -1
+        counter = 1
         # print(f"TSS when intervention is : {intervention}-> {tss}")
 
         if count < counter:
