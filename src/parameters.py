@@ -100,8 +100,8 @@ def get_syn_params():
         'num_cells': 100,
         'num_samples': 5,
         'dropout_rate': 0.10,
-        'win_size': 1,
-        'num_sliding_win': 15,
+        'win_size': 5,
+        'num_sliding_win': 20,
         'step_size': 3,
         'dim': 8,
         'dim_fs': 8,
@@ -293,15 +293,15 @@ def get_rivernet_params_gc():
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3]}, #  
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1]}, #    
 
-        'epochs': 15,
+        'epochs': 30,
         'pred_len': 10,
-        'train_len': 500,
+        'train_len': 1000,
         'num_layers': 4,
         'num_cells': 40,
-        'num_samples': 5,
+        'num_samples': 1,
         'dropout_rate': 0.01,
         'win_size': 1,
-        'num_sliding_win': 30, #21, 25
+        'num_sliding_win': 21, #21, 25
         'step_size': 1,
         'dim': 8,
         'dim_fs': 8,
@@ -317,7 +317,7 @@ def get_rivernet_params_gc():
                        0, 0, 1, 1, 0,
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
-        'freq': 'H',
+        'freq': '6H',
         'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs_rivernet/",
         'model_path': "/home/ahmad/Projects/gCause/models/gc_rivernet/",
         'model_name': 'trained_rivernet',

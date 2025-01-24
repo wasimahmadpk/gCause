@@ -25,7 +25,7 @@ import netCDF4
 from netCDF4 import Dataset,num2date
 from matplotlib import pyplot as plt
 import xarray as xr
-from tigramite import data_processing as pp
+#from tigramite import data_processing as pp
 
 
 np.random.seed(1)

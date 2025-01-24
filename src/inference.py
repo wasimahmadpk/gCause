@@ -82,7 +82,6 @@ def modelTest(model, test_ds, num_samples, data, effect_range, prediction_length
         #     # plt.savefig(filename)
         #     # plt.show()
 
-
     forecasts = list(forecast_it)
     tss = list(ts_it)
 
@@ -97,7 +96,8 @@ def modelTest(model, test_ds, num_samples, data, effect_range, prediction_length
             y_pred.append(forecasts[0].samples[i].transpose()[idx].tolist())
 
         y_pred = np.array(y_pred)
-        y_true = data[idx, -prediction_length:]
+        # print(f'Prediction: {y_pred}')
+        y_true = data.iloc[-prediction_length:, idx]
         
         mape = mean_absolute_percentage_error(y_true, np.mean(y_pred, axis=0))
         # mape = mean_absolute_error(y_true, np.mean(y_pred, axis=0))
@@ -108,7 +108,7 @@ def modelTest(model, test_ds, num_samples, data, effect_range, prediction_length
         mape_effect_variables.append(mape)
         # meanerror = np.mean(np.mean(y_pred, axis=0))
 
-        counter = 1
+        counter = -1
         # print(f"TSS when intervention is : {intervention}-> {tss}")
 
         if count < counter:

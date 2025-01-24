@@ -134,7 +134,7 @@ class Knockoffs:
 
         # Sample test data
         # X_test = DataSampler.sample(n, test=True)
-        X_test = datax[0:round(len(datax)*1.0), :]
+        X_test = datax[:round(len(datax)*1.0), :]
         # print("Test shape:", X_test.shape)
         # print("Generated a test dataset of size: %d x %d." % (X_test.shape))
 
@@ -148,7 +148,7 @@ class Knockoffs:
         # print("Size of the second-order knockoff test dataset: %d x %d." % (Xk_test_g.shape))
 
         # Generate oracle knockoffs
-        oracle = GaussianKnockoffs(DataSampler.Sigma, method="sdp", mu=DataSampler.mu)
+        oracle = GaussianKnockoffs(SigmaHat, method="sdp", mu=np.mean(X_train, axis=0))
         Xk_test_o = oracle.generate(X_test)
         # print("Size of the oracle knockoff test dataset: %d x %d." % (Xk_test_o.shape))
         #
@@ -185,6 +185,39 @@ class Knockoffs:
         # sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
         # plt.title("K-Nearest Neighbors goodness-of-fit")
         # plt.show()
+
+
+        # # ------------plot knockoffs ---------------------------------
+        # # Create subplots within the same figure
+        # fig, axs = plt.subplots(1, 2, figsize=(15, 5))  # Adjust the width and height as needed
+        # date_series = pd.date_range(start='2014-11-01', end='2015-04-04', freq='D')
+        # # date_series = np.arange(311)
+        # ylim = [-0.1, 0.9]
+        # # Iterate over subplots and plot data with different legends
+        # for i, ax in enumerate(axs):
+        #     # Plot the data with a different offset for each subplot
+        #     ax.plot(np.arange(0, len(X_test)), X_test[:, i], color='indigo', label=f'Actual')
+        #     ax.plot(np.arange(0, len(X_test)), Xk_test_o[:, i], color='grey', label=f'Knockoffs')
+        #     corr = round(np.corrcoef(X_test[:, i], Xk_test_o[:, i])[0, 1], 2)
+            
+        #     # Add a legend to each subplot
+        #     ax.legend(loc='upper right', fontsize='16', bbox_to_anchor=(1.0, 1.0))
+            
+        #     ax.set_ylabel('Values', fontsize=16)
+        #     # ax.set_ylim(bottom=None, top=ylim[i])  # Adjust the limits as needed
+        #     ax.set_title(f'Correlation: {corr}', fontsize=16) # ({data.columns[i]}$_{{actual}}$, {data.columns[i]}$_{{knockoffs}}$ )
+        #     ax.xaxis.set_tick_params(labelsize=16)
+        #     ax.yaxis.set_tick_params(labelsize=16)
+        #     ax.set_xlabel('Time', fontsize=16)
+
+        # # Adjust layout to prevent overlap
+        # plt.tight_layout()
+
+        # # Save the figure as a PDF
+        # plt.savefig('actknock.pdf', dpi=300)
+        # # Show the plot
+        # plt.show()
+        # ------------------------------------------------------------- 
         return Xk_test_o
 
 
