@@ -276,7 +276,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
                 knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
-                # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
+                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                 interventionlist = [knockoff_samples]
                 heuristic_itn_types = ['In-dist']
 
@@ -332,7 +332,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                                 knockoffs = obj.Generate_Knockoffs(data_actual, params)
                                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
                                 knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
-                                # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
+                                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                                 intervene = knockoff_samples
                           
                             imse_batches.append(multi_var_point_imse)

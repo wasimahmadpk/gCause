@@ -186,7 +186,6 @@ class Knockoffs:
         # plt.title("K-Nearest Neighbors goodness-of-fit")
         # plt.show()
 
-
         # # ------------plot knockoffs ---------------------------------
         # # Create subplots within the same figure
         # fig, axs = plt.subplots(1, 2, figsize=(15, 5))  # Adjust the width and height as needed
@@ -255,7 +254,6 @@ if __name__ == '__main__':
     temp = normalize(down_sample(syndata['T'], win_size))
     gpp = normalize(down_sample(syndata['GPP'], win_size))
     reco = normalize(down_sample(syndata['Reco'], win_size))
-
 
     obj = Knockoffs()
     datax = np.array([rg, temp, gpp, reco]).transpose()
