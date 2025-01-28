@@ -53,8 +53,7 @@ def plot_graph(g, red_matrix):
 
 def reduce_causal_matrix(causal_matrix, num_groups, group_size):
     """
-    Reduces a causal matrix into a smaller matrix based on the specified number of groups and group size.
-ss
+    Reduces a causal matrix into a smaller matrix based on the specified number of groups and group size.ss
     Parameters:
     causal_matrix (np.ndarray): The original causal matrix.
     num_groups (int): The number of groups.
@@ -115,6 +114,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
     """
     # Create an adjacency matrix for a random graph
     adjacency_matrix = np.random.rand(n, n) < p
+    print(adjacency_matrix)
     # Retain only the lower triangular part to ensure a DAG
     adjacency_matrix = np.tril(adjacency_matrix, -1)
 
@@ -145,26 +145,47 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
             if adjacency_matrix[i, j] == 1 and i != j:
                 nonlinear_links[(i, j)] = np.random.rand() < nonlinear_prob
 
-    # Function to apply nonlinear transformation
+    # # Function to apply nonlinear transformation
+    # def nonlinear_transform(value):
+    #     return np.sin(value)  # Example nonlinear function
+
     def nonlinear_transform(value):
-        return np.sin(value)  # Example nonlinear function
+        """
+        A more complicated but stable nonlinear transformation combining sine, cosine, exponential, and polynomial components.
+        
+        Parameters:
+        value (float or np.ndarray): The input value or array to apply the transformation on.
+
+        Returns:
+        float or np.ndarray: The transformed value.
+        """
+        # Ensure the exponential term does not grow too fast
+        exp_term = np.exp(-0.05 * np.abs(value))  # Controlled decay with a smaller factor
+
+        # Polynomial term with a cubic component, but with scaling factor to keep values manageable
+        poly_term = 0.1 * np.clip(value**3, -100, 100)  # Clip to limit large values
+
+        # Sine and Cosine terms with added scaling to prevent extreme oscillations
+        trig_term = np.sin(value) * 0.5 + np.cos(value)**2 * 0.3
+
+        # Apply a bounded logarithmic transformation for negative values
+        log_term = np.zeros_like(value)
+        log_term[value < 0] = np.log1p(np.abs(value[value < 0]))  # log(1 + abs(x)) for stability
+
+        # Combine all terms while ensuring the final result is bounded between -10 and 10
+        transformed_value = trig_term + exp_term + poly_term + log_term
+
+        # Clip the final result to a reasonable range to avoid explosion
+        transformed_value = np.clip(transformed_value, -10, 10)
+        return transformed_value
+
 
    # Initialize the time series with random Gaussian noise
     data = np.random.normal(size=(timesteps, n))
     # Add seasonality with cycles repeating every 24 samples
-    seasonality = np.sin(np.linspace(0, 2 * np.pi * timesteps / 12, timesteps))[:, None] + np.cos(np.linspace(0, 3 * np.pi * timesteps / 16, timesteps))[:, None]
+    seasonality = np.sin(np.linspace(0, 2 * np.pi * timesteps / 12, timesteps))[:, None] + np.cos(np.linspace(0, 4 * np.pi * timesteps / 18, timesteps))[:, None]
     # Add the seasonality to both time series
-    data = data + seasonality
-
-# ------------ Replace the source signal ----------
-    # # Create a sample signal
-    # # A sine wave with two frequencies (chirp-like signal)
-    # t = np.linspace(0, 1, 1000, endpoint=False)  # Time vector
-    # signal = np.sin(2 * np.pi * 50 * t) + np.sin(2 * np.pi * 120 * t)
-
-    # # Add some noise
-    # signal += 0.5 * np.random.normal(size=t.shape)
-# --------------------------------------------------
+    data = data + 0.5*seasonality
 
     # Update time series data based on DAG relationships, including autoregression on itself
     for t in range(1, timesteps):
@@ -183,7 +204,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
                     else:
                         data[t, i] += data[t-1, parent_index]
 
-            # Add Gaussian noise
+            # Add Gaussian noise again
             data[t, i] += np.random.normal(scale=0.01)
 
     # Convert to DataFrame

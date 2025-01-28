@@ -195,8 +195,8 @@ class Knockoffs:
         # # Iterate over subplots and plot data with different legends
         # for i, ax in enumerate(axs):
         #     # Plot the data with a different offset for each subplot
-        #     ax.plot(np.arange(0, len(X_test)), X_test[:, i], color='indigo', label=f'Actual')
-        #     ax.plot(np.arange(0, len(X_test)), Xk_test_o[:, i], color='grey', label=f'Knockoffs')
+        #     ax.plot(np.arange(0, len(X_test[:100])), X_test[:100, i], color='indigo', label=f'Actual')
+        #     ax.plot(np.arange(0, len(X_test[:100])), Xk_test_o[:100, i], color='grey', label=f'Knockoffs')
         #     corr = round(np.corrcoef(X_test[:, i], Xk_test_o[:, i])[0, 1], 2)
             
         #     # Add a legend to each subplot
