@@ -190,7 +190,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
     for t in range(1, timesteps):
         for i in range(n):
             # # Start with the own past value
-            data[t, i] = data[t, i] + 0.33 * data[t-1, i]
+            data[t, i] = data[t, i] + 0.5 * data[t-1, i]
 
             # Add contributions from the parents
             parents = list(G.predecessors(f'G{i+1}'))
@@ -199,9 +199,9 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
                 for parent_index in parent_indices:
                     if nonlinear_links[(parent_index, i)]:
                         # print(f'Var: {i} is nonlinear parents: {parent_index}')
-                        data[t, i] += nonlinear_transform(data[t-1, parent_index])
+                        data[t, i] += nonlinear_transform(data[t-5, parent_index])
                     else:
-                        data[t, i] += data[t-1, parent_index]
+                        data[t, i] += data[t-5, parent_index]
 
             # Add Gaussian noise again
             data[t, i] += np.random.normal(scale=0.01)

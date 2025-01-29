@@ -94,15 +94,15 @@ def get_syn_params():
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5], 'g6': [5, 6], 'g7': [6, 7], 'g8': [7, 8], 'g9': [8, 9]},      #  
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1], 'g5':[1], 'g6':[1], 'g7':[1], 'g8':[1], 'g9':[1]},                 #    
         
-        'epochs': 10,
-        'pred_len': 10,
-        'train_len': 666,
-        'num_layers': 10,
-        'num_cells': 100,
+        'epochs': 50,
+        'pred_len': 5,
+        'train_len': 1500,
+        'num_layers': 6,
+        'num_cells': 50,
         'num_samples': 5,
         'dropout_rate': 0.10,
         'win_size': 5,
-        'num_sliding_win': 15,
+        'num_sliding_win': 100,
         'step_size': 3,
         'dim': 8,
         'dim_fs': 8,

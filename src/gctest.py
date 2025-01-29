@@ -215,7 +215,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     # ------------------------------------------------------------------------------
     mse_realization, mape_realization = [], []
     causal_matrix, causal_matrix_1tier = [], []
-    kld_matrix = []
+    ci_matrix, kld_matrix = [] , []
     data_range = list(range(len(odata)))
     for r in range(1):  # number of time series realizations
                         
@@ -255,12 +255,12 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     # print(np.array(mape_realization))
     # ------------------------------------------------------------------------------------
     for g in range(group_num):
-        kld_links = []
+        ci_links = []
         causal_links = []
         causal_links_1tier = []
         for h in range(group_num):
             cause_list = []
-            kld_list = []
+            ci_list = []
             cause_list_1tier = []
          
             # if g==h:
@@ -348,182 +348,175 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     imse_mean = np.mean(np.stack(imse_realization), axis=0)
                     mape_mean = np.mean(np.stack(mape_realization[:, :, start_effect: end_effect]), axis=0)
                     imape_mean = np.mean(np.stack(imape_realization), axis=0)
-
-                    mse_interventions.append(mse_mean)
-                    imse_interventions.append(imse_mean)
-                    mape_interventions.append(mape_mean)
-                    imape_interventions.append(imape_mean)
-
                 
-                for m in range(len(interventionlist)):
-                
-                    for j in range(start_effect, end_effect):
+                intervention_type = 'In-distribution'
+                for j in range(start_effect, end_effect):
 
+                    print("----------*****-----------------------*****------------")
+                    # print(f"MSE(Mean): {list(np.mean(mselol, axis=0))}")
+                    if len(columns) > 0:
+                        print(f"Causal Link: {cause_group} --------------> {effect_group} ({columns[j]})")
                         print("----------*****-----------------------*****------------")
-                        # print(f"MSE(Mean): {list(np.mean(mselol, axis=0))}")
-                        if len(columns) > 0:
-                            print(f"Causal Link: {cause_group} --------------> {effect_group} ({columns[j]})")
-                            print("----------*****-----------------------*****------------")
-                            fnamehist = plot_path + "{columns[i]}_{columns[j]}:hist"
-                        else:
-                            print(f"Causal Link: {cause_group} --------------> Z_{j + 1}")
-                            print("----------*****-----------------------*****------------")
-                            fnamehist = plot_path + "{Z_[i + 1]}_{Z_[j + 1]}:hist"
-                        
-                        pvals = []
-                        
-                        # ----------------------------------------------------------- 
-                        #      Invariance testing (distribution and correlation) 
-                        # -----------------------------------------------------------
+                        fnamehist = plot_path + "{columns[i]}_{columns[j]}:hist"
+                    else:
+                        print(f"Causal Link: {cause_group} --------------> Z_{j + 1}")
+                        print("----------*****-----------------------*****------------")
+                        fnamehist = plot_path + "{Z_[i + 1]}_{Z_[j + 1]}:hist"
+                    
+                    pvals = []
+                    
+                    # ----------------------------------------------------------- 
+                    #      Invariance testing (distribution and correlation) 
+                    # -----------------------------------------------------------
 
 
-                        # -----------------------------------------------------------
-                        # Perform the DM test
-                        # t, pv_corr = dm_test(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
-                        # print(f"DM Statistic: {t}, p-value: {p}")
-                        # -----------------------------------------------------------
+                    # -----------------------------------------------------------
+                    # Perform the DM test
+                    # t, pv_corr = dm_test(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
+                    # print(f"DM Statistic: {t}, p-value: {p}")
+                    # -----------------------------------------------------------
 
-                        # -----------------------------------------------------------
-                        #         Calculate CausalImpatc in terms of KLD
-                        # -----------------------------------------------------------
-                        kld_val = kld(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
-                        
-                        # Calculate Spearman correlation coefficient and its p-value
-                        corr, pv_corr = spearmanr(mape_interventions[m][:, j-start_effect], imape_interventions[m][:, j-start_effect])
-                        print("Intervention: " + heuristic_itn_types[m])
-                        # t, p = ttest_ind(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
-                        t, p = ks_2samp(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
-                        pvals.append(1-p)
-                        
-                        print(f'Test statistic: {round(t, 2)}, pv-dist: {round(p, 2)}, pv-corr: {round(pv_corr, 2)}, kld: {kld_val}')
-                        if p < 0.05:
-                            print("\033[92mNull hypothesis is rejected\033[0m")
-                            causal_decision.append(1)
-                            causal_decision_1tier.append(1)
+                    # -----------------------------------------------------------
+                    #         Calculate CausalImpatc in terms of KLD
+                    # -----------------------------------------------------------
+                    kld_val = kld(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
+                    
+                    # Calculate Spearman correlation coefficient and its p-value
+                    corr, pv_corr = spearmanr(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
+                    print("Intervention: " + intervention_type)
+                    # t, p = ttest_ind(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
+                    t, p = ks_2samp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))
+                    # ad_test = anderson_ksamp([np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect])])  # Anderson-Darling Test
+                    # p = ad_test[2]
+                    pvals.append(p)
+                    
+                    print(f'Test statistic: {round(t, 2)}, pv-dist: {round(p, 2)}, pv-corr: {round(pv_corr, 2)}, kld: {kld_val}')
+                    if p < 0.05:
+                        print("\033[92mNull hypothesis is rejected\033[0m")
+                        causal_decision.append(1)
+                        causal_decision_1tier.append(1)
+                        print("-------------------------------------------------------")
+                    else:
+                        causal_decision_1tier.append(0)
+                        if pv_corr < 0.50:
+                            print("\033[94mFail to reject null hypothesis\033[0m")
+                            causal_decision.append(0)
                             print("-------------------------------------------------------")
                         else:
-                            causal_decision_1tier.append(0)
-                            if pv_corr < 0.50:
-                                print("\033[94mFail to reject null hypothesis\033[0m")
-                                causal_decision.append(0)
-                                print("-------------------------------------------------------")
-                            else:
-                                print("\033[92mNull hypothesis is rejected\033[0m")
-                                causal_decision.append(1)
-                                print("-------------------------------------------------------")
-                        
-                        pvi.append(pvals[0])
-
-                        # --------------------------- plot residuals ----------------------------------
-                        fig = plt.figure()
-                        ax = fig.add_subplot(111)
-
-                        # Calculate Spearman correlation coefficient and its p-value
-                        corr, p_val = spearmanr(mse_interventions[m][:, j-start_effect], imse_interventions[m][:, j-start_effect])
-
-                        plt.plot(mse_interventions[m][:, j-start_effect], color='g', alpha=0.7, label='Actual $\epsilon$')
-                        plt.plot(imse_interventions[m][:, j-start_effect], color='r', alpha=0.7, label='Counterfactual $\epsilon$')
-                        plt.title(f'corr: {round(corr, 2)}, p-val: {round(p_val, 2)}')
-                        if len(columns) > 0:
-                            # effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])
-                            effect_var = formatted_columns[j]
-                            ax.set_ylabel(f'{cause_group} ---> {effect_var}')
-                        else:
-                            # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
-                            ax.set_ylabel(f'{cause_group} ---> Z_{j + 1}')
-                        
-                        plt.gcf()
-                        ax.legend()
-                        filename = pathlib.Path(plot_path + f'res_{cause_group} ---> {columns[j]}.pdf')
-                        plt.savefig(filename)
-                        plt.show()
+                            print("\033[92mNull hypothesis is rejected\033[0m")
+                            causal_decision.append(1)
+                            print("-------------------------------------------------------")
                     
-                        # -------------------------- plot residuals distribution ---------------------------
+                    pvi.append(pvals[0])
+
+                    # --------------------------- plot residuals ----------------------------------
+                    fig = plt.figure()
+                    ax = fig.add_subplot(111)
+
+                    # Calculate Spearman correlation coefficient and its p-value
+                    corr, p_val = spearmanr(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
+
+                    plt.plot(mape_mean[:, j-start_effect], color='g', alpha=0.7, label='Actual $\epsilon$')
+                    plt.plot(imape_mean[:, j-start_effect], color='r', alpha=0.7, label='Counterfactual $\epsilon$')
+                    plt.title(f'corr: {round(corr, 2)}, p-val: {round(p_val, 2)}')
+                    if len(columns) > 0:
+                        # effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])
+                        effect_var = formatted_columns[j]
+                        ax.set_ylabel(f'{cause_group} ---> {effect_var}')
+                    else:
+                        # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
+                        ax.set_ylabel(f'{cause_group} ---> Z_{j + 1}')
+                    
+                    plt.gcf()
+                    ax.legend()
+                    filename = pathlib.Path(plot_path + f'res_{cause_group} ---> {columns[j]}.pdf')
+                    plt.savefig(filename)
+                    plt.show()
+                
+                    # -------------------------- plot residuals distribution ---------------------------
+                    fig = plt.figure()
+                    ax1 = fig.add_subplot(111)
+                    
+                    # Create the KDE plot
+                    sns.kdeplot(mape_mean[:, j-start_effect], shade=True, color="g", label="Actual")
+                    # Calculate the mean of the data
+                    mean_value = np.mean(mape_mean[:, j-start_effect])
+                    # Add a vertical line at the mean
+                    plt.axvline(mean_value, color="g", linestyle="--", label=f"Mean: {mean_value:.2f}")
+                    sns.kdeplot(imape_mean[:, j-start_effect], shade=True, color="y", label="Counterfactual")
+                    # Calculate the mean of the data
+                    mean_value = np.mean(imape_mean[:, j-start_effect])
+                    # Add a vertical line at the mean
+                    plt.axvline(mean_value, color="y", linestyle="--", label=f"Mean: {mean_value:.2f}")
+                    
+                    # sns.distplot(mapelol[0], color='red', label='Actual')
+                    # sns.distplot(mapelolint[0], color='green', label='Counterfactual')
+                    
+                    if len(columns) > 0:
+                        # effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])
+                        effect_var = formatted_columns[j]
+                        ax1.set_ylabel(f"{cause_group} ---> {effect_var}")
+                    else:
+                        # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
+                        ax1.set_ylabel(f"{cause_group} ---> Z_{j + 1}")
+
+                    rnd = random.randint(1, 9999)
+                    plt.gcf()
+                    ax1.legend()
+                    filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[j]}_{method}_{rnd}.pdf")
+                    plt.savefig(filename)
+                    plt.show()
+                    # plt.close()
+                    #-------------------------------------------------------------------------------------
+                    cause_list.append(causal_decision[0])
+                    cause_list_1tier.append(causal_decision_1tier[0])
+                    indist_cause.append(causal_decision[0])
+
+                    ci_list.append(p)
+                    causal_decision = []
+            
+                if h == group_num-1 or g==group_num-1:
+                    
+                    for q in range(1, end_effect-start_effect):
+                    
+                        mape_df = pd.DataFrame(data=mse_mean, columns=columns[start_effect: end_effect])
+                        mape_int_df = pd.DataFrame(data=imse_mean, columns=columns[start_effect: end_effect])
+
+                        # Create a single plot
                         fig = plt.figure()
-                        ax1 = fig.add_subplot(111)
-                        
-                        # Create the KDE plot
-                        sns.kdeplot(mse_interventions[m][:, j-start_effect], shade=True, color="g", label="Actual")
-                        # Calculate the mean of the data
-                        mean_value = np.mean(mse_mean[:, j-start_effect])
-                        # Add a vertical line at the mean
-                        plt.axvline(mean_value, color="purple", linestyle="--", label=f"Mean: {mean_value:.2f}")
-                        sns.kdeplot(imse_interventions[m][:, j-start_effect], shade=True, color="y", label="Counterfactual")
-                        # Calculate the mean of the data
-                        mean_value = np.mean(imse_mean[:, j-start_effect])
-                        # Add a vertical line at the mean
-                        plt.axvline(mean_value, color="purple", linestyle="--", label=f"Mean: {mean_value:.2f}")
-                        
-                        # sns.distplot(mapelol[0], color='red', label='Actual')
-                        # sns.distplot(mapelolint[0], color='green', label='Counterfactual')
-                        
+                        ax2 = fig.add_subplot(111)
+
+                        # Plot the first bivariate distribution with transparency
+                        sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Blues',
+                                        alpha=0.75, fill=True, levels=4, color='blue', label='Actual') #fill= True, cmap="Blues", alpha=0.5
+
+                        # Plot the second bivariate distribution on top with transparency
+                        sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Reds',
+                                        alpha=0.60, fill=True, levels=4, color='red', label='Counterfactual') # fill=True, cmap="Reds", fill=True, cmap="Reds",
+
                         if len(columns) > 0:
-                            # effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])
-                            effect_var = formatted_columns[j]
+                            # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
+                            # effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[q])
+                            effect_var = formatted_columns[q]
                             ax1.set_ylabel(f"{cause_group} ---> {effect_var}")
                         else:
                             # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
-                            ax1.set_ylabel(f"{cause_group} ---> Z_{j + 1}")
+                            ax1.set_ylabel(f"{cause_group} ---> Z_{q + 1}")
 
-                        rnd = random.randint(1, 9999)
-                        
+                        # Show the plot
                         plt.gcf()
-                        ax1.legend()
-                        filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[j]}_{method}_{rnd}.pdf")
+
+                        # Add a custom legend
+                        legend_elements = [
+                        Patch(facecolor=plt.cm.Greens(100), alpha=0.70, edgecolor='b', label='Actual'),
+                        Patch(facecolor=plt.cm.Oranges(100), alpha=0.85, edgecolor='r', label='Counterfactual')
+                        ]
+                        ax2.legend(handles=legend_elements)
+                        filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d_{method}_{rnd}.pdf")
                         plt.savefig(filename)
-                        plt.show()
-                        # plt.close()
-                        #-------------------------------------------------------------------------------------
-                        cause_list.append(causal_decision[0])
-                        cause_list_1tier.append(causal_decision_1tier[0])
-                        indist_cause.append(causal_decision[0])
-
-                        kld_list.append(kld_val)
-        
-                        causal_decision = []
+                        # plt.show()
                 
-                    if h == group_num-1 or g==group_num-1:
-                        
-                        for q in range(1, end_effect-start_effect):
-                        
-                            mape_df = pd.DataFrame(data=mse_mean, columns=columns[start_effect: end_effect])
-                            mape_int_df = pd.DataFrame(data=imse_mean, columns=columns[start_effect: end_effect])
-
-                            # Create a single plot
-                            fig = plt.figure()
-                            ax2 = fig.add_subplot(111)
-
-                            # Plot the first bivariate distribution with transparency
-                            sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Blues',
-                                         alpha=0.75, fill=True, levels=4, color='blue', label='Actual') #fill= True, cmap="Blues", alpha=0.5
-
-                            # Plot the second bivariate distribution on top with transparency
-                            sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Reds',
-                                         alpha=0.60, fill=True, levels=4, color='red', label='Counterfactual') # fill=True, cmap="Reds", fill=True, cmap="Reds",
-
-                            if len(columns) > 0:
-                                # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
-                                # effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[q])
-                                effect_var = formatted_columns[q]
-                                ax1.set_ylabel(f"{cause_group} ---> {effect_var}")
-                            else:
-                                # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
-                                ax1.set_ylabel(f"{cause_group} ---> Z_{q + 1}")
-
-                            # Show the plot
-                            plt.gcf()
-
-                            # Add a custom legend
-                            legend_elements = [
-                            Patch(facecolor=plt.cm.Greens(100), alpha=0.70, edgecolor='b', label='Actual'),
-                            Patch(facecolor=plt.cm.Oranges(100), alpha=0.85, edgecolor='r', label='Counterfactual')
-                            ]
-                            ax2.legend(handles=legend_elements)
-                            filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d_{method}_{rnd}.pdf")
-                            plt.savefig(filename)
-                            # plt.show()
-                
-                kld_links.append(kld_list[0])
+                ci_links.append(ci_list[0])
                 if method=='Full':
                     causal_links.append(cause_list[0])
                     causal_links_1tier.append(cause_list_1tier[0])
@@ -531,7 +524,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     causal_links.append(1 if 1 in cause_list else 0)
                     causal_links_1tier.append(1 if 1 in cause_list_1tier else 0)
 
-        kld_matrix.append(kld_links)
+        ci_matrix.append(ci_links)
         causal_matrix.append(causal_links)
         causal_matrix_1tier.append(causal_links_1tier)
     
@@ -548,7 +541,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     # print("Pair-wise Graph: ", conf_mat)
     print(f'Actual Causal Graph: \n {ground_truth}')
     print(f'Discovered Causal Graph: \n {np.array(causal_matrix)}')
-    print(f'Causal Impact Graph: \n {np.array(kld_matrix)}')
+    print(f'Causal Impact Graph: \n {np.array(ci_matrix)}')
     print("----------*****-----------------------*****-------------")
 
   
