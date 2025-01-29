@@ -114,10 +114,9 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
     """
     # Create an adjacency matrix for a random graph
     adjacency_matrix = np.random.rand(n, n) < p
-    print(adjacency_matrix)
     # Retain only the lower triangular part to ensure a DAG
     adjacency_matrix = np.tril(adjacency_matrix, -1)
-
+   
     # Print the adjacency matrix
     # print("Causal Matrix (Adjacency Matrix):")
     # print(adjacency_matrix.astype(int))  # Convert boolean matrix to int for better readability
@@ -217,5 +216,4 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
     np.fill_diagonal(full_matrix, 1) 
 
     plot_graph(g, red_matrix)
-
     return df, red_matrix, full_matrix

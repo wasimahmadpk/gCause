@@ -166,10 +166,9 @@ def dm_test(err1, err2, h=1, crit="MSE"):
     p_value = 2 * (1 - stats.norm.cdf(np.abs(dm_stat)))
     return dm_stat, p_value
 
-def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
+def groupCause(df, odata, model, params, ground_truth, method='Group'):
 
-    p_val_list = np.arange(0.01, 0.101, 0.01)
-
+    p_val_list = [0.05] #np.arange(0.03, 0.1, 0.03)
     num_samples = params['num_samples']
     step = params['step_size']
     training_length = params['train_len']
@@ -188,6 +187,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
     elif method=='Full':
         groups = params['groups_fs']
         group_num = params['group_num_fs']
+        print(f'Select number of groups: {group_num}')
     else:
         groups = params['groups_cc']
 
@@ -203,7 +203,10 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
     causal_decision, causal_decision_1tier, indist_cause, uni_cause, group_cause = [], [], [], [], []
 
     # Generate Knockoffs
+      # Generate Knockoffs
     data_actual = np.array(odata[: , 0: training_length + prediction_length]).transpose()
+    n = len(data_actual[:, 0])
+    params.update({'length': n})
     obj = Knockoffs()
     knockoffs = obj.Generate_Knockoffs(data_actual, params)
     
@@ -214,18 +217,18 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
     causal_matrix, causal_matrix_1tier = [], []
     kld_matrix = []
     data_range = list(range(len(odata)))
-    for r in range(2):  # number of time series realizations
+    for r in range(1):  # number of time series realizations
                         
         start_batch = 10
         mse_batches, mape_batches = [], []
         
         for iter in range(num_sliding_win): # batches
 
-            test_data = odata[: , start_batch: start_batch + training_length + prediction_length].copy()
+            test_data= df.iloc[start_batch: start_batch + training_length + prediction_length]
             test_ds = ListDataset(
                 [
-                    {'start': "01/04/2001 00:00:00",
-                        'target': test_data
+                     {'start': test_data.index[0],
+                     'target': test_data.values.T.tolist()
                     }
                 ],
                 freq=frequency,
@@ -264,12 +267,9 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                 # causal_links.append(1)
             if g > -1: #g!=h:
                 
-                start_effect = groups.get(f'g{h+1}')[0]
-                end_effect = groups.get(f'g{h+1}')[1]
-                start_cause = groups.get(f'g{g+1}')[0]
-                end_cause = groups.get(f'g{g+1}')[1]
-                cause_group = f'Group: {g+1}'
-                effect_group = f'Group: {h+1}' 
+                start_effect, end_effect = groups.get(f'g{h+1}')[0], groups.get(f'g{h+1}')[1]
+                start_cause, end_cause = groups.get(f'g{g+1}')[0], groups.get(f'g{g+1}')[1] 
+                cause_group, effect_group = f'Group: {g+1}', f'Group: {h+1}'
                 
                 # p-values
                 pvi, pvu = [], []
@@ -297,24 +297,24 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                         
                         for iter in range(num_sliding_win): # batches
 
-                            test_data = odata[: , start_batch: start_batch + training_length + prediction_length].copy()
+                            test_data = df.iloc[start_batch: start_batch + training_length + prediction_length] #.values.T.tolist()
                             test_ds = ListDataset(
                                 [
-                                    {'start': "01/04/2001 00:00:00",
-                                     'target': test_data
-                                    }
+                                     {'start': test_data.index[0],
+                                     'target': test_data.values.T.tolist()
+                                      }
                                 ],
                                 freq=frequency,
                                 one_dim_target=False
                             )
                         
-                            int_data = odata[: , start_batch: start_batch + training_length + prediction_length].copy()
-                            int_data[start_cause: end_cause, :] = intervene
+                            int_data = df.iloc[start_batch: start_batch + training_length + prediction_length].copy()
+                            int_data.iloc[:, start_cause:end_cause] = intervene.T
                         
                             test_dsint = ListDataset(
                                 [
-                                    {'start': "01/04/2001 00:00:00",
-                                     'target': int_data
+                                   {'start': test_data.index[0],
+                                    'target': int_data.values.T.tolist()
                                     }
                                 ],
                                 freq=frequency,
@@ -325,15 +325,15 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                             multi_var_point_imse, muti_var_point_imape = modelTest(model, test_dsint, num_samples, test_data,
                                                         range_effect_group, prediction_length, iter, True, m)
 
-                            if m == 0:
+        
                             
-                                data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
-                                obj = Knockoffs()
-                                knockoffs = obj.Generate_Knockoffs(data_actual, params)
-                                knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                                knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
-                                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
-                                intervene = knockoff_samples
+                            data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
+                            obj = Knockoffs()
+                            knockoffs = obj.Generate_Knockoffs(data_actual, params)
+                            knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
+                            knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
+                            knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
+                            intervene = knockoff_samples
                           
                             imse_batches.append(multi_var_point_imse)
                             imape_batches.append(multi_var_point_imse)
@@ -343,12 +343,7 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                         imse_realization.append(np.array(imse_batches))
                         imape_realization.append(np.array(imape_batches))
                     
-                    # print('Forecast Multivariate_Point')
-                    # print(np.array(multi_var_point_mse).shape)
-                    # print('Forecast Multivariate Realization')
-                    # print(np.array(mape_realization).shape)
-                    # print(np.stack(mape_realization))    
-                        
+                   
                     mse_mean = np.mean(np.stack(mse_realization[:, :, start_effect: end_effect]), axis=0)
                     imse_mean = np.mean(np.stack(imse_realization), axis=0)
                     mape_mean = np.mean(np.stack(mape_realization[:, :, start_effect: end_effect]), axis=0)
@@ -359,9 +354,6 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                     mape_interventions.append(mape_mean)
                     imape_interventions.append(imape_mean)
 
-                    # print('Forecast Multivariate')
-                    # print(mape_interventions)
-                    # print(mape_interventions[0][:, 0])
                 
                 for m in range(len(interventionlist)):
                 
@@ -452,7 +444,16 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
                         
                         # Create the KDE plot
                         sns.kdeplot(mse_interventions[m][:, j-start_effect], shade=True, color="g", label="Actual")
+                        # Calculate the mean of the data
+                        mean_value = np.mean(mse_mean[:, j-start_effect])
+                        # Add a vertical line at the mean
+                        plt.axvline(mean_value, color="purple", linestyle="--", label=f"Mean: {mean_value:.2f}")
                         sns.kdeplot(imse_interventions[m][:, j-start_effect], shade=True, color="y", label="Counterfactual")
+                        # Calculate the mean of the data
+                        mean_value = np.mean(imse_mean[:, j-start_effect])
+                        # Add a vertical line at the mean
+                        plt.axvline(mean_value, color="purple", linestyle="--", label=f"Mean: {mean_value:.2f}")
+                        
                         # sns.distplot(mapelol[0], color='red', label='Actual')
                         # sns.distplot(mapelolint[0], color='green', label='Counterfactual')
                         
@@ -549,20 +550,29 @@ def groupCause(odata, knockoffs, model, params, ground_truth, method='Group'):
     print(f'Discovered Causal Graph: \n {np.array(causal_matrix)}')
     print(f'Causal Impact Graph: \n {np.array(kld_matrix)}')
     print("----------*****-----------------------*****-------------")
+
+  
+    print("----------*****-----------------------*****-------------")
+    pred = np.array(kld_matrix)   #1 - np.array(kld_matrix)
+    actual_lab = prep.remove_diagonal_and_flatten(ground_truth)
+    pred_score = prep.remove_diagonal_and_flatten(pred)
+    fmax = prep.f1_max(actual_lab, pred_score)
      
     # Calculate metrics
-    metrics = evaluate(ground_truth, causal_matrix)
-    metrics_1tier = evaluate(ground_truth, causal_matrix_1tier)
+    metrics = prep.evaluate_best_predicted_graph(ground_truth, np.array([causal_matrix]))
+    metrics_1tier = prep.evaluate_best_predicted_graph(ground_truth, np.array([causal_matrix_1tier]))
+    metrics['Fscore'] = fmax[1]
     # Print metrics
     for metric, value in metrics.items():
         print(f"{metric}: {value:.2f}")
 
     # Print metrics
-    print("----------*****--------T1-test--------*****------------")
+    print("----------*****--------Tier1-INtest--------*****------------")
     for metric, value in metrics_1tier.items():
        print(f"{metric}: {value:.2f}")
 
     return metrics, conf_mat, metrics_1tier
+
 
 
 
