@@ -1314,6 +1314,130 @@ def plot_motor_count(data, save_path="plots", json_path=''):
         print(f"Saved {metric} bar data as JSON at: {bar_data_json}")
 
 
+
+def kld(P, Q, epsilon=1e-10):
+    """
+    Calculate the Kullback-Leibler divergence between two probability distributions.
+
+    Parameters:
+    - P: np.ndarray, the first distribution
+    - Q: np.ndarray, the second distribution
+    - epsilon: float, small value added for numerical stability
+
+    Returns:
+    - kl_div: float, the Kullback-Leibler divergence from P to Q
+    """
+    # Step 1: Normalize the distributions
+    P = P / np.sum(P) if np.sum(P) > 0 else P
+    Q = Q / np.sum(Q) if np.sum(Q) > 0 else Q
+
+    # Step 2: Add a small value to avoid log(0)
+    P = P + epsilon
+    Q = Q + epsilon
+
+    # Step 3: Calculate KL Divergence
+    kl_div = np.sum(P * np.log(P / Q))
+    return round(kl_div, 3)
+
+def calculate_shd(ground_truth, predicted):
+    """
+    Calculates the Structural Hamming Distance (SHD) between two DAG adjacency matrices.
+    SHD is the number of differing edges between the ground truth and predicted matrices.
+    
+    :param ground_truth: np.ndarray - Ground truth adjacency matrix (n x n).
+    :param predicted: np.ndarray - Predicted adjacency matrix (n x n).
+    :return: int - The SHD between the two matrices.
+    """
+    if ground_truth.shape != predicted.shape:
+        raise ValueError("Both matrices must have the same shape")
+    
+    # Element-wise comparison (1 where they differ, 0 where they are the same)
+    differences = ground_truth != predicted
+    
+    # Sum the number of differing edges (the number of 1s in the differences matrix)
+    shd = np.sum(differences)
+    
+    # Calculate the maximum possible number of edges (n * (n - 1) for an n x n adjacency matrix without self-loops)
+    n = ground_truth.shape[0]
+    max_edges = n * (n - 1)
+    
+    # Calculate normalized SHD
+    normalized_shd = shd / max_edges
+    
+    return shd
+
+def convert_variable_name(variable_name):
+    # Use regular expression to find and replace digits with subscript format
+    return re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', variable_name)
+
+
+def causal_criteria(list1, list2):
+
+    n1, n2 = np.count_nonzero(list1), np.count_nonzero(list2)
+    c1, c2 = n1/len(list1), n2/len(list2)
+    return [c1, c2]
+
+def evaluate(actual, predicted):
+
+    y_true_flat = [item for sublist in actual for item in sublist]
+    y_pred_flat = [item for sublist in predicted for item in sublist]
+    
+    # Calculate confusion matrix
+    cm = confusion_matrix(y_true_flat, y_pred_flat)
+    # Extract TP, TN, FP, FN from confusion matrix
+    tn, fp, fn, tp = cm.ravel()
+    
+    # Calculate rates
+    tpr = tp / (tp + fn) if (tp + fn) != 0 else 0  # True Positive Rate (Sensitivity)
+    tnr = tn / (tn + fp) if (tn + fp) != 0 else 0  # True Negative Rate (Specificity)
+    fpr = fp / (fp + tn) if (fp + tn) != 0 else 0  # False Positive Rate
+    fnr = fn / (fn + tp) if (fn + tp) != 0 else 0  # False Negative Rate
+    accuracy = (tp + tn) / (tp + tn + fp + fn) if (tp + tn + fp + fn) != 0 else 0
+    precision = tp / (tp + fp) if (tp + fp) != 0 else 0
+    recall = tp / (tp + fn) if (tp + fn) != 0 else 0
+    f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) != 0 else 0
+    
+    # Create a dictionary to store metrics
+    shd = calculate_shd(np.array(actual), np.array(predicted))
+    metrics = {
+        # 'TP': tp,
+        # 'TN': tn,
+        # 'FP': fp,
+        # 'FN': fn,
+        'TPR': tpr,
+        'TNR': tnr,
+        'FPR': fpr,
+        'FNR': fnr,
+        'Accuracy': accuracy,
+        'Precision': precision,
+        'Recall': recall,
+        'Fscore': f1_score,
+        'SHD': shd
+    }
+    
+    return metrics
+
+# Diebold-Mariano test function
+def dm_test(err1, err2, h=1, crit="MSE"):
+    
+    # Compute the loss differentials (MSE differences)
+    d_mse = err1 - err2
+
+    # Compute the mean and variance of the loss differentials
+    mean_d = np.mean(d_mse)
+    var_d = np.var(d_mse, ddof=1)
+
+    # Number of forecasts
+    T = len(d_mse)
+
+    # Compute the DM test statistic
+    dm_stat = mean_d / np.sqrt((var_d / T) * (1 + 2 * np.sum([1 - i / T for i in range(1, T)])))
+
+    # Compute the p-value
+    p_value = 2 * (1 - stats.norm.cdf(np.abs(dm_stat)))
+    return dm_stat, p_value
+
+
 # Calculate average metrics
 def calculate_average_metrics(performance_dicts):
     sums = {}

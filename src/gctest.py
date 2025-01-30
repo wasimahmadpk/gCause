@@ -1,9 +1,5 @@
 import io
 import re
-import sys
-import time
-import math
-import pickle
 import pathlib
 import random
 import parameters
@@ -17,11 +13,8 @@ from inference import modelTest
 import matplotlib.pyplot as plt
 from knockoffs import Knockoffs
 from matplotlib.patches import Patch
-from scipy.stats import gaussian_kde
 from gluonts.dataset.common import ListDataset
-from gluonts.model.deepar._network import DeepARTrainingNetwork
 from gluonts.evaluation.backtest import make_evaluation_predictions
-from gluonts.distribution.multivariate_gaussian import MultivariateGaussianOutput
 from scipy.stats import ttest_ind, ttest_ind_from_stats, ttest_1samp, ks_2samp, anderson_ksamp, kstest, spearmanr
 from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, accuracy_score
 
@@ -190,7 +183,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
 
                         # Get the required inference here
                         multi_var_point_imse, muti_var_point_imape = modelTest(model, test_dsint, num_samples, test_data,
-                                                    range_effect_group, prediction_length, iter, True, m)
+                                                    range_effect_group, prediction_length, iter, True, 1)
 
     
                         
@@ -260,7 +253,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         print("-------------------------------------------------------")
                     else:
                         causal_decision_1tier.append(0)
-                        if pv_corr < 0.50:
+                        if pv_corr < 0.25:
                             print("\033[94mFail to reject null hypothesis\033[0m")
                             causal_decision.append(0)
                             print("-------------------------------------------------------")
@@ -270,7 +263,6 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                             print("-------------------------------------------------------")
                     
                     pvi.append(pvals[0])
-
                     # -------------------------------------------------------- 
                     #                        plot residuals 
                     # --------------------------------------------------------
@@ -332,7 +324,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     cause_list_1tier.append(causal_decision_1tier[0])
                     indist_cause.append(causal_decision[0])
 
-                    ci_list.append(p)
+                    ci_list.append(kld_val)
                     causal_decision = []
             
                 if h == group_num-1 or g==group_num-1:
@@ -389,7 +381,6 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
         causal_matrix_1tier.append(causal_links_1tier)
     
     pval_indist.append(pvi)
-
     conf_mat_indist = conf_mat_indist + indist_cause
     indist_cause = []
 
