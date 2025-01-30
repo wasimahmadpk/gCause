@@ -99,8 +99,8 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
             test_ds = ListDataset(
                 [
                      {'start': test_data.index[0],
-                     'target': test_data.values.T.tolist()
-                    }
+                      'target': test_data.values.T.tolist()
+                     }
                 ],
                 freq=frequency,
                 one_dim_target=False
