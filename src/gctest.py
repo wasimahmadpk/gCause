@@ -144,81 +144,75 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                 cause_group, effect_group = f'Group: {g+1}', f'Group: {h+1}'
                 
                 # p-values
-                pvi, pvu = [], []
+                pvi = []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
                 knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
                 knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
-                interventionlist = [knockoff_samples]
-                heuristic_itn_types = ['In-dist']
 
                 mapeslol, mapeslolint = [], []
                 range_effect_group = list(range(start_effect, end_effect))
-                mse_interventions, imse_interventions, mape_interventions, imape_interventions = [], [], [], []
-                    
-                for m in range(len(interventionlist)):  # apply all types of intervention methods
 
-                    intervene = interventionlist[m]
-                    # np.random.shuffle(intervene)
-                    imse_realization, imape_realization = [], []
+                intervene = knockoff_samples
+                # np.random.shuffle(intervene)
+                imse_realization, imape_realization = [], []
+                
+                for r in range(2):  # realizations
                     
-                    for r in range(2):  # realizations
-                        
-                        start_batch = 10
-                        imse_batches, imape_batches = [], []
-                        
-                        for iter in range(num_sliding_win): # batches
+                    start_batch = 10
+                    imse_batches, imape_batches = [], []
+                    
+                    for iter in range(num_sliding_win): # batches
 
-                            test_data = df.iloc[start_batch: start_batch + training_length + prediction_length] #.values.T.tolist()
-                            test_ds = ListDataset(
-                                [
-                                     {'start': test_data.index[0],
-                                     'target': test_data.values.T.tolist()
-                                      }
-                                ],
-                                freq=frequency,
-                                one_dim_target=False
-                            )
-                        
-                            int_data = df.iloc[start_batch: start_batch + training_length + prediction_length].copy()
-                            int_data.iloc[:, start_cause:end_cause] = intervene.T
-                        
-                            test_dsint = ListDataset(
-                                [
-                                   {'start': test_data.index[0],
-                                    'target': int_data.values.T.tolist()
+                        test_data = df.iloc[start_batch: start_batch + training_length + prediction_length] #.values.T.tolist()
+                        test_ds = ListDataset(
+                            [
+                                    {'start': test_data.index[0],
+                                    'target': test_data.values.T.tolist()
                                     }
-                                ],
-                                freq=frequency,
-                                one_dim_target=False
-                            )
-
-                            # Get the required inference here
-                            multi_var_point_imse, muti_var_point_imape = modelTest(model, test_dsint, num_samples, test_data,
-                                                        range_effect_group, prediction_length, iter, True, m)
-
-        
-                            
-                            data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
-                            knockoffs = knock_obj.Generate_Knockoffs(data_actual, params)
-                            knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                            knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
-                            knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
-                            intervene = knockoff_samples
-                          
-                            imse_batches.append(multi_var_point_imse)
-                            imape_batches.append(multi_var_point_imse)
-                            # np.random.shuffle(intervene)
-                            start_batch = start_batch + step
-                        
-                        imse_realization.append(np.array(imse_batches))
-                        imape_realization.append(np.array(imape_batches))
+                            ],
+                            freq=frequency,
+                            one_dim_target=False
+                        )
                     
-                   
-                    mse_mean = np.mean(np.stack(mse_realization[:, :, start_effect: end_effect]), axis=0)
-                    imse_mean = np.mean(np.stack(imse_realization), axis=0)
-                    mape_mean = np.mean(np.stack(mape_realization[:, :, start_effect: end_effect]), axis=0)
-                    imape_mean = np.mean(np.stack(imape_realization), axis=0)
+                        int_data = df.iloc[start_batch: start_batch + training_length + prediction_length].copy()
+                        int_data.iloc[:, start_cause:end_cause] = intervene.T
+                    
+                        test_dsint = ListDataset(
+                            [
+                                {'start': test_data.index[0],
+                                'target': int_data.values.T.tolist()
+                                }
+                            ],
+                            freq=frequency,
+                            one_dim_target=False
+                        )
+
+                        # Get the required inference here
+                        multi_var_point_imse, muti_var_point_imape = modelTest(model, test_dsint, num_samples, test_data,
+                                                    range_effect_group, prediction_length, iter, True, m)
+
+    
+                        
+                        data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
+                        knockoffs = knock_obj.Generate_Knockoffs(data_actual, params)
+                        knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
+                        knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
+                        knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
+                        intervene = knockoff_samples
+                        
+                        imse_batches.append(multi_var_point_imse)
+                        imape_batches.append(multi_var_point_imse)
+                        # np.random.shuffle(intervene)
+                        start_batch = start_batch + step
+                    
+                    imse_realization.append(np.array(imse_batches))
+                    imape_realization.append(np.array(imape_batches))
+                
+                mse_mean = np.mean(np.stack(mse_realization[:, :, start_effect: end_effect]), axis=0)
+                imse_mean = np.mean(np.stack(imse_realization), axis=0)
+                mape_mean = np.mean(np.stack(mape_realization[:, :, start_effect: end_effect]), axis=0)
+                imape_mean = np.mean(np.stack(imape_realization), axis=0)
                 
                 intervention_type = 'In-distribution'
                 for j in range(start_effect, end_effect):
@@ -239,13 +233,10 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     # ----------------------------------------------------------- 
                     #      Invariance testing (distribution and correlation) 
                     # -----------------------------------------------------------
-
-
-                    # -----------------------------------------------------------
+        
                     # Perform the DM test
                     # t, pv_corr = dm_test(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
                     # print(f"DM Statistic: {t}, p-value: {p}")
-                    # -----------------------------------------------------------
 
                     # -----------------------------------------------------------
                     #         Calculate CausalImpatc in terms of KLD

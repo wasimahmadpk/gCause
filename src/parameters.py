@@ -77,6 +77,43 @@ def GetFDRTestParams(model):
     return params
 
 
+# Default parameters dictionary
+def get_default_params():
+    default_params = {
+
+        'group_num': 4,    
+        'groups': {'g1': [0, 3], 'g2': [3, 5], 'g3': [5, 8], 'g4': [8, 10]},
+        'groups_size': {'g1':[3], 'g2':[2], 'g3':[3], 'g4':[2]},
+        'epochs': 100,
+        'pred_len': 15,
+        'train_len': 555,
+        'num_layers': 6,
+        'num_cells': 60,
+        'num_samples': 10,
+        'dropout_rate': 0.1,
+        'win_size': 1,
+        'num_sliding_win': 15,
+        'step_size': 5,
+        'dim': 10,
+        'batch_size': 32,
+        'prior_graph': np.array([[1, 1, 1, 0, 1],
+                                 [0, 1, 0, 0, 0],
+                                 [0, 0, 1, 1, 0],
+                                 [0, 0, 0, 1, 1],
+                                 [0, 0, 0, 0, 1]]),
+        'true_graph': [1, 1, 1, 0, 1,
+                       0, 1, 0, 0, 0,
+                       0, 0, 1, 1, 0,
+                       0, 0, 0, 1, 1,
+                       0, 0, 0, 0, 1],
+        'freq': '30min',
+        'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs/",
+        'model_path': "/home/ahmad/Projects/gCause/models/",
+        'model_name': 'trained_synthetic'
+    }
+    return default_params
+
+
 def get_syn_params():
     # Parameters for synthetic data
     params = {
