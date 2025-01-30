@@ -184,13 +184,32 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
     # Add seasonality with cycles repeating every 24 samples
     seasonality = np.sin(np.linspace(0, 2 * np.pi * timesteps / 12, timesteps))[:, None] + np.cos(np.linspace(0, 4 * np.pi * timesteps / 18, timesteps))[:, None]
     # Add the seasonality to both time series
-    data = data + 0.5*seasonality
+    data = data + 0.25*seasonality
+
+    # Initialize the time series with random Gaussian noise
+    data = np.random.normal(size=(timesteps, n))
+
+    # Generate unique seasonality for each variable
+    seasonality = np.zeros((timesteps, n))
+
+    for i in range(n):
+        phase_shift = np.random.uniform(0, 2 * np.pi)  # Unique phase shift for each variable
+        freq1 = 12 + np.random.randint(-2, 3)  # Slightly vary the frequency
+        freq2 = 18 + np.random.randint(-2, 3)
+    
+        seasonality[:, i] = (
+            np.sin(np.linspace(0, 2 * np.pi * timesteps / freq1, timesteps) + phase_shift) +
+            np.cos(np.linspace(0, 4 * np.pi * timesteps / freq2, timesteps) + phase_shift)
+            )
+
+    # Add unique seasonality to each time series
+    data = data + 0.25 * seasonality
 
     # Update time series data based on DAG relationships, including autoregression on itself
     for t in range(1, timesteps):
         for i in range(n):
             # # Start with the own past value
-            data[t, i] = data[t, i] + 0.5 * data[t-1, i]
+            data[t, i] = data[t, i] + 0.25 * data[t-1, i]
 
             # Add contributions from the parents
             parents = list(G.predecessors(f'G{i+1}'))

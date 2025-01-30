@@ -1454,7 +1454,68 @@ def generate_group_dicts(num_nodes, num_groups):
     return result
 
 
-def calculate_multi_group_cc(df, group_sizes, regularization=1e-1):
+def calculate_group_means(df, params):
+    """
+    Calculate the mean of variables in each group and return a new DataFrame.
+
+    Parameters:
+    df (pd.DataFrame): The original DataFrame with variables.
+    params (dict): A dictionary containing group information.
+
+    Returns:
+    pd.DataFrame: A DataFrame with the mean of variables in each group.
+    """
+    # Create a new DataFrame to store the mean of each group
+    group_means = pd.DataFrame()
+
+    # Calculate the mean of each group and add it as a new column in group_means
+    for group, (start, end) in params['groups'].items():
+        group_means[group] = df.iloc[:, start:end].mean(axis=1)
+
+    return group_means
+
+
+# Calculate average metrics
+def calculate_average_metrics(performance_dicts):
+    sums = {}
+    count = len(performance_dicts)
+    
+    for metrics in performance_dicts.values():
+        for key, value in metrics.items():
+            if key not in sums:
+                sums[key] = 0
+            sums[key] += value
+    
+    avg_metrics = {key: value / count for key, value in sums.items()}
+    return avg_metrics
+
+
+# Plot metrics
+def plot_metrics(methods_performance_dict, plot_path, metric_name):
+    fig, ax = plt.subplots()
+
+    for method, performance_dicts in methods_performance_dict.items():
+        x = sorted(performance_dicts.keys())
+        y = [performance_dicts[param][metric_name] for param in x]
+        
+        ax.plot(x, y, marker='.', linestyle='-', label=f'{method}')
+    
+    ax.set_xticks(x)
+    plt.xticks(fontsize=14)
+    ax.set_ylim(-0.1, 1.1)
+    plt.xlabel('Interaction density', fontsize=12)
+    plt.ylabel(metric_name, fontsize=12)
+    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
+    plt.yticks(fontsize=14)
+    plt.grid(True)
+    plt.legend(fontsize=10, ncol=2)
+    
+    rnd = random.randint(1, 9999)
+    filename = pathlib.Path(plot_path) / f'{metric_name}_idense_{rnd}.pdf'
+    plt.savefig(filename)  # Save the figure
+    # plt.show()
+
+def calculate_multi_group_cc(df, group_sizes, regularization=1e-3):
     #  # Filter out groups with less than 2 variables
     group_sizes_filtered = [size for size in group_sizes if size > 1]
     if len(group_sizes_filtered) < 2:

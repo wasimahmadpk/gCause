@@ -44,128 +44,6 @@ groups = params['groups']
 num_sliding_win = params['num_sliding_win']
 
 
-def kld(P, Q, epsilon=1e-10):
-    """
-    Calculate the Kullback-Leibler divergence between two probability distributions.
-
-    Parameters:
-    - P: np.ndarray, the first distribution
-    - Q: np.ndarray, the second distribution
-    - epsilon: float, small value added for numerical stability
-
-    Returns:
-    - kl_div: float, the Kullback-Leibler divergence from P to Q
-    """
-    # Step 1: Normalize the distributions
-    P = P / np.sum(P) if np.sum(P) > 0 else P
-    Q = Q / np.sum(Q) if np.sum(Q) > 0 else Q
-
-    # Step 2: Add a small value to avoid log(0)
-    P = P + epsilon
-    Q = Q + epsilon
-
-    # Step 3: Calculate KL Divergence
-    kl_div = np.sum(P * np.log(P / Q))
-    return round(kl_div, 3)
-
-def calculate_shd(ground_truth, predicted):
-    """
-    Calculates the Structural Hamming Distance (SHD) between two DAG adjacency matrices.
-    SHD is the number of differing edges between the ground truth and predicted matrices.
-    
-    :param ground_truth: np.ndarray - Ground truth adjacency matrix (n x n).
-    :param predicted: np.ndarray - Predicted adjacency matrix (n x n).
-    :return: int - The SHD between the two matrices.
-    """
-    if ground_truth.shape != predicted.shape:
-        raise ValueError("Both matrices must have the same shape")
-    
-    # Element-wise comparison (1 where they differ, 0 where they are the same)
-    differences = ground_truth != predicted
-    
-    # Sum the number of differing edges (the number of 1s in the differences matrix)
-    shd = np.sum(differences)
-    
-    # Calculate the maximum possible number of edges (n * (n - 1) for an n x n adjacency matrix without self-loops)
-    n = ground_truth.shape[0]
-    max_edges = n * (n - 1)
-    
-    # Calculate normalized SHD
-    normalized_shd = shd / max_edges
-    
-    return shd
-
-def convert_variable_name(variable_name):
-    # Use regular expression to find and replace digits with subscript format
-    return re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', variable_name)
-
-
-def causal_criteria(list1, list2):
-
-    n1, n2 = np.count_nonzero(list1), np.count_nonzero(list2)
-    c1, c2 = n1/len(list1), n2/len(list2)
-    return [c1, c2]
-
-def evaluate(actual, predicted):
-
-    y_true_flat = [item for sublist in actual for item in sublist]
-    y_pred_flat = [item for sublist in predicted for item in sublist]
-    
-    # Calculate confusion matrix
-    cm = confusion_matrix(y_true_flat, y_pred_flat)
-    # Extract TP, TN, FP, FN from confusion matrix
-    tn, fp, fn, tp = cm.ravel()
-    
-    # Calculate rates
-    tpr = tp / (tp + fn) if (tp + fn) != 0 else 0  # True Positive Rate (Sensitivity)
-    tnr = tn / (tn + fp) if (tn + fp) != 0 else 0  # True Negative Rate (Specificity)
-    fpr = fp / (fp + tn) if (fp + tn) != 0 else 0  # False Positive Rate
-    fnr = fn / (fn + tp) if (fn + tp) != 0 else 0  # False Negative Rate
-    accuracy = (tp + tn) / (tp + tn + fp + fn) if (tp + tn + fp + fn) != 0 else 0
-    precision = tp / (tp + fp) if (tp + fp) != 0 else 0
-    recall = tp / (tp + fn) if (tp + fn) != 0 else 0
-    f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) != 0 else 0
-    
-    # Create a dictionary to store metrics
-    shd = calculate_shd(np.array(actual), np.array(predicted))
-    metrics = {
-        # 'TP': tp,
-        # 'TN': tn,
-        # 'FP': fp,
-        # 'FN': fn,
-        'TPR': tpr,
-        'TNR': tnr,
-        'FPR': fpr,
-        'FNR': fnr,
-        'Accuracy': accuracy,
-        'Precision': precision,
-        'Recall': recall,
-        'Fscore': f1_score,
-        'SHD': shd
-    }
-    
-    return metrics
-
-# Diebold-Mariano test function
-def dm_test(err1, err2, h=1, crit="MSE"):
-    
-    # Compute the loss differentials (MSE differences)
-    d_mse = err1 - err2
-
-    # Compute the mean and variance of the loss differentials
-    mean_d = np.mean(d_mse)
-    var_d = np.var(d_mse, ddof=1)
-
-    # Number of forecasts
-    T = len(d_mse)
-
-    # Compute the DM test statistic
-    dm_stat = mean_d / np.sqrt((var_d / T) * (1 + 2 * np.sum([1 - i / T for i in range(1, T)])))
-
-    # Compute the p-value
-    p_value = 2 * (1 - stats.norm.cdf(np.abs(dm_stat)))
-    return dm_stat, p_value
-
 def groupCause(df, odata, model, params, ground_truth, method='Group'):
 
     p_val_list = [0.05] #np.arange(0.03, 0.1, 0.03)
@@ -207,8 +85,8 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     data_actual = np.array(odata[: , 0: training_length + prediction_length]).transpose()
     n = len(data_actual[:, 0])
     params.update({'length': n})
-    obj = Knockoffs()
-    knockoffs = obj.Generate_Knockoffs(data_actual, params)
+    knock_obj = Knockoffs()
+    knockoffs = knock_obj.Generate_Knockoffs(data_actual, params)
     
     # ------------------------------------------------------------------------------
     #         Inference for joint distribution of the multivarite system 
@@ -246,13 +124,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     
     mse_realization = np.array(mse_realization)
     mape_realization = np.array(mape_realization)
-    # print('Forecast Multivariate_Point')
-    # print(np.array(multi_var_point_mse).shape)
 
-    # print('Forecast Multivariate Realization')
-    # print(np.array(mape_realization).shape)
-    # print(np.stack(mape_realization))
-    # print(np.array(mape_realization))
     # ------------------------------------------------------------------------------------
     for g in range(group_num):
         ci_links = []
@@ -328,8 +200,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
         
                             
                             data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
-                            obj = Knockoffs()
-                            knockoffs = obj.Generate_Knockoffs(data_actual, params)
+                            knockoffs = knock_obj.Generate_Knockoffs(data_actual, params)
                             knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
                             knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
                             knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
@@ -379,7 +250,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     # -----------------------------------------------------------
                     #         Calculate CausalImpatc in terms of KLD
                     # -----------------------------------------------------------
-                    kld_val = kld(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
+                    kld_val = prep.kld(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
                     
                     # Calculate Spearman correlation coefficient and its p-value
                     corr, pv_corr = spearmanr(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
@@ -409,7 +280,9 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     
                     pvi.append(pvals[0])
 
-                    # --------------------------- plot residuals ----------------------------------
+                    # -------------------------------------------------------- 
+                    #                        plot residuals 
+                    # --------------------------------------------------------
                     fig = plt.figure()
                     ax = fig.add_subplot(111)
 
@@ -433,24 +306,20 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     plt.savefig(filename)
                     plt.show()
                 
-                    # -------------------------- plot residuals distribution ---------------------------
+                    # ----------------------------------------------------------------
+                    #                   plot residuals distribution 
+                    # ----------------------------------------------------------------
                     fig = plt.figure()
                     ax1 = fig.add_subplot(111)
                     
                     # Create the KDE plot
                     sns.kdeplot(mape_mean[:, j-start_effect], shade=True, color="g", label="Actual")
-                    # Calculate the mean of the data
-                    mean_value = np.mean(mape_mean[:, j-start_effect])
-                    # Add a vertical line at the mean
+                    mean_value = np.mean(mape_mean[:, j-start_effect]) # Calculate the mean of the data
+                     # Add a vertical line at the mean
                     plt.axvline(mean_value, color="g", linestyle="--", label=f"Mean: {mean_value:.2f}")
                     sns.kdeplot(imape_mean[:, j-start_effect], shade=True, color="y", label="Counterfactual")
-                    # Calculate the mean of the data
                     mean_value = np.mean(imape_mean[:, j-start_effect])
-                    # Add a vertical line at the mean
                     plt.axvline(mean_value, color="y", linestyle="--", label=f"Mean: {mean_value:.2f}")
-                    
-                    # sns.distplot(mapelol[0], color='red', label='Actual')
-                    # sns.distplot(mapelolint[0], color='green', label='Counterfactual')
                     
                     if len(columns) > 0:
                         # effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[j])
@@ -541,12 +410,12 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     # print("Pair-wise Graph: ", conf_mat)
     print(f'Actual Causal Graph: \n {ground_truth}')
     print(f'Discovered Causal Graph: \n {np.array(causal_matrix)}')
-    print(f'Causal Impact Graph: \n {np.array(ci_matrix)}')
+    print(f'Causal Impact Graph: {np.array(ci_matrix).shape} \n {np.array(ci_matrix)}')
     print("----------*****-----------------------*****-------------")
 
   
     print("----------*****-----------------------*****-------------")
-    pred = np.array(kld_matrix)   #1 - np.array(kld_matrix)
+    pred = np.array(ci_matrix)   #1 - np.array(kld_matrix)
     actual_lab = prep.remove_diagonal_and_flatten(ground_truth)
     pred_score = prep.remove_diagonal_and_flatten(pred)
     fmax = prep.f1_max(actual_lab, pred_score)
