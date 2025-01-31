@@ -160,20 +160,15 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
         """
         # Ensure the exponential term does not grow too fast
         exp_term = np.exp(-0.05 * np.abs(value))  # Controlled decay with a smaller factor
-
         # Polynomial term with a cubic component, but with scaling factor to keep values manageable
         poly_term = 0.1 * np.clip(value**3, -100, 100)  # Clip to limit large values
-
         # Sine and Cosine terms with added scaling to prevent extreme oscillations
         trig_term = np.sin(value) * 0.5 + np.cos(value)**2 * 0.3
-
         # Apply a bounded logarithmic transformation for negative values
         log_term = np.zeros_like(value)
         log_term[value < 0] = np.log1p(np.abs(value[value < 0]))  # log(1 + abs(x)) for stability
-
         # Combine all terms while ensuring the final result is bounded between -10 and 10
         transformed_value = trig_term + exp_term + poly_term + log_term
-
         # Clip the final result to a reasonable range to avoid explosion
         transformed_value = np.clip(transformed_value, -10, 10)
         return transformed_value
@@ -185,10 +180,8 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
     seasonality = np.sin(np.linspace(0, 2 * np.pi * timesteps / 12, timesteps))[:, None] + np.cos(np.linspace(0, 4 * np.pi * timesteps / 18, timesteps))[:, None]
     # Add the seasonality to both time series
     data = data + 0.25*seasonality
-
     # Initialize the time series with random Gaussian noise
     data = np.random.normal(size=(timesteps, n))
-
     # Generate unique seasonality for each variable
     seasonality = np.zeros((timesteps, n))
 
@@ -220,7 +213,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
                         # print(f'Var: {i} is nonlinear parents: {parent_index}')
                         data[t, i] += nonlinear_transform(data[t-5, parent_index])
                     else:
-                        data[t, i] += data[t-5, parent_index]
+                        data[t, i] = 0.25*data[t, i] + data[t-5, parent_index]
 
             # Add Gaussian noise again
             data[t, i] += np.random.normal(scale=0.01)

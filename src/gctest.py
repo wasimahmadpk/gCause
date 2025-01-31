@@ -140,7 +140,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                 pvi = []
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(0, 0.50, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(0, 5.0, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
 
                 mapeslol, mapeslolint = [], []
@@ -185,12 +185,10 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         multi_var_point_imse, muti_var_point_imape = modelTest(model, test_dsint, num_samples, test_data,
                                                     range_effect_group, prediction_length, iter, True, 1)
 
-    
-                        
                         data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
                         knockoffs = knock_obj.Generate_Knockoffs(data_actual, params)
                         knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                        knockoff_samples = knockoff_samples + np.random.normal(0, 0.50, knockoff_samples.shape)
+                        knockoff_samples = knockoff_samples + np.random.normal(0, 5.0, knockoff_samples.shape)
                         # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                         intervene = knockoff_samples
                         
@@ -222,7 +220,6 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         fnamehist = plot_path + "{Z_[i + 1]}_{Z_[j + 1]}:hist"
                     
                     pvals = []
-                    
                     # ----------------------------------------------------------- 
                     #      Invariance testing (distribution and correlation) 
                     # -----------------------------------------------------------
@@ -395,7 +392,6 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     print(f'Causal Impact Graph: {np.array(ci_matrix).shape} \n {np.array(ci_matrix)}')
     print("----------*****-----------------------*****-------------")
 
-  
     print("----------*****-----------------------*****-------------")
     pred = np.array(ci_matrix)   #1 - np.array(kld_matrix)
     actual_lab = prep.remove_diagonal_and_flatten(ground_truth)
