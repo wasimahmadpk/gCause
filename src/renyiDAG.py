@@ -149,7 +149,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
     #     return np.sin(value)  # Example nonlinear function
 
     def nonlinear_transform(value):
-        """
+        '''
         A more complicated but stable nonlinear transformation combining sine, cosine, exponential, and polynomial components.
         
         Parameters:
@@ -157,7 +157,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
 
         Returns:
         float or np.ndarray: The transformed value.
-        """
+        '''
         # Ensure the exponential term does not grow too fast
         exp_term = np.exp(-0.05 * np.abs(value))  # Controlled decay with a smaller factor
         # Polynomial term with a cubic component, but with scaling factor to keep values manageable
@@ -206,6 +206,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
 
             # Add contributions from the parents
             parents = list(G.predecessors(f'G{i+1}'))
+            # print(f'Parents of var {i} are {parents} with nonlinear link: {nonlinear_links}')
             if parents:
                 parent_indices = [int(p[1:]) - 1 for p in parents]
                 for parent_index in parent_indices:

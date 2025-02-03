@@ -107,7 +107,7 @@ if __name__ == '__main__':
     data = {'Z1': X1[50:], 'Z2': X2[50:], 'Z3': X3[50:], 'Z4': X4[50:]}
     
     df = pd.DataFrame(data, columns=['Z1', 'Z2', 'Z3', 'Z4'])
-    df.to_csv(r'/home/ahmad/Projects/gCause/datasets/synthetic_datasets/synthetic_gts.csv', index_label=False, header=True)
+    df.to_csv(r'/home/ahmad/Projects/gCause/datasets/synthetic_datasets/synthetic_groups.csv', index_label=False, header=True)
     print(df.head(33))
     
     print("Correlation Matrix")
