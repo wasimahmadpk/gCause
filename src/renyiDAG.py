@@ -221,7 +221,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
 
     # Convert to DataFrame
     df = pd.DataFrame(data, columns=[f'Z{i}' for i in range(n)])
-    df = df.apply(normalize)
+    # df = df.apply(normalize)
 
     red_matrix = reduce_causal_matrix(adjacency_matrix.astype(int), g, s)
     np.fill_diagonal(red_matrix, 1)
