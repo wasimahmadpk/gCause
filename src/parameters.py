@@ -118,9 +118,9 @@ def get_syn_params():
     # Parameters for synthetic data
     params = {
 
-        'group_num': 3,    
-        'groups': {'g1': [0, 2], 'g2': [2, 4], 'g3': [4, 6]},    #  
-        'groups_size': {'g1':[2], 'g2':[2], 'g3':[2]},               # 
+        'group_num': 4,    
+        'groups': {'g1': [0, 2], 'g2': [2, 4], 'g3': [4, 6], 'g4': [6, 8]},    #  
+        'groups_size': {'g1':[2], 'g2':[2], 'g3':[2], 'g4':[2]},               # 
 
         'group_num_fs': 18,    
         'groups_fs': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5], 'g6': [5, 6], 'g7': [6, 7], 'g8': [7, 8],
@@ -131,11 +131,11 @@ def get_syn_params():
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4]},      #  
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1]},                 #    
         
-        'epochs': 30,
+        'epochs': 40,
         'pred_len': 3,
         'train_len': 1000,
-        'num_layers': 3,
-        'num_cells':30,
+        'num_layers': 4,
+        'num_cells':40,
         'num_samples': 3,
         'dropout_rate': 0.10,
         'num_sliding_win': 20,

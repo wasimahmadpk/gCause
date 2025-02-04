@@ -90,6 +90,29 @@ def reduce_causal_matrix(causal_matrix, num_groups, group_size):
     return reduced_matrix
 
 
+def generate_stationary_noise(timesteps, n):
+    """
+    Generates stationary Gaussian noise for n variables with dynamically assigned means and variances.
+    
+    Parameters:
+        timesteps (int): Number of time steps.
+        n (int): Number of variables.
+    
+    Returns:
+        noise (ndarray): Noise matrix of shape (timesteps, n).
+        means (ndarray): Randomly generated means for each variable (shape: (n,))
+        variances (ndarray): Randomly generated variances for each variable (shape: (n,))
+    """
+    # Randomly generate different means and variances for each variable
+    means = np.random.uniform(-2, 2, size=n)  # Means in range [-2, 2]
+    variances = np.random.uniform(0.2, 2.0, size=n)  # Variances in range [0.2, 2]
+    std_devs = np.sqrt(variances)  # Convert variances to standard deviations
+
+    # Generate Gaussian noise with these means and std deviations
+    noise = np.random.normal(loc=means.reshape(1, n), scale=std_devs.reshape(1, n), size=(timesteps, n))
+    
+    return noise
+
 # Normalization (MinMax/Standard)
 def normalize(data, type='minmax'):
     if type == 'std':
@@ -175,7 +198,8 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
 
 
    # Initialize the time series with random Gaussian noise
-    data = np.random.normal(size=(timesteps, n))
+    # data = np.random.normal(size=(timesteps, n))
+    data = generate_stationary_noise(timesteps, n)
     # Add seasonality with cycles repeating every 24 samples
     seasonality = np.sin(np.linspace(0, 2 * np.pi * timesteps / 12, timesteps))[:, None] + np.cos(np.linspace(0, 4 * np.pi * timesteps / 18, timesteps))[:, None]
     # Add the seasonality to both time series
