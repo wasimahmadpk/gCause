@@ -8,7 +8,7 @@ import mxnet as mx
 import pandas as pd
 import seaborn as sns
 from scipy import stats
-import preprocessing as prep
+from preprocessing import *
 from inference import modelTest
 import matplotlib.pyplot as plt
 from knockoffs import Knockoffs
@@ -20,21 +20,6 @@ from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_
 
 np.random.seed(1)
 mx.random.seed(2)
-
-data_type = 'synthetic'
-params = parameters.get_syn_params()
-num_samples = params["num_samples"]
-step = params["step_size"]
-training_length = params["train_len"]
-prediction_length = params["pred_len"]
-frequency = params["freq"]
-plot_path = params["plot_path"]
-# Get prior skeleton
-prior_graph = params['prior_graph']
-true_conf_mat = params["true_graph"]
-group_num = params['group_num']
-groups = params['groups']
-num_sliding_win = params['num_sliding_win']
 
 
 def groupCause(df, odata, model, params, ground_truth, method='Group'):
@@ -49,8 +34,9 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     prior_graph = params['prior_graph']
     true_conf_mat = params["true_graph"]
     group_num = params['group_num']
-    columns = params.get('col')
-    step = params.get('step_size')
+    columns = params['col']
+    step = params['step_size']
+    num_sliding_win =  params['num_sliding_win']
     
     if method=='Group':
         groups = params['groups']
@@ -61,16 +47,12 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     else:
         groups = params['groups_cc']
 
-
-
     formatted_columns = columns
-
-    conf_mat, conf_mat_indist, conf_mat_uniform, causal_direction = [], [], [], []
-    pvalues, pval_indist, pval_uniform = [], [], []
-    causal_decision, causal_decision_1tier, indist_cause, uni_cause, group_cause = [], [], [], [], []
+    conf_mat, conf_mat_indist = [], []
+    pvalues, pval_indist = [], []
+    causal_decision, causal_decision_1tier, indist_cause = [], [], []
 
     # Generate Knockoffs
-      # Generate Knockoffs
     data_actual = np.array(odata[: , 0: training_length + prediction_length]).transpose()
     n = len(data_actual[:, 0])
     params.update({'length': n})
@@ -132,14 +114,11 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                 start_cause, end_cause = groups.get(f'g{g+1}')[0], groups.get(f'g{g+1}')[1] 
                 cause_group, effect_group = f'Group: {g+1}', f'Group: {h+1}'
                 
-                # p-values
-                pvi = []
-                
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(0, 5.0, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(1, 1.0, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
 
-                mapeslol, mapeslolint = [], []
+                pvi, mapeslol, mapeslolint = [], [], [] # p-values
                 range_effect_group = list(range(start_effect, end_effect))
 
                 intervene = knockoff_samples
@@ -184,7 +163,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
                         knockoffs = knock_obj.Generate_Knockoffs(data_actual, params)
                         knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                        knockoff_samples = knockoff_samples + np.random.normal(0, 5.0, knockoff_samples.shape)
+                        knockoff_samples = knockoff_samples + np.random.normal(1, 1.0, knockoff_samples.shape)
                         # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                         intervene = knockoff_samples
                         
@@ -227,14 +206,14 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     # -----------------------------------------------------------
                     #         Calculate CausalImpatc in terms of KLD
                     # -----------------------------------------------------------
-                    kld_val = prep.kld(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
+                    kld_val = kld(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
                     
                     # Calculate Spearman correlation coefficient and its p-value
                     corr, pv_corr = spearmanr(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
                     print("Intervention: " + intervention_type)
                     # t, p = ttest_ind(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
                     t, p = ks_2samp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))
-                    # ad_test = anderson_ksamp([np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect])])  # Anderson-Darling Test
+                    # ad_test = anderson_ksamp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))  # Anderson-Darling Test
                     # p = ad_test[2]
                     pvals.append(p)
                     
@@ -390,13 +369,13 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
 
     print("----------*****-----------------------*****-------------")
     pred = np.array(ci_matrix)   #1 - np.array(kld_matrix)
-    actual_lab = prep.remove_diagonal_and_flatten(ground_truth)
-    pred_score = prep.remove_diagonal_and_flatten(pred)
-    fmax = prep.f1_max(actual_lab, pred_score)
+    actual_lab = remove_diagonal_and_flatten(ground_truth)
+    pred_score = remove_diagonal_and_flatten(pred)
+    fmax = f1_max(actual_lab, pred_score)
      
     # Calculate metrics
-    metrics = prep.evaluate_best_predicted_graph(ground_truth, np.array([causal_matrix]))
-    metrics_1tier = prep.evaluate_best_predicted_graph(ground_truth, np.array([causal_matrix_1tier]))
+    metrics = evaluate_best_predicted_graph(ground_truth, np.array([causal_matrix]))
+    metrics_1tier = evaluate_best_predicted_graph(ground_truth, np.array([causal_matrix_1tier]))
     # metrics['Fscore'] = fmax[1]
     # Print metrics
     for metric, value in metrics.items():

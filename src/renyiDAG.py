@@ -90,6 +90,30 @@ def reduce_causal_matrix(causal_matrix, num_groups, group_size):
     return reduced_matrix
 
 
+def generate_stationary_data(timesteps, n):
+    """
+    Generates stationary Gaussian noise for n variables with dynamically assigned means and variances.
+    
+    Parameters:
+        timesteps (int): Number of time steps.
+        n (int): Number of variables.
+    
+    Returns:
+        noise (ndarray): Noise matrix of shape (timesteps, n).
+        means (ndarray): Randomly generated means for each variable (shape: (n,))
+        variances (ndarray): Randomly generated variances for each variable (shape: (n,))
+    """
+    # Randomly generate different means and variances for each variable
+    means = np.random.uniform(-3, 3, size=n)  # Means in range [-2, 2]
+    variances = np.random.uniform(0.1, 3.0, size=n)  # Variances in range [0.2, 2]
+    std_devs = np.sqrt(variances)  # Convert variances to standard deviations
+    print(f'Means: {means}')
+    print(f'Variances: {std_devs}')
+    # Generate Gaussian noise with these means and std deviations
+    data = np.random.normal(loc=means.reshape(1, n), scale=std_devs.reshape(1, n), size=(timesteps, n))
+    return data
+
+
 def generate_stationary_noise(timesteps, n):
     """
     Generates stationary Gaussian noise for n variables with dynamically assigned means and variances.
@@ -104,13 +128,11 @@ def generate_stationary_noise(timesteps, n):
         variances (ndarray): Randomly generated variances for each variable (shape: (n,))
     """
     # Randomly generate different means and variances for each variable
-    means = np.random.uniform(-2, 2, size=n)  # Means in range [-2, 2]
-    variances = np.random.uniform(0.2, 2.0, size=n)  # Variances in range [0.2, 2]
+    means = np.random.uniform(0, 1, size=n)  # Means in range [-2, 2]
+    variances = np.random.uniform(0.5, 1.5, size=n)  # Variances in range [0.2, 2]
     std_devs = np.sqrt(variances)  # Convert variances to standard deviations
-
     # Generate Gaussian noise with these means and std deviations
     noise = np.random.normal(loc=means.reshape(1, n), scale=std_devs.reshape(1, n), size=(timesteps, n))
-    
     return noise
 
 # Normalization (MinMax/Standard)
@@ -199,13 +221,8 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
 
    # Initialize the time series with random Gaussian noise
     # data = np.random.normal(size=(timesteps, n))
-    data = generate_stationary_noise(timesteps, n)
-    # Add seasonality with cycles repeating every 24 samples
-    seasonality = np.sin(np.linspace(0, 2 * np.pi * timesteps / 12, timesteps))[:, None] + np.cos(np.linspace(0, 4 * np.pi * timesteps / 18, timesteps))[:, None]
-    # Add the seasonality to both time series
-    data = data + 0.25*seasonality
-    # Initialize the time series with random Gaussian noise
-    data = np.random.normal(size=(timesteps, n))
+    data = generate_stationary_data(timesteps, n)
+    noise = generate_stationary_noise(timesteps, n)
     # Generate unique seasonality for each variable
     seasonality = np.zeros((timesteps, n))
 
@@ -220,13 +237,13 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
             )
 
     # Add unique seasonality to each time series
-    data = data + 0.25 * seasonality
+    data = data + 0.20*seasonality
 
     # Update time series data based on DAG relationships, including autoregression on itself
     for t in range(1, timesteps):
         for i in range(n):
             # # Start with the own past value
-            data[t, i] = data[t, i] + 0.25 * data[t-1, i]
+            data[t, i] = data[t, i] + 0.20*data[t-2, i]
 
             # Add contributions from the parents
             parents = list(G.predecessors(f'G{i+1}'))
@@ -236,12 +253,12 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
                 for parent_index in parent_indices:
                     if nonlinear_links[(parent_index, i)]:
                         # print(f'Var: {i} is nonlinear parents: {parent_index}')
-                        data[t, i] += nonlinear_transform(data[t-5, parent_index])
+                        data[t, i] = nonlinear_transform(data[t-5, parent_index])
                     else:
-                        data[t, i] = 0.25*data[t, i] + data[t-5, parent_index]
+                        data[t, i] = data[t-5, parent_index]
 
             # Add Gaussian noise again
-            data[t, i] += np.random.normal(scale=0.01)
+            data[t, i] += noise[t, i]
 
     # Convert to DataFrame
     df = pd.DataFrame(data, columns=[f'Z{i}' for i in range(n)])
