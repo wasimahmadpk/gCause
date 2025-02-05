@@ -39,14 +39,13 @@ num_sliding_win = params['num_sliding_win']
 
 def groupCause(df, odata, model, params, ground_truth, method='Group'):
 
-    p_val_list = [0.05] #np.arange(0.03, 0.1, 0.03)
+    p_val_list = [0.05] # np.arange(0.03, 0.1, 0.03)
     num_samples = params['num_samples']
     step = params['step_size']
     training_length = params['train_len']
     prediction_length = params["pred_len"]
     frequency = params["freq"]
-    plot_path = params["plot_path"]
-    # Get prior skeleton
+    plot_path = params["plot_path"] # Get prior skeleton
     prior_graph = params['prior_graph']
     true_conf_mat = params["true_graph"]
     group_num = params['group_num']
@@ -62,10 +61,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     else:
         groups = params['groups_cc']
 
-     # Extract variable name and number using regular expressions
-    # formatted_names = [re.match(r'([A-Za-z]+)(\d+)', name).groups() for name in columns]
-    # Create formatted variable names
-    # formatted_columns = [f'${name}_{{{number}}}$' for name, number in formatted_names]
+
 
     formatted_columns = columns
 
@@ -401,7 +397,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     # Calculate metrics
     metrics = prep.evaluate_best_predicted_graph(ground_truth, np.array([causal_matrix]))
     metrics_1tier = prep.evaluate_best_predicted_graph(ground_truth, np.array([causal_matrix_1tier]))
-    metrics['Fscore'] = fmax[1]
+    # metrics['Fscore'] = fmax[1]
     # Print metrics
     for metric, value in metrics.items():
         print(f"{metric}: {value:.2f}")
