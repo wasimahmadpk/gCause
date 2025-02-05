@@ -381,7 +381,7 @@ def groupCause(odata, knockoffs, model, params):
                     print('gCDMI: Causal direction can\'t be inferred')
     print("----------*****-----------------------*****------------")
     end_time = time.time()
-
+    print('a')
     return conf_mat, end_time 
 
 
