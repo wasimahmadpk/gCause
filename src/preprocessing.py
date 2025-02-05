@@ -833,7 +833,6 @@ def average_repeated_movements(data):
 def get_ground_truth(matrix, group_sizes):
     # Convert the input matrix to a numpy array
     matrix = np.array(matrix)
-    print(f'Test matrix: {matrix}')
     # Determine the number of groups
     num_groups = len(group_sizes)
     
@@ -847,7 +846,7 @@ def get_ground_truth(matrix, group_sizes):
     for size in group_sizes:
         groups.append(list(range(start_idx, start_idx + size)))
         start_idx += size
-    print(f'Test groups: {groups}')
+
     # Fill in the reduced matrix
     for i, group_i in enumerate(groups):
         for j, group_j in enumerate(groups):
