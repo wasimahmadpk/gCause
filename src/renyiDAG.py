@@ -223,6 +223,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
     # data = np.random.normal(size=(timesteps, n))
     data = generate_stationary_data(timesteps, n)
     noise = generate_stationary_noise(timesteps, n)
+    coeffs = np.random.uniform(0.5, 1.0, n)
     # Generate unique seasonality for each variable
     seasonality = np.zeros((timesteps, n))
 
@@ -237,32 +238,36 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
             )
 
     # Add unique seasonality to each time series
-    data = data + 0.20*seasonality
+    data = data + 0.33*seasonality
 
     # Update time series data based on DAG relationships, including autoregression on itself
     for t in range(1, timesteps):
         for i in range(n):
             # # Start with the own past value
-            data[t, i] = data[t, i] + 0.20*data[t-2, i]
+            data[t, i] = data[t, i] + coeffs[i]*data[t-1, i]
 
             # Add contributions from the parents
             parents = list(G.predecessors(f'G{i+1}'))
             # print(f'Parents of var {i} are {parents} with nonlinear link: {nonlinear_links}')
+            parents_sum = 0
             if parents:
                 parent_indices = [int(p[1:]) - 1 for p in parents]
                 for parent_index in parent_indices:
                     if nonlinear_links[(parent_index, i)]:
                         # print(f'Var: {i} is nonlinear parents: {parent_index}')
-                        data[t, i] = nonlinear_transform(data[t-5, parent_index])
+                        parents_sum += coeffs[i]*nonlinear_transform(data[t-3, parent_index])
+                        # data[t, i] = data[t, i] + coeffs[i]*nonlinear_transform(data[t-3, parent_index])
                     else:
-                        data[t, i] = data[t-5, parent_index]
+                        parents_sum += coeffs[i]*data[t-3, parent_index]
+                        # data[t, i] = data[t, i] + coeffs[i]*data[t-3, parent_index]
 
             # Add Gaussian noise again
-            data[t, i] += noise[t, i]
+            # data[t, i] += noise[t, i]
+            data[t, i] += parents_sum
 
     # Convert to DataFrame
     df = pd.DataFrame(data, columns=[f'Z{i}' for i in range(n)])
-    # df = df.apply(normalize)
+    df = df.apply(normalize)
 
     red_matrix = reduce_causal_matrix(adjacency_matrix.astype(int), g, s)
     np.fill_diagonal(red_matrix, 1)

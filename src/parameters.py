@@ -131,9 +131,9 @@ def get_syn_params():
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4]},      #  
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1]},                 #    
         
-        'epochs': 35,
+        'epochs': 25,
         'pred_len': 5,
-        'train_len': 900,
+        'train_len': 600,
         'num_layers': 4,
         'num_cells': 32,
         'num_samples': 3,
