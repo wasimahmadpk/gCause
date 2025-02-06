@@ -131,14 +131,14 @@ def get_syn_params():
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4]},      #  
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1]},                 #    
         
-        'epochs': 25,
+        'epochs': 45,
         'pred_len': 5,
         'train_len': 600,
         'num_layers': 4,
         'num_cells': 32,
         'num_samples': 3,
         'dropout_rate': 0.10,
-        'num_sliding_win': 30,
+        'num_sliding_win': 50,
         'step_size': 3,
         'dim': 8,
         'dim_fs': 8,
@@ -495,14 +495,14 @@ def get_sims_params():
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4]}, #  
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1]}, #    
         
-        'epochs': 30,
+        'epochs': 45,
         'pred_len': 5,
-        'train_len': 125, #120,
-        'num_layers': 5,
-        'num_cells': 50,
+        'train_len': 120, #120,
+        'num_layers': 6,
+        'num_cells': 66,
         'num_samples': 5,
         'dropout_rate': 0.10,
-        'num_sliding_win': 55,
+        'num_sliding_win': 30,
         'step_size': 1,
         'dim': 8,
         'dim_cc': 4,

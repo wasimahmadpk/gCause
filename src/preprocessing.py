@@ -1456,12 +1456,12 @@ def plot_river_metrics(methods_performance_dict, plot_path, metric_name):
     ax.set_xticks(x)
     ax.set_ylim(-0.1, 1.1)
     ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
-    plt.xlabel('River Networks', fontsize=14)
+    plt.xlabel('Groups', fontsize=14)
     plt.ylabel(metric_name, fontsize=14)
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
     plt.grid(True)
-    plt.legend(title="", loc="best", fontsize=14, framealpha=0.5)
+    plt.legend(title="", loc="best", ncol=2, fontsize=13, framealpha=0.5)
     
     rnd = random.randint(1, 9999)
     filename = pathlib.Path(plot_path) / f'{metric_name}_regime_{rnd}.pdf'
@@ -1959,7 +1959,7 @@ def load_sims_data(groups):
     dim = groups*5
     cols = [f'Z{i}' for i in range(1, dim+1)]
     df = pd.DataFrame(data= mat_data['ts'][: 200, :dim], columns=cols)
-    # df = df.apply(normalize)
+    df = df.apply(normalize)
 
     cgraphs = mat_data['net'][0, :dim, :dim].T
 

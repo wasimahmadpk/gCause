@@ -15,7 +15,7 @@ from knockoffs import Knockoffs
 from matplotlib.patches import Patch
 from gluonts.dataset.common import ListDataset
 from gluonts.evaluation.backtest import make_evaluation_predictions
-from scipy.stats import ttest_ind, ttest_ind_from_stats, ttest_1samp, ks_2samp, anderson_ksamp, kstest, spearmanr
+from scipy.stats import ttest_ind, ttest_ind_from_stats, ttest_1samp, ks_2samp, anderson_ksamp, ttest_rel, kstest, spearmanr
 from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, accuracy_score
 
 np.random.seed(1)
@@ -24,7 +24,7 @@ mx.random.seed(2)
 
 def groupCause(df, odata, model, params, ground_truth, method='Group'):
 
-    p_val_list = [0.05] # np.arange(0.03, 0.1, 0.03)
+    p_val_list = [0.01] # np.arange(0.03, 0.1, 0.03)
     num_samples = params['num_samples']
     step = params['step_size']
     training_length = params['train_len']
@@ -115,7 +115,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                 cause_group, effect_group = f'Group: {g+1}', f'Group: {h+1}'
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(1, 1.0, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(0, 0.10, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
 
                 pvi, mapeslol, mapeslolint = [], [], [] # p-values
@@ -163,7 +163,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
                         knockoffs = knock_obj.Generate_Knockoffs(data_actual, params)
                         knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                        knockoff_samples = knockoff_samples + np.random.normal(1, 1.0, knockoff_samples.shape)
+                        knockoff_samples = knockoff_samples + np.random.normal(0, 0.10, knockoff_samples.shape)
                         # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                         intervene = knockoff_samples
                         
@@ -212,13 +212,14 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     corr, pv_corr = spearmanr(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
                     print("Intervention: " + intervention_type)
                     # t, p = ttest_ind(np.array(mape_interventions[m][:, j-start_effect]), np.array(imape_interventions[m][:, j-start_effect]))
-                    t, p = ks_2samp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))
+                    # t, p = ks_2samp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))
+                    t, p = ttest_rel(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
                     # ad_test = anderson_ksamp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))  # Anderson-Darling Test
                     # p = ad_test[2]
                     pvals.append(p)
                     
                     print(f'Test statistic: {round(t, 2)}, pv-dist: {round(p, 2)}, pv-corr: {round(pv_corr, 2)}, kld: {kld_val}')
-                    if p < 0.05:
+                    if p < 0.01:
                         print("\033[92mNull hypothesis is rejected\033[0m")
                         causal_decision.append(1)
                         causal_decision_1tier.append(1)
