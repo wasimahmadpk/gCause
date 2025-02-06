@@ -502,7 +502,7 @@ def get_sims_params():
         'num_cells': 66,
         'num_samples': 5,
         'dropout_rate': 0.10,
-        'num_sliding_win': 30,
+        'num_sliding_win': 60,
         'step_size': 1,
         'dim': 8,
         'dim_cc': 4,
