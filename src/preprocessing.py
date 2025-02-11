@@ -1442,59 +1442,6 @@ def calculate_group_means(df, params):
     return group_means
 
 
-
-# Plot metrics
-def plot_river_metrics(methods_performance_dict, plot_path, metric_name):
-    fig, ax = plt.subplots()
-
-    for method, performance_dicts in methods_performance_dict.items():
-        x = sorted(performance_dicts.keys())
-        y = [performance_dicts[param][metric_name] for param in x]
-        
-        ax.plot(x, y, marker='.', linestyle='-', label=f'{method}')
-    
-    ax.set_xticks(x)
-    ax.set_ylim(-0.1, 1.1)
-    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
-    plt.xlabel('Groups', fontsize=14)
-    plt.ylabel(metric_name, fontsize=14)
-    plt.xticks(fontsize=14)
-    plt.yticks(fontsize=14)
-    plt.grid(True)
-    plt.legend(title="", loc="best", ncol=2, fontsize=13, framealpha=0.5)
-    
-    rnd = random.randint(1, 9999)
-    filename = pathlib.Path(plot_path) / f'{metric_name}_regime_{rnd}.pdf'
-    plt.savefig(filename)  # Save the figure
-    # plt.show()
-
-
-
-# Plot metrics
-def plot_metrics(methods_performance_dict, plot_path, metric_name):
-    fig, ax = plt.subplots()
-
-    for method, performance_dicts in methods_performance_dict.items():
-        x = sorted(performance_dicts.keys())
-        y = [performance_dicts[param][metric_name] for param in x]
-        
-        ax.plot(x, y, marker='.', linestyle='-', label=f'{method}')
-    
-    ax.set_xticks(x)
-    ax.set_ylim(-0.1, 1.1)
-    plt.xlabel('Experiments', fontsize=14)
-    plt.xticks(rotation=90, fontsize=18)
-    plt.ylabel(metric_name, fontsize=14)
-    plt.yticks(fontsize=18)
-    plt.grid(True)
-    plt.legend()
-    
-    rnd = random.randint(1, 9999)
-    filename = pathlib.Path(plot_path) / f'{metric_name}_exp_{rnd}.pdf'
-    plt.savefig(filename)  # Save the figure
-    # plt.show()
-
-
 def generate_group_dicts(num_nodes, num_groups):
     
     groups, groups_cc, groups_fs = {}, {}, {}
@@ -1583,6 +1530,7 @@ def calculate_average_metrics(performance_dicts):
     return avg_metrics
 
 
+
 # Plot metrics
 def plot_metrics(methods_performance_dict, plot_path, metric_name):
     fig, ax = plt.subplots()
@@ -1594,18 +1542,44 @@ def plot_metrics(methods_performance_dict, plot_path, metric_name):
         ax.plot(x, y, marker='.', linestyle='-', label=f'{method}')
     
     ax.set_xticks(x)
-    plt.xticks(fontsize=16)
+    plt.xticks(fontsize=14)
     ax.set_ylim(-0.1, 1.1)
     plt.xlabel('Groups', fontsize=14)
     plt.ylabel(metric_name, fontsize=14)
     ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
-    plt.yticks(fontsize=16)
+    plt.yticks(fontsize=14)
     plt.grid(True)
-    # plt.legend(fontsize=10, ncol=2)
+    # plt.legend(fontsize=13, ncol=2)
     plt.legend().remove()
     
     rnd = random.randint(1, 9999)
     filename = pathlib.Path(plot_path) / f'{metric_name}_groups_{rnd}.pdf'
+    plt.savefig(filename)  # Save the figure
+    # plt.show()
+
+
+# Plot metrics
+def plot_river_metrics(methods_performance_dict, plot_path, metric_name):
+    fig, ax = plt.subplots()
+
+    for method, performance_dicts in methods_performance_dict.items():
+        x = sorted(performance_dicts.keys())
+        y = [performance_dicts[param][metric_name] for param in x]
+        
+        ax.plot(x, y, marker='.', linestyle='-', label=f'{method}')
+    
+    ax.set_xticks(x)
+    ax.set_ylim(-0.1, 1.1)
+    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
+    plt.xlabel('Groups', fontsize=14)
+    plt.ylabel(metric_name, fontsize=14)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    plt.grid(True)
+    plt.legend(title="", loc="best", ncol=2, fontsize=13, framealpha=0.5)
+    
+    rnd = random.randint(1, 9999)
+    filename = pathlib.Path(plot_path) / f'{metric_name}_regime_{rnd}.pdf'
     plt.savefig(filename)  # Save the figure
     # plt.show()
 
