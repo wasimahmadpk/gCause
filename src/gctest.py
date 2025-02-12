@@ -115,7 +115,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                 cause_group, effect_group = f'Group: {g+1}', f'Group: {h+1}'
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(0, 0.10, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(10, 10.0, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
 
                 pvi, mapeslol, mapeslolint = [], [], [] # p-values
@@ -163,7 +163,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
                         knockoffs = knock_obj.Generate_Knockoffs(data_actual, params)
                         knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                        knockoff_samples = knockoff_samples + np.random.normal(0, 0.10, knockoff_samples.shape)
+                        knockoff_samples = knockoff_samples + np.random.normal(10, 10.0, knockoff_samples.shape)
                         # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                         intervene = knockoff_samples
                         
@@ -227,7 +227,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         print("-------------------------------------------------------")
                     else:
                         causal_decision_1tier.append(0)
-                        if pv_corr < 0.25:
+                        if pv_corr < 0.99:
                             print("\033[94mFail to reject null hypothesis\033[0m")
                             causal_decision.append(0)
                             print("-------------------------------------------------------")
