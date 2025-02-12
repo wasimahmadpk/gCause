@@ -37,6 +37,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     columns = params['col']
     step = params['step_size']
     num_sliding_win =  params['num_sliding_win']
+    alpha = params['alpha']
     
     if method=='Group':
         groups = params['groups']
@@ -115,7 +116,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                 cause_group, effect_group = f'Group: {g+1}', f'Group: {h+1}'
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(10, 10.0, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(0, 0.10, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
 
                 pvi, mapeslol, mapeslolint = [], [], [] # p-values
@@ -163,7 +164,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
                         knockoffs = knock_obj.Generate_Knockoffs(data_actual, params)
                         knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                        knockoff_samples = knockoff_samples + np.random.normal(10, 10.0, knockoff_samples.shape)
+                        knockoff_samples = knockoff_samples + np.random.normal(0, 0.10, knockoff_samples.shape)
                         # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                         intervene = knockoff_samples
                         
@@ -220,7 +221,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     pvals.append(p)
                     
                     print(f'Test statistic: {round(t, 2)}, pv-dist: {round(p, 2)}, pv-corr: {round(pv_corr, 2)}, kld: {kld_val}')
-                    if p < 0.1:
+                    if p < alpha:
                         print("\033[92mNull hypothesis is rejected\033[0m")
                         causal_decision.append(1)
                         causal_decision_1tier.append(1)
@@ -299,7 +300,8 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     indist_cause.append(causal_decision[0])
 
                     ci_list.append(kld_val)
-                    causal_decision = []
+                    causal_decision, causal_decision_1tier = [], []
+                    
             
                 if h == group_num-1 or g==group_num-1:
                     

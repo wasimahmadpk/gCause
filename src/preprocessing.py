@@ -1557,6 +1557,33 @@ def plot_metrics(methods_performance_dict, plot_path, metric_name):
     plt.savefig(filename)  # Save the figure
     # plt.show()
 
+    # Plot metrics
+def plot_metrics_tier(methods_performance_dict, plot_path, metric_name):
+    fig, ax = plt.subplots()
+
+    for method, performance_dicts in methods_performance_dict.items():
+        x = sorted(performance_dicts.keys())
+        y = [performance_dicts[param][metric_name] for param in x]
+        
+        ax.plot(x, y, marker='.', linestyle='-', label=f'{method}')
+    
+    ax.set_xticks(x)
+    plt.xticks(fontsize=14)
+    ax.set_ylim(-0.1, 1.1)
+    plt.xlabel('Groups', fontsize=14)
+    plt.ylabel(metric_name, fontsize=14)
+    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
+    plt.yticks(fontsize=14)
+    plt.grid(True)
+    plt.legend(fontsize=13)
+    # plt.legend().remove()
+    
+    rnd = random.randint(1, 9999)
+    filename = pathlib.Path(plot_path) / f'{metric_name}_groups_{rnd}.pdf'
+    plt.savefig(filename)  # Save the figure
+    # plt.show()
+
+
 
 # Plot metrics
 def plot_river_metrics(methods_performance_dict, plot_path, metric_name):
@@ -1934,7 +1961,7 @@ def load_sims_data(groups):
     dim = groups*5
     cols = [f'Z{i}' for i in range(1, dim+1)]
     df = pd.DataFrame(data= mat_data['ts'][: 200, :dim], columns=cols)
-    df = df.apply(normalize)
+    # df = df.apply(normalize)
 
     cgraphs = mat_data['net'][0, :dim, :dim].T
 
