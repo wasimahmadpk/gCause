@@ -213,9 +213,9 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     corr, pv_corr = spearmanr(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
                     print("Intervention: " + intervention_type)
                     # t, p = ks_2samp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))
-                    t, p = ttest_rel(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
+                    # t, p = ttest_rel(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
                     # t, p = ttest_ind(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect], equal_var = True, alternative = 'greater')
-                    # t, p = ttest_1samp(imape_mean[:, j-start_effect], popmean=0.0, alternative="greater")
+                    t, p = ttest_1samp(imape_mean[:, j-start_effect], popmean=0.0, alternative="greater")
                     # ad_test = anderson_ksamp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))  # Anderson-Darling Test
                     # p = ad_test[2]
                     pvals.append(p)
