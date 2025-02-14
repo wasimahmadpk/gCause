@@ -131,9 +131,9 @@ def get_syn_params():
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4]},      #  
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1]},                 #    
         
-        'epochs': 45,
+        'epochs': 50,
         'pred_len': 5,
-        'train_len': 600,
+        'train_len': 500,
         'num_layers': 4,
         'num_cells': 32,
         'num_samples': 3,
@@ -143,7 +143,7 @@ def get_syn_params():
         'dim': 8,
         'dim_fs': 8,
         'dim_cc': 4,
-        'alpha' : 0.10,
+        'alpha' : 0.05,
         'batch_size': 32,
         'test': 'ks',
         'intervention': 'knockoffs',
