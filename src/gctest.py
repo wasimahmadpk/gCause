@@ -116,7 +116,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                 cause_group, effect_group = f'Group: {g+1}', f'Group: {h+1}'
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(1, 1.10, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(3, 3.33, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
 
                 pvi, mapeslol, mapeslolint = [], [], [] # p-values
@@ -164,7 +164,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
                         knockoffs = knock_obj.Generate_Knockoffs(data_actual, params)
                         knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                        knockoff_samples = knockoff_samples + np.random.normal(1, 0.10, knockoff_samples.shape)
+                        knockoff_samples = knockoff_samples + np.random.normal(3, 3.33, knockoff_samples.shape)
                         # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                         intervene = knockoff_samples
                         
@@ -212,10 +212,10 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     # Calculate Spearman correlation coefficient and its p-value
                     corr, pv_corr = spearmanr(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
                     print("Intervention: " + intervention_type)
-                    # t, p = ks_2samp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))
+                    t, p = ks_2samp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))
                     # t, p = ttest_rel(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
                     # t, p = ttest_ind(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect], equal_var = True, alternative = 'greater')
-                    t, p = ttest_1samp(imape_mean[:, j-start_effect], popmean=np.mean(mape_mean[:, j-start_effect]))
+                    # t, p = ttest_1samp(imape_mean[:, j-start_effect], popmean=np.mean(mape_mean[:, j-start_effect]))
                     # ad_test = anderson_ksamp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))  # Anderson-Darling Test
                     # p = ad_test[2]
                     pvals.append(p)
@@ -228,7 +228,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         print("-------------------------------------------------------")
                     else:
                         causal_decision_1tier.append(0)
-                        if pv_corr < 0.66:
+                        if pv_corr < 0.33:
                             print("\033[94mFail to reject null hypothesis\033[0m")
                             causal_decision.append(0)
                             print("-------------------------------------------------------")
