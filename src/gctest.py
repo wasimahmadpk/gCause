@@ -212,8 +212,8 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     # Calculate Spearman correlation coefficient and its p-value
                     corr, pv_corr = spearmanr(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
                     print("Intervention: " + intervention_type)
-                    # t, p = ks_2samp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))
-                    t, p = ttest_rel(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
+                    t, p = ks_2samp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))
+                    # t, p = ttest_rel(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
                     # t, p = ttest_ind(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect], equal_var = True, alternative = 'greater')
                     # t, p = ttest_1samp(imape_mean[:, j-start_effect], popmean=np.mean(mape_mean[:, j-start_effect]))
                     # ad_test = anderson_ksamp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))  # Anderson-Darling Test
@@ -228,7 +228,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         print("-------------------------------------------------------")
                     else:
                         causal_decision_1tier.append(0)
-                        if pv_corr < 0.10:
+                        if pv_corr < 0.50:
                             print("\033[94mFail to reject null hypothesis\033[0m")
                             causal_decision.append(0)
                             print("-------------------------------------------------------")

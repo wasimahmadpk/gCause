@@ -213,7 +213,7 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
         log_term = np.zeros_like(value)
         log_term[value < 0] = np.log1p(np.abs(value[value < 0]))  # log(1 + abs(x)) for stability
         # Combine all terms while ensuring the final result is bounded between -10 and 10
-        transformed_value = trig_term + exp_term + poly_term + log_term
+        transformed_value = trig_term 
         # Clip the final result to a reasonable range to avoid explosion
         transformed_value = np.clip(transformed_value, -10, 10)
         return transformed_value
