@@ -16,6 +16,7 @@ from datetime import datetime
 from mvlearn.embed import MCCA
 from scipy.special import stdtr
 import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, auc
 from sklearn.metrics import precision_recall_curve
 from sklearn.feature_selection import f_regression, mutual_info_regression
 from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, accuracy_score
@@ -239,6 +240,109 @@ def remove_diagonal_and_flatten(matrix):
     return matrix[mask].tolist()
 
 
+def plot_precision_recall_curve(y_true, dist, corr, plot_path):
+    """
+    Function to plot the Precision-Recall curve and AUC comparison for two methods based on their prediction scores.
+    
+    Parameters:
+    - y_true: Actual binary labels (ground truth).
+    - dist: Predicted scores for Method 1 (e.g., Distance-based method).
+    - corr: Predicted scores for Method 2 (e.g., Correlation-based method, lower means better for label 1).
+    - plot_path: Path where the Precision-Recall plot will be saved.
+    """
+    
+    # Flatten the lists to make them suitable for Precision-Recall calculation
+    y_true = [item for sublist in y_true for item in sublist]
+    dist_scores = [item for sublist in dist for item in sublist]  # Flatten distance-based scores
+    corr_scores = [item for sublist in corr for item in sublist]  # Flatten correlation-based scores
+
+    # Invert correlation scores if lower values indicate positive class (label 1)
+    # corr_scores = [1 - score for score in corr_scores]  # Inverting scores for correlation method
+
+    # Compute Precision-Recall curve for Method 1 (using dist_scores)
+    precision1, recall1, _ = precision_recall_curve(y_true, dist_scores)
+    pr_auc1 = auc(recall1, precision1)
+
+    # Compute Precision-Recall curve for Method 2 (using inverted corr_scores)
+    precision2, recall2, _ = precision_recall_curve(y_true, corr_scores)
+    pr_auc2 = auc(recall2, precision2)
+
+     # Plot random classifier line
+    plt.plot([0, 1], [0, 1], color='gray', linestyle='--', lw=1)
+
+    # Plot Precision-Recall curves
+    plt.figure(figsize=(8, 6))
+    plt.plot(recall1, precision1, color='orange', lw=2, label=f'gCDMI-1tier (AUC = {pr_auc1:.2f})')
+    plt.plot(recall2, precision2, color='green', lw=2, label=f'gCDMI-2tier (AUC = {pr_auc2:.2f})')
+
+    # Labels and formatting
+    plt.xlabel('Recall', fontsize=13)
+    plt.ylabel('Precision', fontsize=13)
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
+    plt.legend(loc='lower left', fontsize=13)
+    plt.grid(alpha=0.3)
+
+    # Save plot as high-quality PDF
+    rnd = np.random.randint(1, 9999)
+    filename = plot_path + f"pr_comparison_{rnd}.pdf"
+    plt.savefig(filename, format="pdf", dpi=400, bbox_inches="tight")
+
+    # Show plot
+
+
+def plot_roc_curve(y_true, dist, corr, plot_path):
+    """
+    Function to plot the ROC curve and AUC comparison for two methods based on their KLD scores.
+
+    Parameters:
+    - y_true: Actual binary labels.
+    - dist: Distance scores (higher value = more likely positive class).
+    - corr: Correlation scores (lower value = more likely positive class).
+    - plot_path: Path where the ROC plot will be saved.
+    """
+    # Flatten the lists to make them suitable for ROC curve calculation
+    y_true = [item for sublist in y_true for item in sublist]
+    dist_scores = [item for sublist in dist for item in sublist]  # Distance-based scores
+    corr_scores = [item for sublist in corr for item in sublist]  # Correlation-based scores
+    
+    precision, recall, thresholds = precision_recall_curve(y_true, dist_scores)
+    # Invert correlation scores if lower values indicate positive class
+    # corr_scores = [1 - score for score in corr_scores]  # Invert scores for correlation
+    
+    # Compute ROC curve and AUC for both methods
+    fpr1, tpr1, _ = roc_curve(y_true, dist_scores)
+    roc_auc1 = auc(fpr1, tpr1)
+
+    fpr2, tpr2, _ = roc_curve(y_true, corr_scores)
+    roc_auc2 = auc(fpr2, tpr2)
+
+    # Plot ROC curves
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr1, tpr1, color='orange', lw=2, label=f'gCDMI-1tier (AUC = {roc_auc1:.2f})')
+    plt.plot(fpr2, tpr2, color='green', lw=2, label=f'gCDMI-2tier (AUC = {roc_auc2:.2f})')
+
+    # Plot random classifier line
+    plt.plot([0, 1], [0, 1], color='gray', linestyle='--', lw=1)
+
+    # Labels and formatting
+    plt.xlabel('FPR', fontsize=13)
+    plt.ylabel('TPR', fontsize=13)
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
+    plt.legend(loc='lower right', fontsize=13)
+    plt.grid(alpha=0.3)
+
+    rnd = random.randint(1, 9999)
+    filename = pathlib.Path(plot_path + f"roc_{rnd}.pdf")
+    # Save as high-quality PDF
+    plt.savefig(filename, format="pdf", dpi=400, bbox_inches="tight")
+
+    # Show plot
+    # plt.show()
+
+
+
 def f1_max(labs,preds):
 
     # F1 MAX
@@ -263,13 +367,13 @@ def evaluate_best_predicted_graph(actual, predicted_list):
     best_fpr = float('inf')  # Initialize FPR with high value for tiebreakers
     
     # Flatten actual graph once, since it's common for all predictions
-    # y_true_flat = actual[mask].tolist()
-    y_true_flat = [item for sublist in actual for item in sublist]
+    y_true_flat = actual[mask].tolist()
+    # y_true_flat = [item for sublist in actual for item in sublist]
     
     for predicted in predicted_list:
          # Flatten predicted graph
-        # y_pred_flat = predicted[mask].tolist()
-        y_pred_flat = [item for sublist in predicted for item in sublist]
+        y_pred_flat = predicted[mask].tolist()
+        # y_pred_flat = [item for sublist in predicted for item in sublist]
 
         # Calculate confusion matrix
         cm = confusion_matrix(y_true_flat, y_pred_flat, labels=[0, 1])
@@ -367,175 +471,6 @@ def count_metrics(input_data):
         }
 
     return metrics_counts
-
-
-# def plot_motor_metrics(data, save_path=''):
-#     """
-#     Create bar plots for the mean Accuracy and Fscore metrics for multiple methods and movements.
-#     Save the plots as PDF files.
-#     """
-#     # Save to JSON (preserve exact structure)
-#     data = convert_numpy_types(data)
-#     filename = 'motor_metrics.json'
-#     json_full_path = os.path.join('', filename)
-#     with open(json_full_path, "w") as json_file:
-#         json.dump(data, json_file, indent=4)
-#     print(f"Metrics saved to JSON: {json_full_path}")
-    
-#     # Prepare the data for plotting mean metrics
-#     rows = []
-#     for movement, methods in data.items():
-#         for method, experiments in methods.items():
-#             for exp, metrics in experiments.items():
-#                 rows.append({
-#                     "Movement": movement,
-#                     "Method": method,
-#                     "Accuracy": metrics["Accuracy"],
-#                     "Fscore": metrics["Fscore"]
-#                 })
-#     df = pd.DataFrame(rows)
-    
-#     # Compute the mean of Accuracy and Fscore for each combination of Movement and Method
-#     df_mean = df.groupby(['Movement', 'Method']).agg({'Accuracy': 'mean', 'Fscore': 'mean'}).reset_index()
-
-#     # Dynamically generate colors for the methods
-#     unique_methods = df['Method'].unique()
-#     method_colors = sns.color_palette("Set2", len(unique_methods))  # Generate colors for all methods
-#     method_colors = dict(zip(unique_methods, method_colors))  # Map methods to colors
-
-#     # Plot the mean Accuracy for each movement and method
-#     plt.figure(figsize=(12, 6))
-#     sns.barplot(data=df_mean, x="Movement", y="Accuracy", hue="Method", palette=method_colors)
-#     plt.xlabel("Movement", fontsize=12)
-#     plt.ylabel("Accuracy", fontsize=12)
-#     plt.ylim(0, 1.1)
-#     # plt.title("Mean Accuracy by Movement and Method", fontsize=14)
-#     plt.xticks(rotation=0, ha='right', fontsize=10)
-#     plt.grid(axis='y', linestyle='--', alpha=0.7)
-
-#     # Add custom legend based on methods
-#     plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
-
-#     # Save the plot as a PDF file
-#     plt.tight_layout()
-#     acc_pdf_path = os.path.join(save_path, "mean_acc_barplot.pdf")
-#     plt.savefig(acc_pdf_path, format='pdf')
-#     plt.show()
-
-#     # Plot the mean Fscore for each movement and method
-#     plt.figure(figsize=(12, 6))
-#     sns.barplot(data=df_mean, x="Movement", y="Fscore", hue="Method", palette=method_colors)
-#     plt.xlabel("Movement", fontsize=12)
-#     plt.ylabel("Fscore", fontsize=12)
-#     plt.ylim(0, 1.1)
-#     # plt.title("Mean Fscore by Movement and Method", fontsize=14)
-#     plt.xticks(rotation=45, ha='right', fontsize=10)
-#     plt.grid(axis='y', linestyle='--', alpha=0.7)
-
-#     # Add custom legend based on methods
-#     plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
-
-#     # Save the plot as a PDF file
-#     plt.tight_layout()
-#     fscore_pdf_path = os.path.join(save_path, "mean_fscore_barplot.pdf")
-#     plt.savefig(fscore_pdf_path, format='pdf')
-#     plt.show()
-
-
-# def plot_motor_metrics(data, save_path=''):
-#     """
-#     Create bar plots for the mean Accuracy and Fscore metrics for multiple methods and movements.
-#     Save the plots as PDF files and the mean metrics as a JSON file.
-#     """
-#     # Save the original data to JSON
-#     data = convert_numpy_types(data)
-#     raw_filename = 'motor_metrics.json'
-#     raw_json_full_path = os.path.join(save_path, raw_filename)
-#     with open(raw_json_full_path, "w") as json_file:
-#         json.dump(data, json_file, indent=4)
-#     print(f"Raw metrics saved to JSON: {raw_json_full_path}")
-    
-#     # Prepare the data for plotting mean metrics
-#     rows = []
-#     for movement, methods in data.items():
-#         for method, experiments in methods.items():
-#             for exp, metrics in experiments.items():
-#                 rows.append({
-#                     "Movement": movement,
-#                     "Method": method,
-#                     "Accuracy": metrics["Accuracy"],
-#                     "Fscore": metrics["Fscore"]
-#                 })
-#     df = pd.DataFrame(rows)
-    
-#     # Compute the mean of Accuracy and Fscore for each combination of Movement and Method
-#     df_mean = df.groupby(['Movement', 'Method']).agg({'Accuracy': 'mean', 'Fscore': 'mean'}).reset_index()
-
-#     # Transform the DataFrame to the desired JSON structure
-#     mean_metrics_dict = {}
-#     for _, row in df_mean.iterrows():
-#         movement = row["Movement"]
-#         method = row["Method"]
-#         accuracy = row["Accuracy"]
-#         fscore = row["Fscore"]
-        
-#         # Create nested structure with Movement -> Method -> Metrics
-#         if movement not in mean_metrics_dict:
-#             mean_metrics_dict[movement] = {}
-#         mean_metrics_dict[movement][method] = {
-#             "Accuracy": accuracy,
-#             "Fscore": fscore
-#         }
-
-#     # Save the transformed mean metrics as JSON
-#     mean_filename = 'mean_motor_metrics.json'
-#     mean_json_full_path = os.path.join(save_path, mean_filename)
-#     with open(mean_json_full_path, "w") as mean_json_file:
-#         json.dump(mean_metrics_dict, mean_json_file, indent=4)
-#     print(f"Mean metrics saved to JSON: {mean_json_full_path}")
-
-#     # Dynamically generate colors for the methods
-#     unique_methods = df['Method'].unique()
-#     method_colors = sns.color_palette("Set2", len(unique_methods))  # Generate colors for all methods
-#     method_colors = dict(zip(unique_methods, method_colors))  # Map methods to colors
-
-#     # Plot the mean Accuracy for each movement and method
-#     plt.figure(figsize=(12, 6))
-#     sns.barplot(data=df_mean, x="Movement", y="Accuracy", hue="Method", palette=method_colors)
-#     plt.xlabel("Movement", fontsize=12)
-#     plt.ylabel("Accuracy", fontsize=12)
-#     plt.ylim(0, 1.1)
-#     plt.xticks(rotation=0, ha='right', fontsize=10)
-#     plt.grid(axis='y', linestyle='--', alpha=0.7)
-
-#     # Add custom legend based on methods
-#     plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
-
-#     # Save the plot as a PDF file
-#     plt.tight_layout()
-#     acc_pdf_path = os.path.join(save_path, "mean_acc_barplot.pdf")
-#     plt.savefig(acc_pdf_path, format='pdf')
-#     plt.show()
-#     print(f"Accuracy plot saved to: {acc_pdf_path}")
-
-#     # Plot the mean Fscore for each movement and method
-#     plt.figure(figsize=(12, 6))
-#     sns.barplot(data=df_mean, x="Movement", y="Fscore", hue="Method", palette=method_colors)
-#     plt.xlabel("Movement", fontsize=12)
-#     plt.ylabel("Fscore", fontsize=12)
-#     plt.ylim(0, 1.1)
-#     plt.xticks(rotation=45, ha='right', fontsize=10)
-#     plt.grid(axis='y', linestyle='--', alpha=0.7)
-
-#     # Add custom legend based on methods
-#     plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
-
-#     # Save the plot as a PDF file
-#     plt.tight_layout()
-#     fscore_pdf_path = os.path.join(save_path, "mean_fscore_barplot.pdf")
-#     plt.savefig(fscore_pdf_path, format='pdf')
-#     plt.show()
-#     print(f"Fscore plot saved to: {fscore_pdf_path}")
 
 
 
