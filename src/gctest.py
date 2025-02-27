@@ -116,7 +116,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                 cause_group, effect_group = f'Group: {g+1}', f'Group: {h+1}'
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(0.11, 0.11, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(3.33, 3.33, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
 
                 pvi, mapeslol, mapeslolint = [], [], [] # p-values
@@ -137,7 +137,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         test_ds = ListDataset(
                             [
                                     {'start': test_data.index[0],
-                                    'target': test_data.values.T.tolist()
+                                     'target': test_data.values.T.tolist()
                                     }
                             ],
                             freq=frequency,
@@ -150,7 +150,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         test_dsint = ListDataset(
                             [
                                 {'start': test_data.index[0],
-                                'target': int_data.values.T.tolist()
+                                 'target': int_data.values.T.tolist()
                                 }
                             ],
                             freq=frequency,
@@ -164,7 +164,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
                         knockoffs = knock_obj.Generate_Knockoffs(data_actual, params)
                         knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                        knockoff_samples = knockoff_samples + np.random.normal(0.11, 0.11, knockoff_samples.shape)
+                        knockoff_samples = knockoff_samples + np.random.normal(3.33, 3.33, knockoff_samples.shape)
                         # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                         intervene = knockoff_samples
                         
@@ -229,7 +229,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         print("-------------------------------------------------------")
                     else:
                         causal_decision_1tier.append(0)
-                        if pv_corr < 0.66:
+                        if corr_val > 0.66:
                             print("\033[94mFail to reject null hypothesis\033[0m")
                             causal_decision.append(0)
                             print("-------------------------------------------------------")

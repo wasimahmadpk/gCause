@@ -13,6 +13,8 @@ from os import path
 import pandas as pd
 from math import sqrt
 from datetime import datetime
+import scipy.stats as stats
+from statsmodels.stats.proportion import proportions_ztest
 from mvlearn.embed import MCCA
 from scipy.special import stdtr
 import matplotlib.pyplot as plt
@@ -417,6 +419,40 @@ def evaluate_best_predicted_graph(actual, predicted_list):
             }
     
     return best_metrics
+
+
+def test_link(actual, counterfactual, alpha=0.05):
+    results = {}
+
+    # 1. Kolmogorov-Smirnov (KS) Test
+    ks_stat, ks_p = stats.ks_2samp(actual, counterfactual)
+    results["KS Test"] = ks_p
+
+    # 2. Mann-Whitney U Test
+    mw_stat, mw_p = stats.mannwhitneyu(actual, counterfactual, alternative='two-sided')
+    results["MWU Test"] = mw_p
+
+    # 3. Student’s t-Test (Welch’s t-Test if variance is unequal)
+    t_stat, t_p = stats.ttest_ind(actual, counterfactual, equal_var=False)
+    results["t-Test"] = t_p
+
+    # 4. Anderson-Darling Test
+    ad_stat, ad_crit, ad_sig = stats.anderson_ksamp([actual, counterfactual])
+    results["AD Test"] = ad_sig  # Returns the significance level
+
+    # 5. Shapiro-Wilk Test (Normality Test for Actual Sample)
+    shapiro_stat, shapiro_p = stats.shapiro(actual)
+    results["SW Test"] = shapiro_p
+
+    # 6. Cramér-von Mises Test
+    cvm_result = stats.cramervonmises_2samp(actual, counterfactual)
+    results["CM Test"] = cvm_result.pvalue
+
+    # 7. Wilcoxon Signed-Rank Test (Non-parametric)
+    wilcoxon_stat, wilcoxon_p = stats.wilcoxon(actual, counterfactual)
+    results["WSR Test"] = wilcoxon_p
+
+    return results
 
 
 def count_metrics(input_data):
