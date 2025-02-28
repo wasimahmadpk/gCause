@@ -143,7 +143,7 @@ def get_syn_params():
         'dim': 8,
         'dim_fs': 8,
         'dim_cc': 4,
-        'alpha' : 0.1,
+        'alpha' : 0.01,
         'batch_size': 32,
         'test': 'ks',
         'intervention': 'knockoffs',
@@ -157,6 +157,15 @@ def get_syn_params():
                        0, 0, 1, 1, 0,
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
+        'test_names' : [
+        "KS Test",   # Kolmogorov-Smirnov Test
+        "MWU Test",  # Mann-Whitney U Test
+        "t-Test",    # Student’s t-Test (Welch’s if variance is unequal)
+        "AD Test",   # Anderson-Darling Test
+        "SW Test",   # Shapiro-Wilk Test
+        "CM Test",   # Cramér-von Mises Test
+        "WSR Test"   # Wilcoxon Signed-Rank Test
+        ],
         'freq': '30min',
         'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs_syn/",
         'model_path': "/home/ahmad/Projects/gCause/models/gc_syn/",

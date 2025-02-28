@@ -355,6 +355,97 @@ def f1_max(labs,preds):
     f1_score = np.nanmax(f1_scores)
     return f1_thresh,f1_score
 
+
+def plot_multitests_metrics(metrics_data, plot_path, metric_name):
+    # Group sizes are fixed
+    group_sizes = list(metrics_data.keys())
+    # Prepare the plot
+    plt.figure(figsize=(10, 6))
+    
+    # Loop through each test type
+    for test, metrics in metrics_data[group_sizes[0]].items():  # Assuming data for the first group size
+        y_values = []
+        print(f'Test: {test}')
+        # Loop through group sizes
+        for group_size in group_sizes:
+            # Ensure the metric is available for the current group size and test
+            if test in metrics_data[group_size]:
+                metric_value = metrics_data[group_size][test].get(metric_name, np.nan)
+            else:
+                metric_value = np.nan
+            y_values.append(metric_value)
+        print(y_values)
+        
+        # Plot each test with corresponding y-values for the current group size
+        plt.plot(group_sizes, y_values, marker='o', linestyle='-', label=test)
+    
+    # Customize plot appearance
+    plt.xticks(group_sizes, fontsize=13)
+    plt.yticks(fontsize=13)
+    plt.xlabel('Interaction density', fontsize=13)
+    plt.ylabel(f'{metric_name}', fontsize=13)
+    plt.ylim(0, 1.1)
+    
+    # Add legend
+    plt.legend(fontsize=13, loc='upper left', ncol=3)
+    
+    # # Save the plot if needed
+    if plot_path:
+        filename = pathlib.Path(plot_path) / 'tests_comparison.pdf'
+        plt.savefig(filename, format="pdf", dpi=600, bbox_inches="tight")
+    
+    # Show the plot
+    # plt.show()
+
+
+def plot_multitests_boxplot(dictdata, plotpath, metricsname):
+    """
+    Generates and saves a boxplot for the specified metric across different tests.
+    
+    Parameters:
+    - dictdata: A dictionary containing the data for various tests and metrics.
+    - plotpath: The path where the plot should be saved.
+    - metricsname: The name of the metric to plot (e.g., 'Fscore', 'Precision', 'Recall').
+    """
+    
+    # Prepare data for plotting
+    test_names = []
+    metric_values = []
+
+    # Iterate through the dictionary to extract metric values
+    for key in dictdata:
+        for test_name, metrics in dictdata[key].items():
+            test_names.append(test_name)
+            metric_values.append(metrics[metricsname])
+
+    # Create a DataFrame
+    df = pd.DataFrame({
+        'Test': test_names,
+        metricsname: metric_values
+    })
+
+    # Set up the plot
+    plt.figure(figsize=(10, 6))
+
+    # Create a boxplot
+    sns.boxplot(x='Test', y=metricsname, data=df)
+
+    # Customize the plot
+    plt.xticks(rotation=0, ha='right', fontsize=13)  # Set x-tick label size
+    plt.yticks(fontsize=13)  # Set y-tick label size
+    plt.xlabel('Test', fontsize=13)  # Set x-axis label font size
+    plt.ylabel(metricsname, fontsize=13)  # Set y-axis label font size
+    # plt.title(f'Boxplot of {metricsname} for Different Tests', fontsize=15)
+    plt.tight_layout()
+
+     # # Save the plot if needed
+    if plotpath:
+        filename = pathlib.Path(plotpath) / 'bp_tests_comparison.pdf'
+        plt.savefig(filename, format="pdf", dpi=600, bbox_inches="tight")
+
+    # Show the plot
+    # plt.show()
+
 # Function to compute metrics for each predicted graph and find the best one
 def evaluate_best_predicted_graph(actual, predicted_list):
 
@@ -369,13 +460,13 @@ def evaluate_best_predicted_graph(actual, predicted_list):
     best_fpr = float('inf')  # Initialize FPR with high value for tiebreakers
     
     # Flatten actual graph once, since it's common for all predictions
-    y_true_flat = actual[mask].tolist()
-    # y_true_flat = [item for sublist in actual for item in sublist]
+    # y_true_flat = actual[mask].tolist()
+    y_true_flat = [item for sublist in actual for item in sublist]
     
     for predicted in predicted_list:
          # Flatten predicted graph
-        y_pred_flat = predicted[mask].tolist()
-        # y_pred_flat = [item for sublist in predicted for item in sublist]
+        # y_pred_flat = predicted[mask].tolist()
+        y_pred_flat = [item for sublist in predicted for item in sublist]
 
         # Calculate confusion matrix
         cm = confusion_matrix(y_true_flat, y_pred_flat, labels=[0, 1])
@@ -1499,7 +1590,6 @@ def calculate_average_metrics(performance_dicts):
     
     avg_metrics = {key: value / count for key, value in sums.items()}
     return avg_metrics
-
 
 
 # Plot metrics
