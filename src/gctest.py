@@ -18,9 +18,6 @@ from gluonts.evaluation.backtest import make_evaluation_predictions
 from scipy.stats import ttest_ind, ttest_ind_from_stats, ttest_1samp, ks_2samp, ranksums, anderson_ksamp, ttest_rel, kstest, spearmanr
 from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, accuracy_score
 
-np.random.seed(1)
-mx.random.seed(2)
-
 
 def groupCause(df, odata, model, params, ground_truth, method='Group'):
 
@@ -116,8 +113,8 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                 cause_group, effect_group = f'Group: {g+1}', f'Group: {h+1}'
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                # knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
-                knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
+                # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
 
                 pvi, mapeslol, mapeslolint = [], [], [] # p-values
                 range_effect_group = list(range(start_effect, end_effect))
@@ -164,8 +161,8 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
                         knockoffs = knock_obj.Generate_Knockoffs(data_actual, params)
                         knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                        # knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
-                        knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
+                        knockoff_samples = knockoff_samples + np.random.normal(0, 0.01, knockoff_samples.shape)
+                        # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                         intervene = knockoff_samples
                         
                         imse_batches.append(multi_var_point_imse)

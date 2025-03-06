@@ -1,15 +1,12 @@
 import math
 import os
 import json
-import h5py
-import pickle
 import random
 import pathlib
 import parameters
 import numpy as np
 import scipy as sci
 import seaborn as sns
-from os import path
 import pandas as pd
 from math import sqrt
 from datetime import datetime
@@ -22,21 +19,10 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.metrics import precision_recall_curve
 from sklearn.feature_selection import f_regression, mutual_info_regression
 from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, accuracy_score
-# El Nino imports
-import matplotlib
-import netCDF4
 from netCDF4 import Dataset,num2date
 from matplotlib import pyplot as plt
 import xarray as xr
 #from tigramite import data_processing as pp
-
-
-np.random.seed(1)
-pars = parameters.get_dyadic_params_gc()
-
-win_size = pars.get("win_size")
-training_length = pars.get("train_len")
-prediction_length = pars.get("pred_len")
 
 
 # Function to recursively convert numpy types to native Python types
@@ -1116,111 +1102,6 @@ def load_fnirs(file):
     return df, ground_truth, ground_truth
 
 
-# def plot_movements_metrics(data, save_path="plots"):
-#     """
-#     Generate a single line plot combining TP, TN, FP, FN metrics for all methods, and save the plot.
-
-#     Parameters:
-#     - data (dict): Dictionary containing metrics for movements and methods.
-#     - save_path (str): Directory path where the plot will be saved.
-#     """
-#     # Ensure save_path directory exists
-#     os.makedirs(save_path, exist_ok=True)
-    
-#     plt.figure(figsize=(12, 8))
-    
-#     # Metrics to include in the plot
-#     metrics = ["TP", "TN", "FP", "FN"]
-#     markers = {'MC-PCMCI':'o', 'MC-VGC':'v'}
-#     # Iterate over methods
-#     for method in data["Tap"]:  # Use "Tap" (or any movement) to get method names
-#         for metric in metrics:
-#             # Extract values for the current metric across movements
-#             values = [data[movement][method][metric] for movement in data]
-#             # Plot the values with a unique label for each method-metric pair
-#             plt.plot(data.keys(), values, marker=markers[method], label=f"{method}-{metric}")
-    
-#     # Add plot details
-#     # plt.title("Metrics across Movements")
-#     plt.xlabel("Movements")
-#     plt.ylabel("Metric Value")
-#     plt.legend(loc='upper right', fontsize=8)
-#     plt.grid(True)
-    
-#     # Save the plot
-#     save_file = os.path.join(save_path, "all_metrics_plot.pdf")
-#     plt.savefig(save_file, format='pdf')
-#     print(f"Saved combined metrics plot at: {save_file}")
-    
-#     # Show the plot
-#     plt.show()
-
-
-# def plot_motor_count(data, save_path="plots"): previously used
-#     """
-#     Generate separate line plots for each metric (TP, TN, FP, FN) for all methods.
-#     Each plot is saved as a separate PDF file, dynamically assigning markers.
-
-#     Parameters:
-#     - data (dict): Dictionary containing metrics for movements and methods.
-#     - save_path (str): Directory path where the plots will be saved.
-#     """
-#     # Ensure save_path directory exists
-#     os.makedirs(save_path, exist_ok=True)
-    
-#     # Metrics to include in separate plots
-#     metrics = ["TP", "TN", "FP", "FN"]
-    
-#     # List of markers for dynamic assignment
-#     available_markers = ['o', 'v', 's', '^', 'D', 'P', '*', 'X', 'd', '<', '>']
-    
-#     # Extract all unique methods dynamically
-#     example_movement = next(iter(data.keys()))  # Get the first movement key
-#     methods = list(data[example_movement].keys())  # Extract method names for that movement
-    
-#     # Dynamically assign markers to methods
-#     markers = {method: available_markers[i % len(available_markers)] for i, method in enumerate(methods)}
-    
-#     # Iterate over each metric to create separate plots
-#     for metric in metrics:
-#         plt.figure(figsize=(12, 8))
-        
-#         # Plot values for each method
-#         for method in methods:
-#             # Extract values for the current metric across movements
-#             values = [data[movement][method][metric] for movement in data]
-#             # Plot the values with a unique label for each method
-#             plt.plot(
-#                 data.keys(),
-#                 values,
-#                 marker=markers[method],  # Dynamically assigned marker
-#                 label=f"{method}",
-#                 linewidth=2
-#             )
-        
-#         # Add plot details
-#         # plt.title(f"{metric} Values Across Movements", fontsize=14)
-#         plt.xlabel("Movements", fontsize=12)
-#         plt.ylabel(f"{metric} Value", fontsize=12)
-#         plt.xticks(rotation=0)
-#         plt.ylim(bottom=0)  # Ensure the y-axis starts at 0
-#         plt.legend(title="Method", loc='upper right', fontsize=10, ncol=2)  # Adjust columns if too many methods
-#         plt.grid(True, linestyle='--', alpha=0.7)
-        
-#         # Save the plot as a PDF file
-#         metric_file = os.path.join(save_path, f"{metric}_plot.pdf")
-#         plt.tight_layout()
-#         plt.savefig(metric_file, format='pdf')
-#         print(f"Saved {metric} plot at: {metric_file}")
-        
-#         # Show the plot (optional, remove if not needed)
-#         plt.show()
-
-import os
-import json
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 def plot_motor_count(data, save_path="plots", json_path=''):
     """
@@ -1918,7 +1799,7 @@ def load_nino_data():
 def load_flux_data(start, end):
 
 
-    # ------------ Climate Ecosystem Variables -------------------------
+    # --------------------- Climate Ecosystem Variables ------------------------------
     # Index(['TIMESTAMP_START', 'TIMESTAMP_END', 'TA_F', 'TA_F_QC', 'SW_IN_POT',
     #    'SW_IN_F', 'SW_IN_F_QC', 'LW_IN_F', 'LW_IN_F_QC', 'VPD_F', 'VPD_F_QC',
     #    'PA_F', 'PA_F_QC', 'P_F', 'P_F_QC', 'WS_F', 'WS_F_QC', 'WD', 'USTAR',
@@ -1935,7 +1816,7 @@ def load_flux_data(start, end):
     #    'GPP_DT_VUT_25', 'GPP_DT_VUT_50', 'GPP_DT_VUT_75', 'RECO_SR',
     #    'RECO_SR_N'],
     #   dtype='object')
-    # ------------------------------------------------------------------
+    # -----------------------------------------------------------------------------
 
     # "Load fluxnet 2015 data for various sites"
     USTon = 'FLX_US-Ton_FLUXNET2015_SUBSET_2001-2014_1-4/FLX_US-Ton_FLUXNET2015_SUBSET_HH_2001-2014_1-4.csv'
