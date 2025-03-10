@@ -138,7 +138,7 @@ def get_syn_params():
         'num_cells': 66,
         'num_samples': 3,
         'dropout_rate': 0.10,
-        'num_sliding_win': 33,
+        'num_sliding_win': 30,
         'step_size': 3,
         'dim': 8,
         'dim_fs': 8,
