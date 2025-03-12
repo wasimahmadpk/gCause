@@ -1491,8 +1491,8 @@ def plot_metrics(methods_performance_dict, plot_path, metric_name):
     ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
     plt.yticks(fontsize=14)
     plt.grid(True)
-    # plt.legend(fontsize=13, ncol=2)
-    plt.legend().remove()
+    plt.legend(fontsize=13, ncol=2)
+    # plt.legend().remove()
     
     rnd = random.randint(1, 9999)
     filename = pathlib.Path(plot_path) / f'{metric_name}_groups_{rnd}.pdf'

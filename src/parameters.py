@@ -131,19 +131,19 @@ def get_syn_params():
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4]},      #  
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1]},                 #    
         
-        'epochs': 25,
+        'epochs': 50,
         'pred_len': 3,
         'train_len': 500,
         'num_layers': 6,
         'num_cells': 66,
         'num_samples': 3,
         'dropout_rate': 0.10,
-        'num_sliding_win': 30,
+        'num_sliding_win': 40,
         'step_size': 3,
         'dim': 8,
         'dim_fs': 8,
         'dim_cc': 4,
-        'alpha' : 0.01,
+        'alpha' : 0.10,
         'batch_size': 32,
         'test': 'ks',
         'intervention': 'knockoffs',
