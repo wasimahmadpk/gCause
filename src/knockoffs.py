@@ -159,9 +159,9 @@ class Knockoffs:
         # diagnostics.ScatterCovariance(X_test, Xk_test_g)
 
         # Plot diagnostics for oracle knockoffs
-        # diagnostics.ScatterCovariance(X_test, Xk_test_o)
+        diagnostics.ScatterCovariance(X_test, Xk_test_o)
 
-        # # Compute goodness of fit diagnostics on 50 test sets containing 100 observations each
+        # Compute goodness of fit diagnostics on 50 test sets containing 100 observations each
         # n_exams = 50
         # n_samples = 100
         # exam = diagnostics.KnockoffExam(DataSampler,

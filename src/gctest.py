@@ -108,7 +108,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                 cause_group, effect_group = f'Group: {g+1}', f'Group: {h+1}'
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(0.1, 0.1, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(0.5, 0.5, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
 
                 pvi, mapeslol, mapeslolint = [], [], [] # p-values
@@ -156,7 +156,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
                         knockoffs = knock_obj.Generate_Knockoffs(data_actual, params)
                         knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                        knockoff_samples = knockoff_samples + np.random.normal(0.1, 0.1, knockoff_samples.shape)
+                        knockoff_samples = knockoff_samples + np.random.normal(0.5, 0.5, knockoff_samples.shape)
                         # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                         intervene = knockoff_samples
                         
@@ -302,39 +302,51 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         mape_int_df = pd.DataFrame(data=imse_mean, columns=columns[start_effect: end_effect])
 
                         # Create a single plot
-                        fig = plt.figure()
+                        fig = plt.figure(figsize=(8, 6))  # Adjust size as needed
                         ax2 = fig.add_subplot(111)
 
                         # Plot the first bivariate distribution with transparency
-                        sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Blues',
-                                        alpha=0.75, fill=True, levels=4, color='blue', label='Actual') #fill= True, cmap="Blues", alpha=0.5
+                        sns.kdeplot(data=mape_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Greens',
+                                        alpha=0.99, fill=True, levels=6, label='Actual') #fill= True, cmap="Blues", alpha=0.5
 
                         # Plot the second bivariate distribution on top with transparency
-                        sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Reds',
-                                        alpha=0.60, fill=True, levels=4, color='red', label='Counterfactual') # fill=True, cmap="Reds", fill=True, cmap="Reds",
+                        sns.kdeplot(data=mape_int_df, x=columns[start_effect], y=columns[start_effect+q], cmap='Oranges',
+                                        alpha=0.75, fill=True, levels=6, label='Counterfactual') # fill=True, cmap="Reds", fill=True, cmap="Reds",
 
                         if len(columns) > 0:
                             # plt.ylabel(f"CSS: {columns[i]} ---> {columns[j]}")
                             # effect_var = re.sub(r'(\d+)', lambda match: f'$_{match.group(1)}$', columns[q])
                             effect_var = formatted_columns[q]
-                            ax1.set_ylabel(f"{cause_group} ---> {effect_var}")
+                            # ax2.set_ylabel(f"{cause_group} ---> {effect_var}")
+                            print(f'{columns[start_effect]} and {columns[start_effect+q]}')
+                            plt.xlabel(columns[start_effect], fontsize=22) #
+                            plt.ylabel(columns[start_effect+q], fontsize=22) #columns[start_effect+q]
+                            plt.xticks(fontsize=20)
+                            plt.yticks(fontsize=20)
+                            plt.xticks(rotation=0)  # Rotate if values overlap
+                            plt.gca().xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x:.2f}'))  # Format to 2 decimal places
+
+                            plt.yticks(fontsize=18)
+                            plt.tight_layout()
                         else:
                             # plt.ylabel(f"CSS: Z_{i + 1} ---> Z_{j + 1}")
-                            ax1.set_ylabel(f"{cause_group} ---> Z_{q + 1}")
+                            # ax2.set_ylabel(f"{cause_group} ---> Z_{q + 1}")
+                            plt.xticks(fontsize=15)
+                            plt.yticks(fontsize=15)
 
                         # Show the plot
                         plt.gcf()
-
-                        # Add a custom legend
+                         # Custom Legend
                         legend_elements = [
-                        Patch(facecolor=plt.cm.Greens(100), alpha=0.70, edgecolor='b', label='Actual'),
-                        Patch(facecolor=plt.cm.Oranges(100), alpha=0.85, edgecolor='r', label='Counterfactual')
+                            Patch(facecolor=plt.cm.Greens(100), alpha=0.9, label='Actual'),
+                            Patch(facecolor=plt.cm.Oranges(100), alpha=0.7, label='Counterfactual')
                         ]
-                        ax2.legend(handles=legend_elements)
+
+                        plt.legend(handles=legend_elements, fontsize=22)
                         filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d_{method}_{rnd}.pdf")
                         plt.savefig(filename)
                         # plt.show()
-                
+                            
                 ci_links.append(ci_list[0])
                 ci_links_t1.append(ci_list_t1[0])
                 if method=='Full':
