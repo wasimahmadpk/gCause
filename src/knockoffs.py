@@ -159,7 +159,8 @@ class Knockoffs:
         # diagnostics.ScatterCovariance(X_test, Xk_test_g)
 
         # Plot diagnostics for oracle knockoffs
-        diagnostics.ScatterCovariance(X_test, Xk_test_o)
+        # diagnostics.ScatterCovariance(X_test, Xk_test_o)
+        
 
         # Compute goodness of fit diagnostics on 50 test sets containing 100 observations each
         # n_exams = 50
@@ -172,7 +173,7 @@ class Knockoffs:
         # diagnostics.groupby(['Method', 'Metric', 'Swap']).describe()
         # print(diagnostics.head())
         #
-        # # Plot covariance goodness-of-fit statistics
+        # Plot covariance goodness-of-fit statistics
         # data = diagnostics[(diagnostics.Metric == "Covariance") & (diagnostics.Swap != "self")]
         # fig, ax = plt.subplots(figsize=(12, 6))
         # sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
