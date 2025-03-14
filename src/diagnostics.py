@@ -70,16 +70,16 @@ def ScatterCovariance(X, Xk):
     print("Shape Xk:", np.shape(Xk))
     print("Cov XkXk:", XkXk)
 
-    # # Plot data
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(111)
-    # sns.distplot(X[:, 0], color='red', label='Actual')
-    # sns.distplot(Xk[:, 0], color='green', label='Knockoffs')
-    # ax1.set_ylabel('')
-    # ax1.legend()
-    # plt.savefig('Distribution.pdf')
-    # plt.show()
-    # plt.clf()
+    # Plot data
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    sns.distplot(X[:, 0], color='red', label='Actual')
+    sns.distplot(Xk[:, 0], color='green', label='Knockoffs')
+    ax1.set_ylabel('')
+    ax1.legend()
+    plt.savefig('Distribution.pdf')
+    plt.show()
+    plt.clf()
 
     PlotScatterHelper(XX, XkXk, ax=axarr[0])
     # axarr[0].set_xlabel(r'$\hat{G}_{\mathbf{Z}\mathbf{Z}}(i,j)$', fontsize=18,  weight='bold')

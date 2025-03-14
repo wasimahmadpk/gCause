@@ -255,10 +255,10 @@ def generate_dag_and_time_series(n, p, nonlinear_prob, timesteps, g, s):
                 for parent_index in parent_indices:
                     if nonlinear_links[(parent_index, i)]:
                         # print(f'Var: {i} is nonlinear parents: {parent_index}')
-                        parents_sum += coeffs[i]*nonlinear_transform(data[t-3, parent_index])
+                        parents_sum += coeffs[i]*nonlinear_transform(data[t-7, parent_index])
                         # data[t, i] = data[t, i] + coeffs[i]*nonlinear_transform(data[t-3, parent_index])
                     else:
-                        parents_sum += coeffs[i]*data[t-3, parent_index]
+                        parents_sum += coeffs[i]*data[t-7, parent_index]
                         # data[t, i] = data[t, i] + coeffs[i]*data[t-3, parent_index]
 
             # Add Gaussian noise again
