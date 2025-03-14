@@ -108,7 +108,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                 cause_group, effect_group = f'Group: {g+1}', f'Group: {h+1}'
                 
                 knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose() 
-                knockoff_samples = knockoff_samples + np.random.normal(0.5, 0.5, knockoff_samples.shape)
+                knockoff_samples = knockoff_samples + np.random.normal(2.5, 2.5, knockoff_samples.shape)
                 # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
 
                 pvi, mapeslol, mapeslolint = [], [], [] # p-values
@@ -156,7 +156,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         data_actual = np.array(odata[:, start_batch: start_batch + training_length + prediction_length]).transpose()
                         knockoffs = knock_obj.Generate_Knockoffs(data_actual, params)
                         knockoff_samples = np.array(knockoffs[:, start_cause: end_cause]).transpose()
-                        knockoff_samples = knockoff_samples + np.random.normal(0.5, 0.5, knockoff_samples.shape)
+                        knockoff_samples = knockoff_samples + np.random.normal(2.5, 2.5, knockoff_samples.shape)
                         # knockoff_samples = np.random.uniform(np.min(odata), np.max(odata), knockoff_samples.shape)
                         intervene = knockoff_samples
                         
@@ -204,11 +204,12 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     # Calculate Spearman correlation coefficient and its p-value
                     corr_val, pv_corr = spearmanr(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
                     print("Intervention: " + intervention_type)
-                    t, p = ks_2samp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))
+                    # t, p = ks_2samp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))
                     # t, p = ranksums(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))
-                    # t, p = ttest_rel(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
-                    # t, p = ttest_ind(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect], equal_var = True, alternative = 'greater')
+                    t, p = ttest_rel(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect])
+                    # t, p = ttest_ind(mape_mean[:, j-start_effect], imape_mean[:, j-start_effect], equal_var=True, alternative = 'greater')
                     # t, p = ttest_1samp(imape_mean[:, j-start_effect], popmean=np.mean(mape_mean[:, j-start_effect]))
+                    # t, p = ttest_1samp(imape_mean[:, j-start_effect], popmean=0)
                     # ad_test = anderson_ksamp(np.array(mape_mean[:, j-start_effect]), np.array(imape_mean[:, j-start_effect]))  # Anderson-Darling Test
                     # p = ad_test[2]
                     pvals.append(p)

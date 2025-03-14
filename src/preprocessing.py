@@ -1415,7 +1415,7 @@ def plot_metrics(methods_performance_dict, plot_path, metric_name):
     ax.set_xticks(x)
     plt.xticks(fontsize=14)
     ax.set_ylim(-0.1, 1.1)
-    plt.xlabel('Nonlinearity', fontsize=14)
+    plt.xlabel('Groups', fontsize=14)
     plt.ylabel(metric_name, fontsize=14)
     ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
     plt.yticks(fontsize=14)
@@ -1429,6 +1429,12 @@ def plot_metrics(methods_performance_dict, plot_path, metric_name):
     filename = pathlib.Path(plot_path) / f'{metric_name}_groups_{rnd}.pdf'
     plt.savefig(filename)  # Save the figure
     # plt.show()
+
+     # Save the data as JSON
+    json_filename = pathlib.Path(plot_path) / f'{metric_name}_data_{rnd}.json'
+    with open(json_filename, 'w') as json_file:
+        json.dump(methods_performance_dict, json_file, indent=4)
+
 
     # Plot metrics
 def plot_metrics_tier(methods_performance_dict, plot_path, metric_name):
@@ -1481,6 +1487,11 @@ def plot_real_metrics(methods_performance_dict, plot_path, metric_name):
     filename = pathlib.Path(plot_path) / f'{metric_name}_regime_{rnd}.pdf'
     plt.savefig(filename)  # Save the figure
     # plt.show()
+
+     # Save the data as JSON
+    json_filename = pathlib.Path(plot_path) / f'{metric_name}_data_real_{rnd}.json'
+    with open(json_filename, 'w') as json_file:
+        json.dump(methods_performance_dict, json_file, indent=4)
 
 
 def calculate_multi_group_cc(df, group_sizes, regularization=1e-3):
