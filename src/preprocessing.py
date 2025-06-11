@@ -1430,6 +1430,7 @@ def plot_metrics(methods_performance_dict, plot_path, metric_name):
     plt.savefig(filename)  # Save the figure
     # plt.show()
 
+    methods_performance_dict = convert_numpy_types(methods_performance_dict)
      # Save the data as JSON
     json_filename = pathlib.Path(plot_path) / f'{metric_name}_data_{rnd}.json'
     with open(json_filename, 'w') as json_file:

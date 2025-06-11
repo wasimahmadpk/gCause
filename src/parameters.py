@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-
+import random
+import pathlib
 
 def get_sig_params():
     pars = dict()
@@ -116,63 +117,64 @@ def get_default_params():
 
 def get_syn_params():
     # Parameters for synthetic data
+    rnd = random.randint(1, 9999)  # Generate a random number
+         # Ensure the directory exists
+    plot_path_rnd = f"/home/ahmad/Projects/gCause/plots/multigraphs_syn_{rnd}/"
+    pathlib.Path(plot_path_rnd).mkdir(parents=True, exist_ok=True)
+    
     params = {
+            'group_num': 4,    
+            'groups': {'g1': [0, 2], 'g2': [2, 4], 'g3': [4, 6], 'g4': [6, 8]},    
+            'groups_size': {'g1':[2], 'g2':[2], 'g3':[2], 'g4':[2]},               
 
-        'group_num': 4,    
-        'groups': {'g1': [0, 2], 'g2': [2, 4], 'g3': [4, 6], 'g4': [6, 8]},    #  
-        'groups_size': {'g1':[2], 'g2':[2], 'g3':[2], 'g4':[2]},               # 
+            'group_num_fs': 18,    
+            'groups_fs': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5], 
+                        'g6': [5, 6], 'g7': [6, 7], 'g8': [7, 8], 'g9': [8, 9], 'g10': [9, 10], 
+                        'g11': [10, 11], 'g12': [11, 12], 'g13': [12, 13], 'g14': [13, 14], 
+                        'g15': [14, 15], 'g16': [15, 16], 'g17': [16, 17],'g18': [17, 18]},     
+            'groups_size_fs': {f'g{i}': [1] for i in range(1, 13)},                        
 
-        'group_num_fs': 18,    
-        'groups_fs': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5], 'g6': [5, 6], 'g7': [6, 7], 'g8': [7, 8],
-                       'g9': [8, 9], 'g10': [9, 10], 'g11': [10, 11], 'g12': [11, 12], 'g13': [12, 13], 'g14': [13, 14], 'g15': [14, 15],
-                       'g16': [15, 16], 'g17': [16, 17],'g18': [17, 18]},     #  
-        'groups_size_fs': {'g1': [1], 'g2': [1], 'g3': [1], 'g4': [1], 'g5': [1], 'g6': [1], 'g7': [1], 'g8': [1], 'g9': [1], 'g10': [1], 'g11': [1], 'g12': [1]},                        # 
-         
-        'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4]},      #  
-        'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1]},                 #    
+            'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4]},      
+            'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1], 'g4':[1]},                    
         
-        'epochs': 40,
-        'pred_len': 4,
-        'train_len': 1000,
-        'num_layers': 5,
-        'num_cells': 50,
-        'num_samples': 3,
-        'dropout_rate': 0.01,
-        'num_sliding_win': 25,
-        'step_size': 3,
-        'dim': 8,
-        'dim_fs': 8,
-        'dim_cc': 4,
-        'alpha' : 0.1,
-        'batch_size': 32,
-        'test': 'ks',
-        'intervention': 'knockoffs',
-        'prior_graph': np.array([[1, 1, 1, 0, 1],
-                                 [0, 1, 0, 0, 0],
-                                 [0, 0, 1, 1, 0],
-                                 [0, 0, 0, 1, 1],
-                                 [0, 0, 0, 0, 1]]),
-        'true_graph': [1, 1, 1, 0, 1,
-                       0, 1, 0, 0, 0,
-                       0, 0, 1, 1, 0,
-                       0, 0, 0, 1, 1,
-                       0, 0, 0, 0, 1],
-        'test_names' : [
-        "KS Test",   # Kolmogorov-Smirnov Test
-        "MWU Test",  # Mann-Whitney U Test
-        "t-Test",    # Student’s t-Test (Welch’s if variance is unequal)
-        "AD Test",   # Anderson-Darling Test
-        "SW Test",   # Shapiro-Wilk Test
-        "CM Test",   # Cramér-von Mises Test
-        "WSR Test"   # Wilcoxon Signed-Rank Test
-        ],
-        'freq': '30min',
-        'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs_syn/",
-        'model_path': "/home/ahmad/Projects/gCause/models/gc_syn/",
-        'model_name': 'trained_synthetic',
-        'model_name_cc': 'trained_synthetic_cc'
-    }
+            'epochs': 40,
+            'pred_len': 4,
+            'train_len': 1000,
+            'num_layers': 5,
+            'num_cells': 50,
+            'num_samples': 3,
+            'dropout_rate': 0.1,
+            'num_sliding_win': 30,
+            'step_size': 3,
+            'dim': 8,
+            'dim_fs': 8,
+            'dim_cc': 4,
+            'alpha' : 0.1,
+            'batch_size': 32,
+            'test': 'ks',
+            'intervention': 'knockoffs',
+            'prior_graph': [[1, 1, 1, 0, 1],
+                            [0, 1, 0, 0, 0],
+                            [0, 0, 1, 1, 0],
+                            [0, 0, 0, 1, 1],
+                            [0, 0, 0, 0, 1]],
+            'true_graph': [1, 1, 1, 0, 1,
+                        0, 1, 0, 0, 0,
+                        0, 0, 1, 1, 0,
+                        0, 0, 0, 1, 1,
+                        0, 0, 0, 0, 1],
+            'test_names' : [
+                "KS Test", "MWU Test", "t-Test", "AD Test", 
+                "SW Test", "CM Test", "WSR Test"
+            ],
+            'freq': '30min',
+            'plot_path': plot_path_rnd,
+            'model_path': "/home/ahmad/Projects/gCause/models/gc_syn/",
+            'model_name': 'trained_synthetic',
+            'model_name_cc': 'trained_synthetic_cc'
+        }
 
+   
     return params
 
 
