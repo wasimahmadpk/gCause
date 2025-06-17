@@ -446,13 +446,13 @@ def evaluate_best_predicted_graph(actual, predicted_list):
     best_fpr = float('inf')  # Initialize FPR with high value for tiebreakers
     
     # Flatten actual graph once, since it's common for all predictions
-    # y_true_flat = actual[mask].tolist()
-    y_true_flat = [item for sublist in actual for item in sublist]
+    y_true_flat = actual[mask].tolist()
+    # y_true_flat = [item for sublist in actual for item in sublist]
     
     for predicted in predicted_list:
          # Flatten predicted graph
-        # y_pred_flat = predicted[mask].tolist()
-        y_pred_flat = [item for sublist in predicted for item in sublist]
+        y_pred_flat = predicted[mask].tolist()
+        # y_pred_flat = [item for sublist in predicted for item in sublist]
 
         # Calculate confusion matrix
         cm = confusion_matrix(y_true_flat, y_pred_flat, labels=[0, 1])
@@ -587,7 +587,143 @@ def count_metrics(input_data):
 
 
 
+import os
+import json
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+def convert_numpy_types(data):
+    if isinstance(data, dict):
+        return {k: convert_numpy_types(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [convert_numpy_types(i) for i in data]
+    elif isinstance(data, np.ndarray):
+        return data.tolist()
+    elif isinstance(data, (np.float32, np.float64)):
+        return float(data)
+    elif isinstance(data, (np.int32, np.int64)):
+        return int(data)
+    else:
+        return data
+
 def plot_motor_metrics(data, save_path='', json_path=''):
+    """
+    Create bar plots for mean Accuracy, Fscore, TPR, FPR, TNR, and FNR metrics
+    for multiple methods and movements. Add ±0.5*std as error bars.
+    """
+    os.makedirs(save_path, exist_ok=True)
+    os.makedirs(json_path, exist_ok=True)
+
+    # Save original data
+    data = convert_numpy_types(data)
+    raw_path = os.path.join(save_path, 'motor_metrics.json')
+    with open(raw_path, 'w') as f:
+        json.dump(data, f, indent=4)
+    print(f"Raw metrics saved to: {raw_path}")
+
+    # Convert to DataFrame
+    rows = []
+    for movement, methods in data.items():
+        for method, experiments in methods.items():
+            for exp, metrics in experiments.items():
+                rows.append({
+                    "Movement": movement,
+                    "Method": method,
+                    "Accuracy": metrics["Accuracy"],
+                    "Fscore": metrics["Fscore"],
+                    "TPR": metrics["TPR"],
+                    "FPR": metrics["FPR"],
+                    "TNR": metrics["TNR"],
+                    "FNR": metrics["FNR"]
+                })
+    df = pd.DataFrame(rows)
+
+    # Compute mean and std
+    df_agg = df.groupby(['Movement', 'Method']).agg(['mean', 'std']).reset_index()
+    df_agg.columns = ['Movement', 'Method'] + [f'{metric}_{stat}' for metric, stat in df_agg.columns[2:]]
+
+    # Save mean metrics to JSON
+    mean_metrics_dict = {}
+    for _, row in df_agg.iterrows():
+        movement = row["Movement"]
+        method = row["Method"]
+        if movement not in mean_metrics_dict:
+            mean_metrics_dict[movement] = {}
+        mean_metrics_dict[movement][method] = {
+            "Accuracy": row["Accuracy_mean"],
+            "Fscore": row["Fscore_mean"],
+            "TPR": row["TPR_mean"],
+            "FPR": row["FPR_mean"],
+            "TNR": row["TNR_mean"],
+            "FNR": row["FNR_mean"]
+        }
+
+    mean_path = os.path.join(json_path, 'mean_motor_metrics.json')
+    with open(mean_path, 'w') as f:
+        json.dump(mean_metrics_dict, f, indent=4)
+    print(f"Mean metrics saved to: {mean_path}")
+
+    # Define colors
+    unique_methods = df["Method"].unique()
+    method_colors = dict(zip(unique_methods, sns.color_palette("Set2", len(unique_methods))))
+
+    # Plotting function
+    def plot_metric(metric_name, ylabel):
+        plt.figure(figsize=(12, 6))
+        df_plot = df_agg[["Movement", "Method", f"{metric_name}_mean", f"{metric_name}_std"]].copy()
+        df_plot.rename(columns={f"{metric_name}_mean": "mean", f"{metric_name}_std": "std"}, inplace=True)
+        df_plot["err"] = df_plot["std"] / 2
+
+        ax = sns.barplot(
+            data=df_plot,
+            x="Movement", y="mean", hue="Method",
+            palette=method_colors,
+            ci=None
+        )
+
+        # Add custom error bars
+        for i, bar in enumerate(ax.patches):
+            height = bar.get_height()
+            err = df_plot.iloc[i]["err"]
+            ax.errorbar(
+                x=bar.get_x() + bar.get_width() / 2,
+                y=height,
+                yerr=err,
+                fmt='none',
+                c='black',
+                capsize=5,
+                lw=1.5
+            )
+
+        plt.xlabel("Task", fontsize=14)
+        plt.ylabel(ylabel, fontsize=14)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        ax.set_yticks(np.arange(0, 1.10, 0.10))
+        plt.ylim(0, 1.1)
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
+        plt.tight_layout()
+
+        pdf_path = os.path.join(save_path, f"mean_{metric_name.lower()}_barplot.pdf")
+        plt.savefig(pdf_path, format='pdf')
+        plt.show()
+        print(f"{metric_name} plot saved to: {pdf_path}")
+
+    # Plot all metrics
+    plot_metric("Accuracy", "Accuracy")
+    plot_metric("Fscore", "Fscore")
+    plot_metric("TPR", "TPR")
+    plot_metric("FPR", "FPR")
+    plot_metric("TNR", "TNR")
+    plot_metric("FNR", "FNR")
+
+
+
+
+def plot_motor_metrics2(data, save_path='', json_path=''):
     """
     Create bar plots for the mean Accuracy, Fscore, TPR, FPR, TNR, and FNR metrics for multiple methods and movements.
     Save the plots as PDF files and the mean metrics as a JSON file.
@@ -794,6 +930,8 @@ def plot_motor_metrics(data, save_path='', json_path=''):
     plt.savefig(fnr_pdf_path, format='pdf')
     plt.show()
     print(f"FNR plot saved to: {fnr_pdf_path}")
+
+
 
 
 
@@ -1142,7 +1280,7 @@ def plot_motor_count(data, save_path="plots", json_path=''):
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         
         # Save the bar plot as a PDF file
-        bar_plot_file = os.path.join(save_path, f"{metric}_bar_plot.pdf")
+        bar_plot_file = os.path.join(save_path, f"{metric}_bar_plot_testing.pdf")
         plt.tight_layout()
         plt.savefig(bar_plot_file, format='pdf')
         print(f"Saved {metric} bar plot at: {bar_plot_file}")

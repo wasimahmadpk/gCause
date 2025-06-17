@@ -3,7 +3,7 @@ import pickle
 import pathlib
 import parameters
 import vgc
-import pcmci
+import baseline.pcmci as pcmci
 import numpy as np
 import mxnet as mx
 import pandas as pd
