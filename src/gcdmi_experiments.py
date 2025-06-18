@@ -1,5 +1,8 @@
 import time
 import parameters
+import baseline.Trace as Trace
+import baseline.vpc as vpc
+import baseline.vci as vci
 import baseline.vgc as vgc
 import baseline.pcmci as pcmci
 import gcdmi
@@ -35,8 +38,9 @@ groups = pars["groups"]
 path = pars.get('model_path')
 num_of_groups = pars.get('group_num') 
 
-# ------------------------------------------------------------
-metrics_dict_cdmi, metrics_dict_gcdmi, metrics_dict_ccdmi, metrics_dict_pcmci, metrics_dict_vgc = {}, {}, {}, {}, {}
+# -----------------------------------------------------------
+metrics_dict_vpc, metrics_dict_trace, metrics_dict_vci = {}, {}, {}
+metrics_dict_gcdmi, metrics_dict_pcmci, metrics_dict_vgc = {}, {}, {}
 groups_variation = False
 method = {'Full': 'Full', 'Group': 'Group', 'Canonical': 'Canonical'}
 
@@ -76,18 +80,22 @@ for numgroups in np.arange(2, 12, 2):
     ground_truth = get_ground_truth(full_graph, group_size_list)
     print(f'Ground Truth: {ground_truth}')
     
-        # --------------- Test CDMI on full-set ------------------
     metrics_gcdmi, predicted_graph_gcdmi, end_time = gcdmi.causal_graph(df, pars, ground_truth, method['Group'])
-    metrics_ccdmi, predicted_graph_ccdmi, end_time = gcdmi.causal_graph(calculate_multi_group_cc(df, group_size_list), pars, ground_truth, method['Canonical'])
     metrics_pcmci, predicted_graph_pcmci = pcmci.causal_graph(calculate_multi_group_cc(df, group_size_list), ground_truth) #pcmci.causal_graph(df, ground_truth) #
     metrics_vgc, predicted_graph_vgc = vgc.causal_graph(calculate_multi_group_cc(df, group_size_list), ground_truth) #vgc.causal_graph(df, ground_truth) #
+    metrics_vpc, predicted_graph_vpc = vpc.causal_graph(df, ground_truth, pars)
+    metrics_trace, predicted_graph_trace = Trace.causal_graph(df, ground_truth, pars)
+    metrics_vci, predicted_graph_vpc = vci.causal_graph(df, ground_truth, pars)
 
     metrics_dict_gcdmi[numgroups] = metrics_gcdmi
-    metrics_dict_ccdmi[numgroups] = metrics_ccdmi
     metrics_dict_pcmci[numgroups] = metrics_pcmci
     metrics_dict_vgc[numgroups] = metrics_vgc
+    metrics_dict_vci[numgroups] = metrics_vci
+    metrics_dict_vpc[numgroups] = metrics_vpc
+    metrics_dict_trace[numgroups] = metrics_trace
 
-methods_metrics_dict = {'gCDMI': metrics_dict_gcdmi, 'MC-CDMI': metrics_dict_ccdmi, 'MC-PCMCI': metrics_dict_pcmci, 'MC-VGC': metrics_dict_vgc}
+
+methods_metrics_dict = {'gCDMI': metrics_dict_gcdmi, 'MC-PCMCI': metrics_dict_pcmci, 'MC-VAR': metrics_dict_vgc, 'Trace': metrics_dict_trace, '2GVecCI': metrics_dict_vci, 'Vanilla-PC': metrics_dict_vpc}
 # Plot and save accuracy
 metrics = ['Accuracy', 'SHD', 'Precision', 'Recall', 'Fscore', 'TPR', 'FPR', 'FNR']
 for metric_name in metrics:
