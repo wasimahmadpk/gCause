@@ -381,6 +381,7 @@ def get_rivernet_params_gc():
 
 def get_dyadic_params_gc():
 
+    motor_task = 'M1'
     params = {
         
         'group_num': 2,    
@@ -419,7 +420,8 @@ def get_dyadic_params_gc():
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
         'freq': 'H',
-        'data_path': '/home/ahmad/Projects/gCause/datasets/fnirs/PMC',
+        'motor_task': motor_task,
+        'data_path': f'/home/ahmad/Projects/gCause/datasets/fnirs/{motor_task}',
         'plot_path': '/home/ahmad/Projects/gCause/plots/multigraphs/',
         'json_path': '/home/ahmad/Projects/gCause/src/json/',
         'model_path': '/home/ahmad/Projects/gCause/models/gc/',

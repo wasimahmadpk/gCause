@@ -608,22 +608,26 @@ def convert_numpy_types(data):
     else:
         return data
 
-def plot_motor_metrics(data, save_path='', json_path=''):
+
+def plot_motor_metrics(data, pars, save_path='', json_path=''):
     """
-    Create bar plots for mean Accuracy, Fscore, TPR, FPR, TNR, and FNR metrics
-    for multiple methods and movements. Add ±0.5*std as error bars.
+    Create bar plots for Accuracy, Fscore, TPR, FPR, TNR, FNR.
+    Save mean + std for Accuracy and Fscore only.
     """
+
     os.makedirs(save_path, exist_ok=True)
     os.makedirs(json_path, exist_ok=True)
 
-    # Save original data
+    # Convert NumPy to native types
     data = convert_numpy_types(data)
+
+    # Save raw data
     raw_path = os.path.join(save_path, 'motor_metrics.json')
     with open(raw_path, 'w') as f:
         json.dump(data, f, indent=4)
     print(f"Raw metrics saved to: {raw_path}")
 
-    # Convert to DataFrame
+    # Flatten into DataFrame
     rows = []
     for movement, methods in data.items():
         for method, experiments in methods.items():
@@ -640,11 +644,11 @@ def plot_motor_metrics(data, save_path='', json_path=''):
                 })
     df = pd.DataFrame(rows)
 
-    # Compute mean and std
+    # Aggregate mean and std
     df_agg = df.groupby(['Movement', 'Method']).agg(['mean', 'std']).reset_index()
     df_agg.columns = ['Movement', 'Method'] + [f'{metric}_{stat}' for metric, stat in df_agg.columns[2:]]
 
-    # Save mean metrics to JSON
+    # Save mean + std for Accuracy and Fscore
     mean_metrics_dict = {}
     for _, row in df_agg.iterrows():
         movement = row["Movement"]
@@ -653,23 +657,24 @@ def plot_motor_metrics(data, save_path='', json_path=''):
             mean_metrics_dict[movement] = {}
         mean_metrics_dict[movement][method] = {
             "Accuracy": row["Accuracy_mean"],
+            "std_Accuracy": row["Accuracy_std"],
             "Fscore": row["Fscore_mean"],
+            "std_Fscore": row["Fscore_std"],
             "TPR": row["TPR_mean"],
             "FPR": row["FPR_mean"],
             "TNR": row["TNR_mean"],
             "FNR": row["FNR_mean"]
         }
 
-    mean_path = os.path.join(json_path, 'mean_motor_metrics.json')
+    mean_path = os.path.join(json_path, f'mean_{pars["motor_task"]}_metrics.json')
     with open(mean_path, 'w') as f:
         json.dump(mean_metrics_dict, f, indent=4)
     print(f"Mean metrics saved to: {mean_path}")
 
-    # Define colors
+    # Plotting
     unique_methods = df["Method"].unique()
     method_colors = dict(zip(unique_methods, sns.color_palette("Set2", len(unique_methods))))
 
-    # Plotting function
     def plot_metric(metric_name, ylabel):
         plt.figure(figsize=(12, 6))
         df_plot = df_agg[["Movement", "Method", f"{metric_name}_mean", f"{metric_name}_std"]].copy()
@@ -683,7 +688,6 @@ def plot_motor_metrics(data, save_path='', json_path=''):
             ci=None
         )
 
-        # Add custom error bars
         for i, bar in enumerate(ax.patches):
             height = bar.get_height()
             err = df_plot.iloc[i]["err"]
@@ -712,13 +716,15 @@ def plot_motor_metrics(data, save_path='', json_path=''):
         plt.show()
         print(f"{metric_name} plot saved to: {pdf_path}")
 
-    # Plot all metrics
+    # Only plot Accuracy and Fscore with std bars
     plot_metric("Accuracy", "Accuracy")
-    plot_metric("Fscore", "Fscore")
-    plot_metric("TPR", "TPR")
-    plot_metric("FPR", "FPR")
-    plot_metric("TNR", "TNR")
-    plot_metric("FNR", "FNR")
+    plot_metric("Fscore", "F1 Score")
+
+    # Skip plotting std-less metrics (or you can plot them if needed)
+    plot_metric("TPR", "True Positive Rate")
+    plot_metric("FPR", "False Positive Rate")
+    plot_metric("TNR", "True Negative Rate")
+    plot_metric("FNR", "False Negative Rate")
 
 
 
@@ -1236,19 +1242,6 @@ def plot_motor_count(data, save_path="plots", json_path=''):
         plt.legend(title="Method", loc='upper right', fontsize=10, ncol=2)  # Adjust columns if too many methods
         plt.grid(True, linestyle='--', alpha=0.7)
         
-        # # Save the line plot as a PDF file
-        # line_plot_file = os.path.join(save_path, f"{metric}_line_plot.pdf")
-        # plt.tight_layout()
-        # plt.savefig(line_plot_file, format='pdf')
-        # print(f"Saved {metric} line plot at: {line_plot_file}")
-        # plt.show()
-
-        # # Save line data as JSON
-        # line_data_j = convert_numpy_types(line_data)
-        # line_data_json = os.path.join(save_path, f"{metric}_line_data.json")
-        # with open(line_data_json, 'w') as json_file:
-        #     json.dump(line_data_j, json_file, indent=4)
-        # print(f"Saved {metric} line data as JSON at: {line_data_json}")
         
         # Prepare data for bar plot
         bar_data = []
@@ -1280,7 +1273,7 @@ def plot_motor_count(data, save_path="plots", json_path=''):
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         
         # Save the bar plot as a PDF file
-        bar_plot_file = os.path.join(save_path, f"{metric}_bar_plot_testing.pdf")
+        bar_plot_file = os.path.join(save_path, f"{metric}_bar_plot_t.pdf")
         plt.tight_layout()
         plt.savefig(bar_plot_file, format='pdf')
         print(f"Saved {metric} bar plot at: {bar_plot_file}")
