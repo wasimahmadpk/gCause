@@ -4,6 +4,7 @@ import json
 import random
 import pathlib
 import parameters
+import re
 import numpy as np
 import scipy as sci
 import seaborn as sns
@@ -1049,6 +1050,27 @@ def get_shuffled_ts(SAMPLE_RATE, DURATION, root):
     # plt.show()
     new_ts = irfft(shuffle(yf))
     return new_ts
+
+
+
+def make_filename_safe(s):
+    """
+    Replace unsafe filename characters with underscores and clean up the string.
+    """
+    # Define characters not allowed in filenames (common unsafe chars)
+    unsafe_chars = r'[<>:"/\\|?*\']'
+    
+    # Replace unsafe characters with underscore
+    safe_str = re.sub(unsafe_chars, '_', s)
+    
+    # Replace spaces and multiple underscores with a single underscore
+    safe_str = re.sub(r'\s+', '_', safe_str)        # spaces to underscore
+    safe_str = re.sub(r'_+', '_', safe_str)         # multiple underscores to one
+    
+    # Strip underscores from start and end
+    safe_str = safe_str.strip('_')
+    
+    return safe_str
 
 
 def get_ground_truth(matrix, group_sizes):

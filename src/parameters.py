@@ -383,10 +383,10 @@ def get_melodi_params():
     params = {
         
         'group_num': 3,    
-        'groups': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 5]}, #  
-        'groups_size': {'g1':[1], 'g2':[1], 'g3':[3]}, # 
+        'groups': {'g1': [0, 2], 'g2': [2, 4], 'g3': [4, 6]}, #  
+        'groups_size': {'g1':[2], 'g2':[2], 'g3':[2]}, # 
 
-        'group_num_fs': 5,    
+        'group_num_fs': 6,    
         'groups_fs': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5]}, #  
         'groups_size_fs': {'g1': [1], 'g2': [1], 'g3': [1], 'g4': [1], 'g5': [1]}, # 
          
@@ -404,9 +404,10 @@ def get_melodi_params():
         'num_sliding_win': 21, #21, 25
         'step_size': 1,
         'dim': 8,
-        'dim_fs': 8,
-        'dim_cc': 4,
+        'dim_fs': 6,
+        'dim_cc': 3,
         'batch_size': 32,
+        'alpha' : 0.05,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],
                                  [0, 0, 1, 1, 0],
@@ -418,7 +419,7 @@ def get_melodi_params():
                        0, 0, 0, 1, 1,
                        0, 0, 0, 0, 1],
         'freq': '6H',
-        'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs_melodi/",
+        'plot_path': 'home/ahmad/Projects/gCause/plots/multigraphs_melodi/',
         'model_path': "/home/ahmad/Projects/gCause/models/gc_melodi/",
         'model_name': 'trained_melodi',
         'model_name_cc': 'trained_melodi_cc'

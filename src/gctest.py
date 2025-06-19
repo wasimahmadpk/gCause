@@ -280,8 +280,10 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     rnd = random.randint(1, 9999)
                     plt.gcf()
                     ax1.legend()
-                    filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[j]}_{method}_{rnd}.pdf")
+                    colname = make_filename_safe(columns[j])
+                    filename = pathlib.Path(plot_path + f'{cause_group} ---> {colname}.pdf')
                     plt.savefig(filename)
+                    print(f'plot saved to: {filename}')
                     plt.show()
                     # plt.close()
                     #-------------------------------------------------------------------------------------
@@ -290,7 +292,6 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     indist_cause.append(causal_decision[0])
 
                     ci_list.append(kld_val)
-                    ci_list_t1.append(corr_val)
                     causal_decision, causal_decision_1tier = [], []
                     
             
@@ -343,23 +344,18 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         ]
 
                         plt.legend(handles=legend_elements, fontsize=22)
-                        filename = pathlib.Path(plot_path + f"{cause_group} ---> {columns[q+start_effect]}_2d_{method}_{rnd}.pdf")
+                        filename = pathlib.Path(plot_path + f'{cause_group} ---> {columns[q+start_effect]}_2d_{method}_{rnd}.pdf')
                         plt.savefig(filename)
                         # plt.show()
                             
                 ci_links.append(ci_list[0])
-                ci_links_t1.append(ci_list_t1[0])
                 if method=='Full':
                     causal_links.append(cause_list[0])
-                    causal_links_1tier.append(cause_list_1tier[0])
                 else: 
                     causal_links.append(1 if 1 in cause_list else 0)
-                    causal_links_1tier.append(1 if 1 in cause_list_1tier else 0)
 
         ci_matrix.append(ci_links)
-        ci_matrix_t1.append(ci_links_t1)
         causal_matrix.append(causal_links)
-        causal_matrix_1tier.append(causal_links_1tier)
     
     pval_indist.append(pvi)
     conf_mat_indist = conf_mat_indist + indist_cause
@@ -381,10 +377,6 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     actual_lab = remove_diagonal_and_flatten(ground_truth)
     pred_score = remove_diagonal_and_flatten(pred)
     fmax = f1_max(actual_lab, pred_score)
-
-    # plot ROC, Precision-Recall curve for 1-tier and 2-tier comparison
-    plot_roc_curve(ground_truth, np.array(causal_matrix_1tier), np.array(causal_matrix), plot_path)
-    plot_precision_recall_curve(ground_truth, np.array(causal_matrix_1tier), np.array(causal_matrix), plot_path)
      
     # Calculate metrics
     metrics = evaluate_best_predicted_graph(ground_truth, np.array([causal_matrix]))
@@ -394,15 +386,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     for metric, value in metrics.items():
         print(f"{metric}: {value:.2f}")
 
-    # Print metrics
-    print("----------*****-----------------------*****-------------")
-    print("                    Tier1-test")
-    print("----------*****-----------------------*****-------------")
-    
-    for metric, value in metrics_1tier.items():
-       print(f"{metric}: {value:.2f}")
-
-    return metrics, conf_mat, metrics_1tier
+    return metrics, conf_mat
 
 
 

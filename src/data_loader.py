@@ -161,8 +161,9 @@ def load_melodi_data():
 
     df = pd.read_csv("/home/ahmad/Projects/gCause/datasets/melodi/melodi.csv")
     df = df.apply(normalize)
+    df = df.iloc[0:3000, 0:6].copy()
 
-    return 
+    return df, [[1, 1, 1],[1, 1, 1], [1, 1, 1]]
 
 
 
