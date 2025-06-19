@@ -42,3 +42,7 @@ datasets/sims/
 
 # Shell scripts and temporary outputs (optional)
 *.sh~
+DeepKnockoffs/__init__.py
+DeepKnockoffs/__pycache__/
+DeepKnockoffs/*.pyc
+DeepKnockoffs/machine.py

@@ -7,7 +7,7 @@ import pandas as pd
 import torch.nn as nn
 import torch.optim as optim
 from DeepKnockoffs.mmd import mix_rbf_mmd2_loss
-np.warnings.filterwarnings('ignore')
+
 
 def covariance_diff_biased(X, Xk, SigmaHat, Mask, scale=1.0):
     """ Second-order loss function, as described in deep knockoffs manuscript
