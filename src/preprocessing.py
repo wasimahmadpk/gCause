@@ -1617,6 +1617,21 @@ def plot_metrics_tier(methods_performance_dict, plot_path, metric_name):
     # plt.show()
 
 
+# Helper to make JSON-serializable (recursively handles keys & values)
+def make_json_safe(obj):
+    if isinstance(obj, dict):
+        return {str(k): make_json_safe(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [make_json_safe(v) for v in obj]
+    elif isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    else:
+        return obj
+
 # Plot metrics
 def plot_real_metrics(methods_performance_dict, plot_path, metric_name):
     fig, ax = plt.subplots()
@@ -1629,7 +1644,7 @@ def plot_real_metrics(methods_performance_dict, plot_path, metric_name):
     
     ax.set_xticks(x)
     ax.set_ylim(-0.1, 1.1)
-    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
+    ax.set_yticks(np.arange(0, 1.10, 0.10))
     plt.xlabel('Groups', fontsize=14)
     plt.ylabel(metric_name, fontsize=14)
     plt.xticks(fontsize=14)
@@ -1639,45 +1654,55 @@ def plot_real_metrics(methods_performance_dict, plot_path, metric_name):
     
     rnd = random.randint(1, 9999)
     filename = pathlib.Path(plot_path) / f'{metric_name}_regime_{rnd}.pdf'
-    plt.savefig(filename)  # Save the figure
-    # plt.show()
+    plt.savefig(filename)
 
-     # Save the data as JSON
+    # Save the data as JSON with fully safe values
     json_filename = pathlib.Path(plot_path) / f'{metric_name}_data_real_{rnd}.json'
+    safe_dict = make_json_safe(methods_performance_dict)
     with open(json_filename, 'w') as json_file:
-        json.dump(methods_performance_dict, json_file, indent=4)
-
+        json.dump(safe_dict, json_file, indent=4)
 
 def calculate_multi_group_cc(df, group_sizes, regularization=1e-3):
-    #  # Filter out groups with less than 2 variables
-    group_sizes_filtered = [size for size in group_sizes if size > 1]
-    if len(group_sizes_filtered) < 2:
-        raise ValueError("MCCA requires at least two groups with more than one variable each.")
-
-    # Determine the indices that belong to each group
-    groups = []
+    group_indices = []
     start_idx = 0
     for size in group_sizes:
-        groups.append(list(range(start_idx, start_idx + size)))
+        group_indices.append(list(range(start_idx, start_idx + size)))
         start_idx += size
-    
-    # Extract data for each group
-    group_data = [df.iloc[:, group].values for group in groups]
-    
-    # Perform Multiset Canonical Correlation Analysis (MCCA) with regularization
-    mcca = MCCA(regs=regularization)
-    mcca.fit(group_data)
-    canonical_vars = mcca.transform(group_data)
-    
-    # Create a DataFrame to store the canonical variables
+
+    group_data = []
+    group_labels = []
+    for i, group in enumerate(group_indices):
+        if len(group) < 2:
+            # Use the single variable as-is
+            group_data.append(df.iloc[:, group].values)
+            group_labels.append(f'Group{i+1}_CC')
+        else:
+            group_data.append(df.iloc[:, group].values)
+            group_labels.append(f'Group{i+1}_CC')
+
+    # Perform MCCA only on groups with 2 or more variables
+    mcca_input = [g for g in group_data if g.shape[1] > 1]
+    single_vars = [g for g in group_data if g.shape[1] == 1]
+    single_labels = [label for g, label in zip(group_data, group_labels) if g.shape[1] == 1]
+    multi_labels = [label for g, label in zip(group_data, group_labels) if g.shape[1] > 1]
+
     canonical_df = pd.DataFrame()
-    
-    # Store the canonical variables for each group
-    for i, can_var in enumerate(canonical_vars):
-        canonical_var_df = pd.DataFrame(can_var, columns=[f'Group{i+1}_CC'])
-        canonical_df = pd.concat([canonical_df, canonical_var_df], axis=1)
-    
+
+    if mcca_input:
+        mcca = MCCA(regs=regularization)
+        mcca.fit(mcca_input)
+        canonical_vars = mcca.transform(mcca_input)
+        for can_var, label in zip(canonical_vars, multi_labels):
+            canonical_df[label] = can_var[:, 0]
+
+    for g, label in zip(single_vars, single_labels):
+        canonical_df[label] = g[:, 0]
+
+    # Sort columns to maintain original group order
+    canonical_df = canonical_df[sorted(canonical_df.columns, key=lambda x: int(x.split('Group')[1].split('_')[0]))]
+
     return canonical_df
+
 
 
 def generate_variable_list(N):

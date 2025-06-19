@@ -250,7 +250,8 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     
                     plt.gcf()
                     ax.legend()
-                    filename = pathlib.Path(plot_path + f'res_{cause_group} ---> {columns[j]}.pdf')
+                    colname = make_filename_safe(columns[j])
+                    filename = pathlib.Path(plot_path + f'res_{cause_group} ---> {colname}.pdf')
                     plt.savefig(filename)
                     plt.show()
                 
@@ -344,7 +345,8 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                         ]
 
                         plt.legend(handles=legend_elements, fontsize=22)
-                        filename = pathlib.Path(plot_path + f'{cause_group} ---> {columns[q+start_effect]}_2d_{method}_{rnd}.pdf')
+                        colname = make_filename_safe(columns[q+start_effect])
+                        filename = pathlib.Path(plot_path + f'{cause_group} ---> {colname}_2d_{method}_{rnd}.pdf')
                         plt.savefig(filename)
                         # plt.show()
                             
@@ -374,15 +376,13 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
 
     print("----------*****-----------------------*****-------------")
     pred = np.array(ci_matrix)   #1 - np.array(kld_matrix)
-    actual_lab = remove_diagonal_and_flatten(ground_truth)
+    actual_lab = remove_diagonal_and_flatten(np.array(ground_truth))
     pred_score = remove_diagonal_and_flatten(pred)
     fmax = f1_max(actual_lab, pred_score)
      
     # Calculate metrics
-    metrics = evaluate_best_predicted_graph(ground_truth, np.array([causal_matrix]))
-    metrics_1tier = evaluate_best_predicted_graph(ground_truth, np.array([causal_matrix_1tier]))
+    metrics = evaluate_best_predicted_graph(np.array(ground_truth), np.array([causal_matrix]))
     # metrics['Fscore'] = fmax[1]
-    # Print metrics
     for metric, value in metrics.items():
         print(f"{metric}: {value:.2f}")
 
