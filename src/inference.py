@@ -3,7 +3,6 @@ import pickle
 import pathlib
 import parameters
 import numpy as np
-import mxnet as mx
 from os import path
 import pandas as pd
 from math import sqrt
@@ -14,8 +13,6 @@ from gluonts.dataset.common import ListDataset
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from gluonts.evaluation.backtest import make_evaluation_predictions
 import warnings
-# np.random.seed(1)
-# mx.random.seed(2)
 
 
 # Parameters
