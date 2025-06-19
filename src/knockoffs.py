@@ -5,7 +5,6 @@ from DeepKnockoffs import KnockoffMachine
 from DeepKnockoffs import GaussianKnockoffs
 import data
 import pandas as pd
-import diagnostics
 import parameters
 
 

@@ -378,6 +378,54 @@ def get_rivernet_params_gc():
     return params
 
 
+def get_melodi_params():
+
+    params = {
+        
+        'group_num': 3,    
+        'groups': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 5]}, #  
+        'groups_size': {'g1':[1], 'g2':[1], 'g3':[3]}, # 
+
+        'group_num_fs': 5,    
+        'groups_fs': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5]}, #  
+        'groups_size_fs': {'g1': [1], 'g2': [1], 'g3': [1], 'g4': [1], 'g5': [1]}, # 
+         
+        'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3]}, #  
+        'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1]}, #    
+
+        'epochs': 30,
+        'pred_len': 10,
+        'train_len': 1000,
+        'num_layers': 4,
+        'num_cells': 40,
+        'num_samples': 1,
+        'dropout_rate': 0.01,
+        'win_size': 1,
+        'num_sliding_win': 21, #21, 25
+        'step_size': 1,
+        'dim': 8,
+        'dim_fs': 8,
+        'dim_cc': 4,
+        'batch_size': 32,
+        'prior_graph': np.array([[1, 1, 1, 0, 1],
+                                 [0, 1, 0, 0, 0],
+                                 [0, 0, 1, 1, 0],
+                                 [0, 0, 0, 1, 1],
+                                 [0, 0, 0, 0, 1]]),
+        'true_graph': [1, 1, 1, 0, 1,
+                       0, 1, 0, 0, 0,
+                       0, 0, 1, 1, 0,
+                       0, 0, 0, 1, 1,
+                       0, 0, 0, 0, 1],
+        'freq': '6H',
+        'plot_path': "/home/ahmad/Projects/gCause/plots/multigraphs_melodi/",
+        'model_path': "/home/ahmad/Projects/gCause/models/gc_melodi/",
+        'model_name': 'trained_melodi',
+        'model_name_cc': 'trained_melodi_cc'
+    }
+    return params
+
+
 
 def get_dyadic_params_gc():
 

@@ -156,6 +156,16 @@ def load_rivernet(river):
     return df_diff, ground_truth, ground_truth # get_ground_truth(generate_causal_graph(len(vars)-1), [4, 2])
 
 
+
+def load_melodi_data():
+
+    df = pd.read_csv("/home/ahmad/Projects/gCause/datasets/melodi/melodi.csv")
+    df = df.apply(normalize)
+
+    return 
+
+
+
 def load_geo_data(start, end):
     # Load goeclimate data
     path = '/home/ahmad/Projects/gCause/datasets/geo_dataset/moxa_data_H.csv'
