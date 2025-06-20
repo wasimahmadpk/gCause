@@ -12,7 +12,6 @@ from math import sqrt
 from datetime import datetime
 import scipy.stats as stats
 from statsmodels.stats.proportion import proportions_ztest
-from mvlearn.embed import MCCA
 from scipy.special import stdtr
 from preprocessing import *
 import matplotlib.pyplot as plt
@@ -20,7 +19,6 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.metrics import precision_recall_curve
 from sklearn.feature_selection import f_regression, mutual_info_regression
 from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, accuracy_score
-from netCDF4 import Dataset,num2date
 from matplotlib import pyplot as plt
 import xarray as xr
 #from tigramite import data_processing as pp
