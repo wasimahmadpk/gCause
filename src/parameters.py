@@ -383,8 +383,8 @@ def get_melodi_params():
     params = {
         
         'group_num': 3,    
-        'groups': {'g1': [0, 3], 'g2': [3, 4], 'g3': [4, 6]}, #  
-        'groups_size': {'g1':[3], 'g2':[1], 'g3':[2]}, # 
+        'groups': {'g1': [0, 3], 'g2': [3, 4], 'g3': [4, 7]}, #  
+        'groups_size': {'g1':[3], 'g2':[1], 'g3':[3]}, # 
 
         'group_num_fs': 6,    
         'groups_fs': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3], 'g4': [3, 4], 'g5': [4, 5]}, #  
@@ -393,7 +393,7 @@ def get_melodi_params():
         'groups_cc': {'g1': [0, 1], 'g2': [1, 2], 'g3': [2, 3]}, #  
         'groups_size_cc': {'g1':[1], 'g2':[1], 'g3':[1]}, #    
 
-        'epochs': 30,
+        'epochs': 50,
         'pred_len': 10,
         'train_len': 1000,
         'num_layers': 4,
