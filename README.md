@@ -42,13 +42,13 @@ We test our method on synthetic as well as real data which can be found under `d
 
 
 ## Dependencies
-`requirements.txt` contains all the packages that are related to the project.
+`requirement.yml` contains all the packages that are related to the project.
 To install them, simply create a new [conda](https://docs.conda.io/en/latest/) environment and type
 ```
-pip install -r requirements.txt
+conda env create -f environment.yml
 ```
 
 
 ## Acknowledgement
 
-This work is funded by the Carl Zeiss Foundation within the scope of the program line "Breakthroughs: Exploring Intelligent Systems" for "Digitization — explore the basics, use applications" and the DFG grant SH 1682/1-1.
+This work is funded by the Carl Zeiss Foundation within the scope of the program line "Breakthroughs: Exploring Intelligent Systems" for "Digitization ï¿½ explore the basics, use applications" and the DFG grant SH 1682/1-1.
