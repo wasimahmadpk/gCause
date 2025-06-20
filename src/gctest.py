@@ -253,7 +253,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     colname = make_filename_safe(columns[j])
                     filename = pathlib.Path(plot_path + f'res_{cause_group} ---> {colname}.pdf')
                     plt.savefig(filename)
-                    plt.show()
+                    # plt.show()
                 
                     # ----------------------------------------------------------------
                     #                   plot residuals distribution 
@@ -285,8 +285,8 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
                     filename = pathlib.Path(plot_path + f'{cause_group} ---> {colname}.pdf')
                     plt.savefig(filename)
                     print(f'plot saved to: {filename}')
-                    plt.show()
-                    # plt.close()
+                    # plt.show()
+            
                     #-------------------------------------------------------------------------------------
                     cause_list.append(causal_decision[0])
                     cause_list_1tier.append(causal_decision_1tier[0])

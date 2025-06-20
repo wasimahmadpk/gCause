@@ -155,13 +155,21 @@ def load_rivernet(river):
 
 
 
-def load_melodi_data():
-
+def load_melodi_data(start, step):
     df = pd.read_csv("/home/ahmad/Projects/gCause/datasets/melodi/melodi.csv")
     df = df.apply(normalize)
-    df_selected = df.iloc[0:3000, 0:7].copy()
 
-    return df_selected, [[1, 0, 1],[0, 1, 0], [0, 0, 1]]
+    # Always keep first 4 columns
+    fixed_cols = df.iloc[:, 0:4]
+
+    # Sliding window columns start from column 4
+    sliding_cols = df.iloc[:, start : start+step]
+
+    # Concatenate fixed columns and sliding columns
+    df_selected = pd.concat([fixed_cols, sliding_cols], axis=1)
+
+    return df_selected, [[1, 0, 1], [0, 1, 0], [0, 0, 1]]
+
 
 
 

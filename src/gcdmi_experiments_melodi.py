@@ -41,21 +41,16 @@ method = {'Full': 'Full', 'Group': 'Group', 'Canonical': 'Canonical'}
 
 # regime_size = 4500 # hourly sampled data
 # start = 0
-for numgroups in np.arange(0, 1, 1):
+start, end, step = 4, 14, 3
+for combi in np.arange(start, end, step):
     
     print("----------*****-----------------------*****------------")
-    print(f'Experiment: {numgroups} ')
-    model_name = 'melodi_'+f'{numgroups}'+'.sav'
+    print(f'Experiment: {combi} ')
+    model_name = 'melodi_'+f'{combi}'+'.sav'
     pars['model_name'] = model_name
 
-
-    nodes = 2*numgroups
-    num_groups = numgroups
-
-    # df, reduced_graph, full_graph = prep.load_geo_data(start, start+regime_size)
-    # start = start + regime_size
-
-    df, full_graph = load_melodi_data()
+    nodes = 2*combi
+    df, full_graph = load_melodi_data(start, step)
     print(f'Shape: {df.shape}')
     print(df.head())
 
@@ -68,9 +63,9 @@ for numgroups in np.arange(0, 1, 1):
     metrics_pcmci, predicted_graph_pcmci = pcmci.causal_graph(calculate_multi_group_cc(df, group_size_list), ground_truth) #pcmci.causal_graph(df, ground_truth) #
     metrics_vgc, predicted_graph_vgc = vgc.causal_graph(calculate_multi_group_cc(df, group_size_list), ground_truth) #vgc.causal_graph(df, ground_truth) #
 
-    metrics_dict_gcdmi[numgroups] = metrics_gcdmi
-    metrics_dict_pcmci[numgroups] = metrics_pcmci
-    metrics_dict_vgc[numgroups] = metrics_vgc
+    metrics_dict_gcdmi[combi] = metrics_gcdmi
+    metrics_dict_pcmci[combi] = metrics_pcmci
+    metrics_dict_vgc[combi] = metrics_vgc
    
 
 methods_metrics_dict = {'gCDMI': metrics_dict_gcdmi, 'MC-PCMCI': metrics_dict_pcmci, 'MC-VGC': metrics_dict_vgc}
