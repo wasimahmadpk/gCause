@@ -41,7 +41,7 @@ method = {'Full': 'Full', 'Group': 'Group', 'Canonical': 'Canonical'}
 
 # regime_size = 4500 # hourly sampled data
 # start = 0
-start, end, step = 4, 14, 3
+start, end, step = 4, 33, 3
 for combi in np.arange(start, end, step):
     
     print("----------*****-----------------------*****------------")

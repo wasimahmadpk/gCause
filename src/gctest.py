@@ -379,6 +379,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     actual_lab = remove_diagonal_and_flatten(np.array(ground_truth))
     pred_score = remove_diagonal_and_flatten(pred)
     fmax = f1_max(actual_lab, pred_score)
+    print(f'Max fscore: {fmax}')
      
     # Calculate metrics
     metrics = evaluate_best_predicted_graph(np.array(ground_truth), np.array([causal_matrix]))
