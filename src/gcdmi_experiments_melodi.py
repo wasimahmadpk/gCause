@@ -35,7 +35,7 @@ num_of_groups = pars.get('group_num')
 print(num_of_groups)
 
 # ------------------------------------------------------------
-metrics_dict_gcdmi, metrics_dict_hgcrm, metrics_dict_pcmci, metrics_dict_vgc = {}, {}, {}, {}
+metrics_dict_gcdmi, metrics_dict_ccdmi, metrics_dict_pcmci, metrics_dict_vgc = {}, {}, {}, {}
 groups_variation = False
 method = {'Full': 'Full', 'Group': 'Group', 'Canonical': 'Canonical'}
 
@@ -49,7 +49,6 @@ for combi in np.arange(start, end, step):
     model_name = 'melodi_'+f'{combi}'+'.sav'
     pars['model_name'] = model_name
 
-    nodes = 2*combi
     df, full_graph = load_melodi_data(start, step)
     print(f'Shape: {df.shape}')
     print(df.head())
@@ -64,11 +63,12 @@ for combi in np.arange(start, end, step):
     metrics_vgc, predicted_graph_vgc = vgc.causal_graph(calculate_multi_group_cc(df, group_size_list), ground_truth) #vgc.causal_graph(df, ground_truth) #
 
     metrics_dict_gcdmi[combi] = metrics_gcdmi
+    metrics_dict_ccdmi[combi] = metrics_ccdmi
     metrics_dict_pcmci[combi] = metrics_pcmci
     metrics_dict_vgc[combi] = metrics_vgc
    
 
-methods_metrics_dict = {'gCDMI': metrics_dict_gcdmi, 'MC-PCMCI': metrics_dict_pcmci, 'MC-VGC': metrics_dict_vgc}
+methods_metrics_dict = {'gCDMI': metrics_dict_gcdmi, 'MC-CDMI': metrics_dict_ccdmi, 'MC-PCMCI': metrics_dict_pcmci, 'MC-VGC': metrics_dict_vgc}
 # Plot and save accuracy
 metrics = ['Accuracy', 'SHD', 'Precision', 'Recall', 'Fscore', 'TPR', 'FPR', 'FNR']
 for metric_name in metrics:

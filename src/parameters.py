@@ -407,7 +407,7 @@ def get_melodi_params():
         'dim_fs': 6,
         'dim_cc': 3,
         'batch_size': 32,
-        'alpha' : 0.05,
+        'alpha' : 0.01,
         'prior_graph': np.array([[1, 1, 1, 0, 1],
                                  [0, 1, 0, 0, 0],
                                  [0, 0, 1, 1, 0],
