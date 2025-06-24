@@ -609,16 +609,26 @@ def convert_numpy_types(data):
         return data
 
 
+
 def plot_motor_metrics(data, pars, save_path='', json_path=''):
     """
     Create bar plots for Accuracy, Fscore, TPR, FPR, TNR, FNR.
-    Save mean + std for Accuracy and Fscore only.
+    Save mean + std for all metrics.
     """
 
     os.makedirs(save_path, exist_ok=True)
     os.makedirs(json_path, exist_ok=True)
 
     # Convert NumPy to native types
+    def convert_numpy_types(obj):
+        if isinstance(obj, dict):
+            return {k: convert_numpy_types(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_numpy_types(v) for v in obj]
+        elif isinstance(obj, (np.integer, np.floating)):
+            return obj.item()
+        return obj
+
     data = convert_numpy_types(data)
 
     # Save raw data
@@ -648,7 +658,7 @@ def plot_motor_metrics(data, pars, save_path='', json_path=''):
     df_agg = df.groupby(['Movement', 'Method']).agg(['mean', 'std']).reset_index()
     df_agg.columns = ['Movement', 'Method'] + [f'{metric}_{stat}' for metric, stat in df_agg.columns[2:]]
 
-    # Save mean + std for Accuracy and Fscore
+    # Save mean + std for all metrics
     mean_metrics_dict = {}
     for _, row in df_agg.iterrows():
         movement = row["Movement"]
@@ -661,9 +671,13 @@ def plot_motor_metrics(data, pars, save_path='', json_path=''):
             "Fscore": row["Fscore_mean"],
             "std_Fscore": row["Fscore_std"],
             "TPR": row["TPR_mean"],
+            "std_TPR": row["TPR_std"],
             "FPR": row["FPR_mean"],
+            "std_FPR": row["FPR_std"],
             "TNR": row["TNR_mean"],
-            "FNR": row["FNR_mean"]
+            "std_TNR": row["TNR_std"],
+            "FNR": row["FNR_mean"],
+            "std_FNR": row["FNR_std"]
         }
 
     mean_path = os.path.join(json_path, f'mean_{pars["motor_task"]}_metrics.json')
@@ -679,7 +693,7 @@ def plot_motor_metrics(data, pars, save_path='', json_path=''):
         plt.figure(figsize=(12, 6))
         df_plot = df_agg[["Movement", "Method", f"{metric_name}_mean", f"{metric_name}_std"]].copy()
         df_plot.rename(columns={f"{metric_name}_mean": "mean", f"{metric_name}_std": "std"}, inplace=True)
-        df_plot["err"] = df_plot["std"] / 2
+        df_plot["err"] = df_plot["std"] / 2  # Half of std for visual clarity
 
         ax = sns.barplot(
             data=df_plot,
@@ -716,15 +730,14 @@ def plot_motor_metrics(data, pars, save_path='', json_path=''):
         plt.show()
         print(f"{metric_name} plot saved to: {pdf_path}")
 
-    # Only plot Accuracy and Fscore with std bars
+    # Plot all metrics with std error bars
     plot_metric("Accuracy", "Accuracy")
     plot_metric("Fscore", "F1 Score")
-
-    # Skip plotting std-less metrics (or you can plot them if needed)
     plot_metric("TPR", "True Positive Rate")
     plot_metric("FPR", "False Positive Rate")
     plot_metric("TNR", "True Negative Rate")
     plot_metric("FNR", "False Negative Rate")
+
 
 
 
