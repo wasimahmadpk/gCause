@@ -81,7 +81,7 @@ def load_fnirs(file):
         ground_truth = np.array([[1, 1], [0, 1]]) 
         print('File starts with 1 or 2')
     elif base_name.startswith(('3', '4')):
-        ground_truth = np.array([[1, 0], [1, 1]])
+        ground_truth = np.array([[1, 1], [0, 1]])
         print('File starts with 3 or 4')
     else:
         ground_truth = np.array([[0, 0], [0, 0]])
