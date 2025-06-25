@@ -400,9 +400,9 @@ def get_melodi_params():
         'num_cells': 40,
         'num_samples': 1,
         'dropout_rate': 0.01,
-        'win_size': 1,
-        'num_sliding_win': 21, #21, 25
-        'step_size': 1,
+        'win_size': 3,
+        'num_sliding_win': 30, #21, 25
+        'step_size': 3,
         'dim': 8,
         'dim_fs': 6,
         'dim_cc': 3,
@@ -430,7 +430,7 @@ def get_melodi_params():
 
 def get_dyadic_params_gc():
 
-    motor_task = 'PMC'
+    motor_task = 'PMCM1'
     params = {
         
         'group_num': 2,    
