@@ -610,16 +610,11 @@ def convert_numpy_types(data):
 
 
 
-def plot_motor_metrics(data, pars, save_path='', json_path=''):
-    """
-    Create bar plots for Accuracy, Fscore, TPR, FPR, TNR, FNR.
-    Save mean + std for all metrics.
-    """
 
+def plot_motor_metrics(data, pars, save_path='', json_path=''):
     os.makedirs(save_path, exist_ok=True)
     os.makedirs(json_path, exist_ok=True)
 
-    # Convert NumPy to native types
     def convert_numpy_types(obj):
         if isinstance(obj, dict):
             return {k: convert_numpy_types(v) for k, v in obj.items()}
@@ -631,34 +626,34 @@ def plot_motor_metrics(data, pars, save_path='', json_path=''):
 
     data = convert_numpy_types(data)
 
-    # Save raw data
     raw_path = os.path.join(save_path, 'motor_metrics.json')
     with open(raw_path, 'w') as f:
         json.dump(data, f, indent=4)
-    print(f"Raw metrics saved to: {raw_path}")
 
-    # Flatten into DataFrame
     rows = []
     for movement, methods in data.items():
-        for method, experiments in methods.items():
-            for exp, metrics in experiments.items():
-                rows.append({
-                    "Movement": movement,
-                    "Method": method,
-                    "Accuracy": metrics["Accuracy"],
-                    "Fscore": metrics["Fscore"],
-                    "TPR": metrics["TPR"],
-                    "FPR": metrics["FPR"],
-                    "TNR": metrics["TNR"],
-                    "FNR": metrics["FNR"]
-                })
+        for method, metrics in methods.items():
+            rows.append({
+                "Movement": movement,
+                "Method": method,
+                "Accuracy": metrics["Accuracy"],
+                "Fscore": metrics["Fscore"],
+                "TPR": metrics["TPR"],
+                "FPR": metrics["FPR"],
+                "TNR": metrics["TNR"],
+                "FNR": metrics["FNR"],
+                "std_Accuracy": metrics.get("std_Accuracy", 0),
+                "std_Fscore": metrics.get("std_Fscore", 0),
+                "std_TPR": metrics.get("std_TPR", 0),
+                "std_FPR": metrics.get("std_FPR", 0),
+                "std_TNR": metrics.get("std_TNR", 0),
+                "std_FNR": metrics.get("std_FNR", 0)
+            })
+
     df = pd.DataFrame(rows)
 
-    # Aggregate mean and std
-    df_agg = df.groupby(['Movement', 'Method']).agg(['mean', 'std']).reset_index()
-    df_agg.columns = ['Movement', 'Method'] + [f'{metric}_{stat}' for metric, stat in df_agg.columns[2:]]
+    df_agg = df.groupby(['Movement', 'Method']).agg('mean').reset_index()
 
-    # Save mean + std for all metrics
     mean_metrics_dict = {}
     for _, row in df_agg.iterrows():
         movement = row["Movement"]
@@ -666,34 +661,32 @@ def plot_motor_metrics(data, pars, save_path='', json_path=''):
         if movement not in mean_metrics_dict:
             mean_metrics_dict[movement] = {}
         mean_metrics_dict[movement][method] = {
-            "Accuracy": row["Accuracy_mean"],
-            "std_Accuracy": row["Accuracy_std"],
-            "Fscore": row["Fscore_mean"],
-            "std_Fscore": row["Fscore_std"],
-            "TPR": row["TPR_mean"],
-            "std_TPR": row["TPR_std"],
-            "FPR": row["FPR_mean"],
-            "std_FPR": row["FPR_std"],
-            "TNR": row["TNR_mean"],
-            "std_TNR": row["TNR_std"],
-            "FNR": row["FNR_mean"],
-            "std_FNR": row["FNR_std"]
+            "Accuracy": row["Accuracy"],
+            "std_Accuracy": row["std_Accuracy"],
+            "Fscore": row["Fscore"],
+            "std_Fscore": row["std_Fscore"],
+            "TPR": row["TPR"],
+            "std_TPR": row["std_TPR"],
+            "FPR": row["FPR"],
+            "std_FPR": row["std_FPR"],
+            "TNR": row["TNR"],
+            "std_TNR": row["std_TNR"],
+            "FNR": row["FNR"],
+            "std_FNR": row["std_FNR"]
         }
 
     mean_path = os.path.join(json_path, f'mean_{pars["motor_task"]}_metrics.json')
     with open(mean_path, 'w') as f:
         json.dump(mean_metrics_dict, f, indent=4)
-    print(f"Mean metrics saved to: {mean_path}")
 
-    # Plotting
     unique_methods = df["Method"].unique()
     method_colors = dict(zip(unique_methods, sns.color_palette("Set2", len(unique_methods))))
 
     def plot_metric(metric_name, ylabel):
         plt.figure(figsize=(12, 6))
-        df_plot = df_agg[["Movement", "Method", f"{metric_name}_mean", f"{metric_name}_std"]].copy()
-        df_plot.rename(columns={f"{metric_name}_mean": "mean", f"{metric_name}_std": "std"}, inplace=True)
-        df_plot["err"] = df_plot["std"] / 2  # Half of std for visual clarity
+        df_plot = df_agg[["Movement", "Method", metric_name, f"std_{metric_name}"]].copy()
+        df_plot.rename(columns={metric_name: "mean", f"std_{metric_name}": "std"}, inplace=True)
+        df_plot["err"] = df_plot["std"] / 2
 
         ax = sns.barplot(
             data=df_plot,
@@ -705,10 +698,14 @@ def plot_motor_metrics(data, pars, save_path='', json_path=''):
         for i, bar in enumerate(ax.patches):
             height = bar.get_height()
             err = df_plot.iloc[i]["err"]
+            if np.isnan(err) or err == 0:
+                continue
+            ymin = max(0, height - err)
+            ymax = min(1, height + err)
             ax.errorbar(
                 x=bar.get_x() + bar.get_width() / 2,
                 y=height,
-                yerr=err,
+                yerr=[[height - ymin], [ymax - height]],
                 fmt='none',
                 c='black',
                 capsize=5,
@@ -727,17 +724,14 @@ def plot_motor_metrics(data, pars, save_path='', json_path=''):
 
         pdf_path = os.path.join(save_path, f"mean_{metric_name.lower()}_barplot.pdf")
         plt.savefig(pdf_path, format='pdf')
-        plt.show()
-        print(f"{metric_name} plot saved to: {pdf_path}")
+        plt.close()
 
-    # Plot all metrics with std error bars
     plot_metric("Accuracy", "Accuracy")
     plot_metric("Fscore", "F1 Score")
     plot_metric("TPR", "True Positive Rate")
     plot_metric("FPR", "False Positive Rate")
     plot_metric("TNR", "True Negative Rate")
     plot_metric("FNR", "False Negative Rate")
-
 
 
 
