@@ -5,7 +5,6 @@ import baseline.pcmci as pcmci
 import gcdmi
 from data_loader import *
 import numpy as np
-import mxnet as mx
 import pandas as pd
 from preprocessing import *
 import matplotlib.pyplot as plt
