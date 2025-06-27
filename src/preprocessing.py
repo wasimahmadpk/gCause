@@ -587,13 +587,6 @@ def count_metrics(input_data):
 
 
 
-import os
-import json
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 def convert_numpy_types(data):
     if isinstance(data, dict):
         return {k: convert_numpy_types(v) for k, v in data.items()}
@@ -626,6 +619,144 @@ def plot_motor_metrics(data, pars, save_path='', json_path=''):
 
     data = convert_numpy_types(data)
 
+    # Save raw metrics
+    raw_path = os.path.join(save_path, 'motor_metrics.json')
+    with open(raw_path, 'w') as f:
+        json.dump(data, f, indent=4)
+
+    rows = []
+    for movement, methods in data.items():
+        for method, runs in methods.items():
+            accuracies, fscores = [], []
+            tprs, fprs, tnrs, fnrs = [], [], [], []
+
+            for run_metrics in runs.values():
+                accuracies.append(run_metrics["Accuracy"])
+                fscores.append(run_metrics["Fscore"])
+                tprs.append(run_metrics["TPR"])
+                fprs.append(run_metrics["FPR"])
+                tnrs.append(run_metrics["TNR"])
+                fnrs.append(run_metrics["FNR"])
+
+            rows.append({
+                "Movement": movement,
+                "Method": method,
+                "Accuracy": np.mean(accuracies),
+                "std_Accuracy": np.std(accuracies, ddof=1),
+                "Fscore": np.mean(fscores),
+                "std_Fscore": np.std(fscores, ddof=1),
+                "TPR": np.mean(tprs),
+                "std_TPR": np.std(tprs, ddof=1),
+                "FPR": np.mean(fprs),
+                "std_FPR": np.std(fprs, ddof=1),
+                "TNR": np.mean(tnrs),
+                "std_TNR": np.std(tnrs, ddof=1),
+                "FNR": np.mean(fnrs),
+                "std_FNR": np.std(fnrs, ddof=1)
+            })
+
+    df = pd.DataFrame(rows)
+
+    # Save JSON with mean/std values
+    mean_metrics_dict = {}
+    for _, row in df.iterrows():
+        movement = row["Movement"]
+        method = row["Method"]
+        if movement not in mean_metrics_dict:
+            mean_metrics_dict[movement] = {}
+        mean_metrics_dict[movement][method] = {
+            "Accuracy": row["Accuracy"],
+            "std_Accuracy": row["std_Accuracy"],
+            "Fscore": row["Fscore"],
+            "std_Fscore": row["std_Fscore"],
+            "TPR": row["TPR"],
+            "std_TPR": row["std_TPR"],
+            "FPR": row["FPR"],
+            "std_FPR": row["std_FPR"],
+            "TNR": row["TNR"],
+            "std_TNR": row["std_TNR"],
+            "FNR": row["FNR"],
+            "std_FNR": row["std_FNR"]
+        }
+
+    mean_path = os.path.join(json_path, f'mean_{pars["motor_task"]}_metrics.json')
+    with open(mean_path, 'w') as f:
+        json.dump(mean_metrics_dict, f, indent=4)
+
+    # Plotting
+    unique_methods = df["Method"].unique()
+    method_colors = dict(zip(unique_methods, sns.color_palette("Set2", len(unique_methods))))
+
+    def plot_metric(metric_name, ylabel):
+        plt.figure(figsize=(12, 6))
+        df_plot = df[["Movement", "Method", metric_name, f"std_{metric_name}"]].copy()
+        df_plot.rename(columns={metric_name: "mean", f"std_{metric_name}": "std"}, inplace=True)
+        df_plot["err"] = df_plot["std"] / 2
+
+        ax = sns.barplot(
+            data=df_plot,
+            x="Movement", y="mean", hue="Method",
+            palette=method_colors,
+            ci=None
+        )
+
+        for i, bar in enumerate(ax.patches):
+            height = bar.get_height()
+            err = df_plot.iloc[i]["err"]
+            if np.isnan(err) or err == 0:
+                continue
+            ymin = max(0, height - err)
+            ymax = min(1, height + err)
+            ax.errorbar(
+                x=bar.get_x() + bar.get_width() / 2,
+                y=height,
+                yerr=[[height - ymin], [ymax - height]],
+                fmt='none',
+                c='black',
+                capsize=5,
+                lw=1.5
+            )
+
+        plt.xlabel("Task", fontsize=14)
+        plt.ylabel(ylabel, fontsize=14)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        ax.set_yticks(np.arange(0, 1.10, 0.10))
+        plt.ylim(0, 1.1)
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
+        plt.tight_layout()
+
+        pdf_path = os.path.join(save_path, f"mean_{metric_name.lower()}_barplot.pdf")
+        plt.savefig(pdf_path, format='pdf')
+        plt.close()
+
+    plot_metric("Accuracy", "Accuracy")
+    plot_metric("Fscore", "F1 Score")
+    plot_metric("TPR", "True Positive Rate")
+    plot_metric("FPR", "False Positive Rate")
+    plot_metric("TNR", "True Negative Rate")
+    plot_metric("FNR", "False Negative Rate")
+
+
+
+
+
+def plot_motor_metrics2(data, pars, save_path='', json_path=''):
+    os.makedirs(save_path, exist_ok=True)
+    os.makedirs(json_path, exist_ok=True)
+
+    def convert_numpy_types(obj):
+        if isinstance(obj, dict):
+            return {k: convert_numpy_types(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_numpy_types(v) for v in obj]
+        elif isinstance(obj, (np.integer, np.floating)):
+            return obj.item()
+        return obj
+
+    data = convert_numpy_types(data)
+
     raw_path = os.path.join(save_path, 'motor_metrics.json')
     with open(raw_path, 'w') as f:
         json.dump(data, f, indent=4)
@@ -633,6 +764,7 @@ def plot_motor_metrics(data, pars, save_path='', json_path=''):
     rows = []
     for movement, methods in data.items():
         for method, metrics in methods.items():
+            print(metrics)
             rows.append({
                 "Movement": movement,
                 "Method": method,
@@ -676,6 +808,7 @@ def plot_motor_metrics(data, pars, save_path='', json_path=''):
         }
 
     mean_path = os.path.join(json_path, f'mean_{pars["motor_task"]}_metrics.json')
+    print(mean_path)
     with open(mean_path, 'w') as f:
         json.dump(mean_metrics_dict, f, indent=4)
 
@@ -736,234 +869,11 @@ def plot_motor_metrics(data, pars, save_path='', json_path=''):
 
 
 
-def plot_motor_metrics2(data, save_path='', json_path=''):
-    """
-    Create bar plots for the mean Accuracy, Fscore, TPR, FPR, TNR, and FNR metrics for multiple methods and movements.
-    Save the plots as PDF files and the mean metrics as a JSON file.
-    """
-    # Save the original data to JSON
-    data = convert_numpy_types(data)
-    raw_filename = 'motor_metrics.json'
-    raw_json_full_path = os.path.join(save_path, raw_filename)
-    with open(raw_json_full_path, "w") as json_file:
-        json.dump(data, json_file, indent=4)
-    print(f"Raw metrics saved to JSON: {raw_json_full_path}")
-    
-    # Prepare the data for plotting mean metrics
-    rows = []
-    for movement, methods in data.items():
-        for method, experiments in methods.items():
-            for exp, metrics in experiments.items():
-                rows.append({
-                    "Movement": movement,
-                    "Method": method,
-                    "Accuracy": metrics["Accuracy"],
-                    "Fscore": metrics["Fscore"],
-                    "TPR": metrics["TPR"],
-                    "FPR": metrics["FPR"],
-                    "TNR": metrics["TNR"],
-                    "FNR": metrics["FNR"]
-                })
-    df = pd.DataFrame(rows)
-    
-    # Compute the mean of Accuracy, Fscore, TPR, FPR, TNR, and FNR for each combination of Movement and Method
-    df_mean = df.groupby(['Movement', 'Method']).agg({
-        'Accuracy': 'mean', 
-        'Fscore': 'mean',
-        'TPR': 'mean',
-        'FPR': 'mean',
-        'TNR': 'mean',
-        'FNR': 'mean'
-    }).reset_index()
-
-    # Transform the DataFrame to the desired JSON structure
-    mean_metrics_dict = {}
-    for _, row in df_mean.iterrows():
-        movement = row["Movement"]
-        method = row["Method"]
-        accuracy = row["Accuracy"]
-        fscore = row["Fscore"]
-        tpr = row["TPR"]
-        fpr = row["FPR"]
-        tnr = row["TNR"]
-        fnr = row["FNR"]
-        
-        # Create nested structure with Movement -> Method -> Metrics
-        if movement not in mean_metrics_dict:
-            mean_metrics_dict[movement] = {}
-        mean_metrics_dict[movement][method] = {
-            "Accuracy": accuracy,
-            "Fscore": fscore,
-            "TPR": tpr,
-            "FPR": fpr,
-            "TNR": tnr,
-            "FNR": fnr
-        }
-
-    # Save the transformed mean metrics as JSON
-    mean_filename = 'mean_motor_metrics.json'
-    mean_json_full_path = os.path.join(json_path, mean_filename)
-    with open(mean_json_full_path, "w") as mean_json_file:
-        json.dump(mean_metrics_dict, mean_json_file, indent=4)
-    print(f"Mean metrics saved to JSON: {mean_json_full_path}")
-
-    # Dynamically generate colors for the methods
-    unique_methods = df['Method'].unique()
-    method_colors = sns.color_palette("Set2", len(unique_methods))  # Generate colors for all methods
-    method_colors = dict(zip(unique_methods, method_colors))  # Map methods to colors
-
-    # Plot the mean Accuracy for each movement and method
-    plt.figure(figsize=(12, 6))
-    ax = sns.barplot(data=df_mean, x="Movement", y="Accuracy", hue="Method", palette=method_colors)
-    plt.xlabel("Task", fontsize=14)
-    plt.xticks(fontsize=18)
-    plt.ylabel("Accuracy", fontsize=14)
-    plt.yticks(fontsize=18)
-    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
-    plt.ylim(0, 1.1)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-
-    # Add custom legend based on methods
-    plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
-
-    # Save the plot as a PDF file
-    plt.tight_layout()
-    acc_pdf_path = os.path.join(save_path, "mean_acc_barplot.pdf")
-    plt.savefig(acc_pdf_path, format='pdf')
-    plt.show()
-    print(f"Accuracy plot saved to: {acc_pdf_path}")
-
-    # Plot the mean Fscore for each movement and method
-    plt.figure(figsize=(12, 6))
-    ax = sns.barplot(data=df_mean, x="Movement", y="Fscore", hue="Method", palette=method_colors)
-    plt.xlabel("Task", fontsize=14)
-    plt.ylabel("Fscore", fontsize=14)
-
-    plt.xticks(fontsize=18)
-    plt.yticks(fontsize=18)
-    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
-
-    plt.ylim(0, 1.1)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-
-    # Add custom legend based on methods
-    plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
-
-    # Save the plot as a PDF file
-    plt.tight_layout()
-    fscore_pdf_path = os.path.join(save_path, "mean_fscore_barplot.pdf")
-    plt.savefig(fscore_pdf_path, format='pdf')
-    plt.show()
-    print(f"Fscore plot saved to: {fscore_pdf_path}")
-
-    # Plot the mean TPR for each movement and method
-    plt.figure(figsize=(12, 6))
-    ax = sns.barplot(data=df_mean, x="Movement", y="TPR", hue="Method", palette=method_colors)
-    plt.xlabel("Task", fontsize=14)
-    plt.ylabel("TPR", fontsize=14)
-
-    plt.xticks(fontsize=18)
-    plt.yticks(fontsize=18)
-    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
-    plt.ylim(0, 1.10)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-
-    # Add custom legend based on methods
-    plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
-
-    # Save the plot as a PDF file
-    plt.tight_layout()
-    tpr_pdf_path = os.path.join(save_path, "mean_tpr_barplot.pdf")
-    plt.savefig(tpr_pdf_path, format='pdf')
-    plt.show()
-    print(f"TPR plot saved to: {tpr_pdf_path}")
-
-    # Plot the mean FPR for each movement and method
-    plt.figure(figsize=(12, 6))
-    ax = sns.barplot(data=df_mean, x="Movement", y="FPR", hue="Method", palette=method_colors)
-    plt.xlabel("Task", fontsize=14)
-    plt.ylabel("FPR", fontsize=14)
-    plt.ylim(0, 1.10)
-    
-    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
-    plt.xticks(fontsize=18)
-    plt.yticks(fontsize=18)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-
-    # Add custom legend based on methods
-    plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
-
-    # Save the plot as a PDF file
-    plt.tight_layout()
-    fpr_pdf_path = os.path.join(save_path, "mean_fpr_barplot.pdf")
-    plt.savefig(fpr_pdf_path, format='pdf')
-    plt.show()
-    print(f"FPR plot saved to: {fpr_pdf_path}")
-
-    # Plot the mean TNR for each movement and method
-    plt.figure(figsize=(12, 6))
-    ax = sns.barplot(data=df_mean, x="Movement", y="TNR", hue="Method", palette=method_colors)
-    plt.xlabel("Task", fontsize=14)
-    plt.ylabel("TNR", fontsize=14)
-
-    plt.xticks(fontsize=18)
-    plt.yticks(fontsize=18)
-
-    plt.ylim(0, 1.10)
-    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-
-    # Add custom legend based on methods
-    plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
-
-    # Save the plot as a PDF file
-    plt.tight_layout()
-    tnr_pdf_path = os.path.join(save_path, "mean_tnr_barplot.pdf")
-    plt.savefig(tnr_pdf_path, format='pdf')
-    plt.show()
-    print(f"TNR plot saved to: {tnr_pdf_path}")
-
-    # Plot the mean FNR for each movement and method
-    plt.figure(figsize=(12, 6))
-    ax = sns.barplot(data=df_mean, x="Movement", y="FNR", hue="Method", palette=method_colors)
-    plt.xlabel("Movement", fontsize=14)
-    plt.ylabel("FNR", fontsize=14)
-    plt.ylim(0, 1.10)
-    ax.set_yticks(np.arange(0, 1.10, 0.10))  # Set finer ticks
-    plt.xticks(fontsize=18)
-    plt.yticks(fontsize=18)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-
-    # Add custom legend based on methods
-    plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
-
-    # Save the plot as a PDF file
-    plt.tight_layout()
-    fnr_pdf_path = os.path.join(save_path, "mean_fnr_barplot.pdf")
-    plt.savefig(fnr_pdf_path, format='pdf')
-    plt.show()
-    print(f"FNR plot saved to: {fnr_pdf_path}")
 
 
 
 
 
-def convert_numpy_types_old(data):
-    """
-    Recursively convert NumPy types in the data dictionary to native Python types for JSON serialization.
-    """
-    if isinstance(data, dict):
-        return {key: convert_numpy_types(value) for key, value in data.items()}
-    elif isinstance(data, list):
-        return [convert_numpy_types(item) for item in data]
-    elif isinstance(data, np.ndarray):
-        return data.tolist()
-    elif isinstance(data, (np.int64, np.int32, np.int16, np.int8)):
-        return int(data)
-    elif isinstance(data, (np.float64, np.float32, np.float16)):
-        return float(data)
-    else:
-        return data
     
 def convert_numpy_types(data):
     """
