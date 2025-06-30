@@ -719,12 +719,12 @@ def plot_motor_metrics(data, pars, save_path='', json_path=''):
 
         plt.xlabel("Task", fontsize=14)
         plt.ylabel(ylabel, fontsize=14)
-        plt.xticks(fontsize=16)
-        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=18)
+        plt.yticks(fontsize=18)
         ax.set_yticks(np.arange(0, 1.10, 0.10))
         plt.ylim(0, 1.1)
         plt.grid(axis='y', linestyle='--', alpha=0.7)
-        plt.legend(title="Method", loc='upper right', ncol=len(unique_methods))
+        plt.legend(title="Method", loc='upper right', ncol=2)
         plt.tight_layout()
 
         pdf_path = os.path.join(save_path, f"mean_{metric_name.lower()}_barplot.pdf")
@@ -737,7 +737,6 @@ def plot_motor_metrics(data, pars, save_path='', json_path=''):
     plot_metric("FPR", "False Positive Rate")
     plot_metric("TNR", "True Negative Rate")
     plot_metric("FNR", "False Negative Rate")
-
 
 
 
@@ -865,12 +864,6 @@ def plot_motor_metrics2(data, pars, save_path='', json_path=''):
     plot_metric("FPR", "False Positive Rate")
     plot_metric("TNR", "True Negative Rate")
     plot_metric("FNR", "False Negative Rate")
-
-
-
-
-
-
 
 
 
