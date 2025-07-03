@@ -339,7 +339,7 @@ def f1_max(labs,preds):
     f1_scores = 2 * recall * precision / (recall + precision)
     f1_thresh = thresholds[np.argmax(f1_scores)]
     f1_score = np.nanmax(f1_scores)
-    return f1_thresh,f1_score
+    return f1_score, f1_thresh
 
 
 def plot_multitests_metrics(metrics_data, plot_path, metric_name):
@@ -446,13 +446,13 @@ def evaluate_best_predicted_graph(actual, predicted_list):
     best_fpr = float('inf')  # Initialize FPR with high value for tiebreakers
     
     # Flatten actual graph once, since it's common for all predictions
-    y_true_flat = actual[mask].tolist()
-    # y_true_flat = [item for sublist in actual for item in sublist]
+    # y_true_flat = actual[mask].tolist()
+    y_true_flat = [item for sublist in actual for item in sublist]
     
     for predicted in predicted_list:
          # Flatten predicted graph
-        y_pred_flat = predicted[mask].tolist()
-        # y_pred_flat = [item for sublist in predicted for item in sublist]
+        # y_pred_flat = predicted[mask].tolist()
+        y_pred_flat = [item for sublist in predicted for item in sublist]
 
         # Calculate confusion matrix
         cm = confusion_matrix(y_true_flat, y_pred_flat, labels=[0, 1])

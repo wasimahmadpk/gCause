@@ -369,7 +369,7 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     conf_mat.append(conf_mat_indist)
     print("--------------------------------------------------------")
     # print("Pair-wise Graph: ", conf_mat)
-    print(f'Actual Causal Graph: \n {ground_truth}')
+    print(f'Actual Causal Graph: \n {np.array(ground_truth)}')
     print(f'Discovered Causal Graph: \n {np.array(causal_matrix)}')
     print(f'Causal Impact Graph: {np.array(ci_matrix).shape} \n {np.array(ci_matrix)}')
     print("----------*****-----------------------*****-------------")
@@ -377,13 +377,13 @@ def groupCause(df, odata, model, params, ground_truth, method='Group'):
     print("----------*****-----------------------*****-------------")
     pred = np.array(ci_matrix)   #1 - np.array(kld_matrix)
     actual_lab = remove_diagonal_and_flatten(np.array(ground_truth))
-    pred_score = remove_diagonal_and_flatten(pred)
+    pred_score = remove_diagonal_and_flatten(np.array(causal_matrix)) #pred
     fmax = f1_max(actual_lab, pred_score)
     print(f'Max fscore: {fmax}')
      
     # Calculate metrics
     metrics = evaluate_best_predicted_graph(np.array(ground_truth), np.array([causal_matrix]))
-    # metrics['Fscore'] = fmax[1]
+    metrics['Fscore'] = fmax[0]
     for metric, value in metrics.items():
         print(f"{metric}: {value:.2f}")
 
