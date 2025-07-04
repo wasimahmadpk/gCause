@@ -326,9 +326,6 @@ def plot_roc_curve(y_true, dist, corr, plot_path):
     # Save as high-quality PDF
     plt.savefig(filename, format="pdf", dpi=400, bbox_inches="tight")
 
-    # Show plot
-    # plt.show()
-
 
 
 def f1_max(labs,preds):
