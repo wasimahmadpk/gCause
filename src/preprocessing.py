@@ -6,7 +6,6 @@ import pathlib
 import parameters
 import re
 import numpy as np
-import scipy as sci
 import seaborn as sns
 import pandas as pd
 from math import sqrt
