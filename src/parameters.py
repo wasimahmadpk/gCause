@@ -426,7 +426,7 @@ def get_melodi_params():
 
 def get_dyadic_params_gc():
 
-    motor_task = 'PMC'
+    motor_task = 'M1'
     params = {
         
         'group_num': 2,    
