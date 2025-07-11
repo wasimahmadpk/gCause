@@ -419,7 +419,7 @@ def load_sims_data(groups):
     dim = groups*5
     cols = [f'Z{i}' for i in range(1, dim+1)]
     df = pd.DataFrame(data= mat_data['ts'][: 200, :dim], columns=cols)
-    df = df.apply(normalize)
+    # df = df.apply(normalize)
 
     cgraphs = mat_data['net'][0, :dim, :dim].T
 
